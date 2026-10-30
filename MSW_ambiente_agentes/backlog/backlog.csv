@@ -306,7 +306,7 @@ Guardar canciones, secciones, líneas y acordes en SQLite local.
 flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
 
 *Depende de*
-MSW-19","","MSW-3","Highest","fase-2","msw","5","S2","Por hacer"
+MSW-19","","MSW-3","Highest","fase-2","msw","5","S2","Listo para prueba de Luis"
 "MSW-21","Story","Repositorio de canciones (crear, leer, editar, borrar)","*Objetivo*
 Capa de datos separada de la pantalla.
 
