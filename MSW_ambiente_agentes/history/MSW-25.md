@@ -7,5 +7,7 @@
 - 2026-10-29 23:55: Pruebas añadidas para posiciones de acordes, transposición, restauración del tono original y notación latina.
 - 2026-10-30 00:14: Corrección: el tono actual ahora se calcula directamente desde el tono original y los semitonos activos; se normalizan también los pasos descendentes.
 - 2026-10-30 00:14: Prueba añadida para verificar que dos pulsaciones de subir semitono actualizan el tono actual a D desde C.
+- 2026-10-30 00:20: Corrección: el indicador de tono actual ahora reconoce tonos con calidad, como `F#m`, y muestra `Bm` después de subir 5 semitonos.
+- 2026-10-30 00:20: Validación: `flutter analyze` limpio y `flutter test` 90/90 OK.
 - 2026-10-29 23:52: Estado: Por hacer -> Listo para prueba de Luis
 - 2026-10-29 23:52: Pantalla de detalle implementada con transposición por semitonos, tono destino, notación latina/americana y apertura desde Biblioteca. flutter analyze y flutter test: 88 pruebas OK.

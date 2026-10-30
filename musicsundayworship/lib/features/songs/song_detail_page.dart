@@ -19,20 +19,17 @@ class _SongDetailPageState extends State<SongDetailPage> {
 
   String get _originalKey => widget.song.originalKey ?? '—';
 
-  MusicKey? get _sourceKey => MusicKey.parse(widget.song.originalKey ?? '');
+  Chord? get _sourceChord => Chord.parse(widget.song.originalKey ?? '');
 
-  String get _currentKey {
-    final source = _sourceKey;
-    if (source == null) return _originalKey;
-    final key = _transposedKey(source, _semitones);
-    return _notation == NoteNotation.latin
-        ? key.tonic.toLatin().toString()
-        : key.toString();
+  MusicKey? get _sourceKey {
+    final chord = _sourceChord;
+    return chord == null ? null : MusicKey(chord.root);
   }
 
-  MusicKey _transposedKey(MusicKey source, int semitones) {
-    final chord = Transposer.transpose(Chord(root: source.tonic), semitones);
-    return MusicKey(chord.root);
+  String get _currentKey {
+    final source = _sourceChord;
+    if (source == null) return _originalKey;
+    return _renderChord(source, _semitones);
   }
 
   void _setSemitones(int value) {

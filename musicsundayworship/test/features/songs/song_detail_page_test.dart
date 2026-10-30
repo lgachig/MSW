@@ -77,4 +77,22 @@ void main() {
     await tester.pump();
     expect(find.text('Do      Sol'), findsOneWidget);
   });
+
+  testWidgets('updates minor current keys after transposition', (tester) async {
+    const song = SongDocument(
+      title: 'Canción en menor',
+      originalKey: 'F#m',
+      sections: [],
+    );
+    await tester.pumpWidget(
+      const MaterialApp(home: SongDetailPage(song: song)),
+    );
+
+    for (var index = 0; index < 5; index++) {
+      await tester.tap(find.byKey(const Key('transpose-up')));
+    }
+    await tester.pump();
+
+    expect(find.text('Tono actual: Bm'), findsOneWidget);
+  });
 }
