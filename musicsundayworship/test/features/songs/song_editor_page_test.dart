@@ -92,6 +92,19 @@ void main() {
     expect(SongTextParser.format(withoutPunctuation), 'A       E\nLetra');
   });
 
+  test('keeps the exact spacing from the reported chord line', () {
+    const input = 'A.          F#m\nLetra';
+    final sections = SongTextParser.parse(input);
+
+    expect(SongTextParser.format(sections), input);
+    expect(
+      sections.single.lines.single.chords
+          .map((chord) => (chord.chord, chord.position))
+          .toList(),
+      [('A', 0), ('.', 1), ('F#m', 12)],
+    );
+  });
+
   testWidgets('uses a monospaced font for pasted chord text', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
@@ -162,6 +175,35 @@ void main() {
     expect(repository.song?.author, 'Autor');
     expect(repository.song?.source, 'Fuente');
     expect(repository.song?.sections.single.lines.single.content, 'Letra');
+  });
+
+  testWidgets('saves the pasted chord columns without rebuilding the text', (
+    tester,
+  ) async {
+    final repository = _FakeSongRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [songRepositoryProvider.overrideWithValue(repository)],
+        child: const MaterialApp(home: SongEditorPage()),
+      ),
+    );
+    await tester.pump();
+    final fields = find.byType(TextFormField);
+    await tester.enterText(fields.at(0), 'Nueva');
+    await tester.enterText(fields.at(3), 'G');
+    await tester.enterText(fields.at(6), 'A.          F#m\nLetra');
+    await tester.scrollUntilVisible(
+      find.byType(FilledButton),
+      500,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.byType(FilledButton));
+    await tester.pumpAndSettle();
+
+    expect(
+      SongTextParser.format(repository.song!.sections),
+      'A.          F#m\nLetra',
+    );
   });
 
   testWidgets('creates and edits an existing song', (tester) async {

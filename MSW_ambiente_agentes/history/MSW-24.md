@@ -24,3 +24,5 @@
 - 2026-10-29 23:10: Se añadió prueba de regresión para conservar puntuación y columnas al importar y reconstruir acordes.
 - 2026-10-29 23:12: Corrección adicional: el parser reconoce puntuación pegada a acordes, como `.A` y `E.`, sin perder las columnas de los acordes restantes al quitarla.
 - 2026-10-29 23:12: Se añadió prueba de regresión para comparar la serialización con y sin puntuación.
+- 2026-10-29 23:17: Corrección de flujo: mientras el usuario solo pega o edita texto, el guardado usa el texto actual como fuente principal; el modelo táctil solo se usa después de mover, agregar, editar o borrar acordes.
+- 2026-10-29 23:17: Se añadió prueba widget que guarda `A.          F#m` conservando exactamente sus columnas.

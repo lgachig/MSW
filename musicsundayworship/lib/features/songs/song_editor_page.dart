@@ -184,6 +184,7 @@ class _SongEditorPageState extends ConsumerState<SongEditorPage> {
   String? _saveError;
   SongDocument? _song;
   List<SongSection>? _editorSections;
+  bool _chordEditorDirty = false;
 
   bool get editing => widget.songId != null;
 
@@ -233,7 +234,9 @@ class _SongEditorPageState extends ConsumerState<SongEditorPage> {
       originalKey: _key.text.trim(),
       tempo: int.tryParse(_tempo.text.trim()),
       timeSignature: _optional(_timeSignature.text),
-      sections: _editorSections ?? SongTextParser.parse(_lyrics.text),
+      sections: _chordEditorDirty
+          ? (_editorSections ?? SongTextParser.parse(_lyrics.text))
+          : SongTextParser.parse(_lyrics.text),
     );
     final repository = ref.read(songRepositoryProvider);
     try {
@@ -338,7 +341,10 @@ class _SongEditorPageState extends ConsumerState<SongEditorPage> {
               ),
               onChanged: (value) {
                 final parsed = SongTextParser.parse(value);
-                setState(() => _editorSections = parsed);
+                setState(() {
+                  _editorSections = parsed;
+                  _chordEditorDirty = false;
+                });
               },
             ),
             if (_editorSections
@@ -370,6 +376,7 @@ class _SongEditorPageState extends ConsumerState<SongEditorPage> {
                   ];
                   setState(() {
                     _editorSections = sections;
+                    _chordEditorDirty = true;
                     _lyrics.text = _sectionsToText(sections);
                   });
                 },
