@@ -78,6 +78,12 @@ void main() {
     expect(SongTextParser.format(sections), 'A       E/G#       F#m\nLetra');
   });
 
+  test('preserves punctuation between chord placements', () {
+    final sections = SongTextParser.parse('A       .       E\nLetra');
+
+    expect(SongTextParser.format(sections), 'A       .       E\nLetra');
+  });
+
   testWidgets('uses a monospaced font for pasted chord text', (tester) async {
     await tester.pumpWidget(
       ProviderScope(

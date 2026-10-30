@@ -20,3 +20,5 @@
 - 2026-10-29 23:00: Validación: `flutter analyze` limpio y `flutter test` 79/79 OK. No hay aplicación Flutter activa para ejecutar hot reload mediante DTD.
 - 2026-10-29 23:07: Corrección adicional: el campo de importación ahora usa fuente monoespaciada para mostrar visualmente las columnas originales de los acordes.
 - 2026-10-29 23:07: Prueba añadida para verificar la fuente monoespaciada del campo de acordes.
+- 2026-10-29 23:10: Corrección: el parser ya no descarta tokens de puntuación independientes, como `.`, dentro de líneas de acordes; se conservan sus posiciones y espacios originales.
+- 2026-10-29 23:10: Se añadió prueba de regresión para conservar puntuación y columnas al importar y reconstruir acordes.

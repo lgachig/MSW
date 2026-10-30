@@ -21,14 +21,7 @@ class SongTextParser {
         if (result.isChordLine) {
           pending
             ..clear()
-            ..addAll(
-              result.tokens.map(
-                (token) => ChordPlacementData(
-                  chord: token.text,
-                  position: token.start,
-                ),
-              ),
-            );
+            ..addAll(_placementsForChordLine(sourceLine, result));
         } else if (sourceLine.trim().isNotEmpty || pending.isNotEmpty) {
           lines.add(
             SongLine(
@@ -61,6 +54,26 @@ class SongTextParser {
     }
     return List.unmodifiable(sections);
   }
+
+  static List<ChordPlacementData> _placementsForChordLine(
+    String sourceLine,
+    ChordLineResult result,
+  ) {
+    final validPositions = {for (final token in result.tokens) token.start};
+    final placements = <ChordPlacementData>[];
+    final tokenPattern = RegExp(r'[^\s|–—-]+');
+    for (final match in tokenPattern.allMatches(sourceLine)) {
+      final text = match.group(0)!;
+      final position = match.start;
+      if (validPositions.contains(position) || _isStandalonePunctuation(text)) {
+        placements.add(ChordPlacementData(chord: text, position: position));
+      }
+    }
+    return placements;
+  }
+
+  static bool _isStandalonePunctuation(String value) =>
+      RegExp(r'^[^A-Za-zÁÉÍÓÚáéíóúÑñ0-9]+$').hasMatch(value);
 
   static String format(List<SongSection> sections) => sections
       .expand(
