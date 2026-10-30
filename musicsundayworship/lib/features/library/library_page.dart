@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/song_repository.dart';
 import '../songs/song_editor_page.dart';
+import '../songs/song_detail_page.dart';
 
 enum LibrarySort { title, author, key, label }
 
@@ -140,7 +141,7 @@ class _LibraryPageState extends ConsumerState<LibraryPage> {
                                 : () => Navigator.of(context).push(
                                     MaterialPageRoute<void>(
                                       builder: (_) =>
-                                          SongEditorPage(songId: song.id),
+                                          SongDetailPage(song: song),
                                     ),
                                   ),
                           );
