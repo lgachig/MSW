@@ -40,6 +40,7 @@ void main() {
       expect(MusicKey.parse('A')!.semitonesTo(MusicKey.parse('G')!), 10);
       expect(Transposer.transpose(Chord.parse('C')!, 12).toString(), 'C');
       expect(Transposer.transpose(Chord.parse('C')!, -12).toString(), 'C');
+      expect(Transposer.transpose(Chord.parse('C')!, -1).toString(), 'B');
     });
 
     test('restores original sharp and flat spellings on a round trip', () {
@@ -54,6 +55,35 @@ void main() {
       final chord = Chord.parse('Db/F#')!;
       final moved = Transposer.transpose(chord, 2);
       expect(Transposer.transpose(moved, -2).toString(), 'Db/F#');
+    });
+
+    test('supports instance APIs and accumulated transposition state', () {
+      const transposer = Transposer();
+      final chord = Chord.parse('C/E')!;
+      expect(transposer.move(chord, 4).toString(), 'E/G#');
+      expect(
+        transposer
+            .toKey(chord, MusicKey.parse('C')!, MusicKey.parse('D')!)
+            .toString(),
+        'D/F#',
+      );
+      final moved = transposer.move(chord, 5);
+      expect(transposer.move(moved, 7).toString(), 'C/E');
+    });
+
+    test('uses flat source spellings and restores after a full cycle', () {
+      final chord = Chord.parse('Bb/D')!;
+      final moved = Transposer.transpose(chord, -1);
+      expect(moved.toString(), 'A/Db');
+      expect(Transposer.transpose(moved, 1).toString(), 'Bb/D');
+      expect(
+        Transposer.transpose(
+          Chord.parse('C')!,
+          -1,
+          targetKey: MusicKey.parse('F')!,
+        ).toString(),
+        'B',
+      );
     });
   });
 }
