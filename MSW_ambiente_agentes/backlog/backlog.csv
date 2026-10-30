@@ -424,7 +424,7 @@ Ver la canción y cambiar de tono o de notación al instante.
 flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
 
 *Depende de*
-MSW-15, MSW-24","","MSW-3","High","fase-2","msw","5","S4","Por hacer"
+MSW-15, MSW-24","","MSW-3","High","fase-2","msw","5","S4","Listo para prueba de Luis"
 "MSW-26","Story","Arreglos propios sin perder el original","*Objetivo*
 Guardar versiones de una canción con acordes cambiados.
 
