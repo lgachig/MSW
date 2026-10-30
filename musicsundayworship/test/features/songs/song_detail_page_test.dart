@@ -53,6 +53,21 @@ void main() {
     expect(find.text('C       G'), findsOneWidget);
   });
 
+  testWidgets('updates the current key after two semitone steps', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(home: SongDetailPage(song: _song)),
+    );
+
+    await tester.tap(find.byKey(const Key('transpose-up')));
+    await tester.tap(find.byKey(const Key('transpose-up')));
+    await tester.pump();
+
+    expect(find.byKey(const Key('current-key')), findsOneWidget);
+    expect(find.text('Tono actual: D'), findsOneWidget);
+  });
+
   testWidgets('switches rendered chords to Latin notation', (tester) async {
     await tester.pumpWidget(
       const MaterialApp(home: SongDetailPage(song: _song)),

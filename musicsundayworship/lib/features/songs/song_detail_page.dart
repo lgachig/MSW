@@ -24,7 +24,7 @@ class _SongDetailPageState extends State<SongDetailPage> {
   String get _currentKey {
     final source = _sourceKey;
     if (source == null) return _originalKey;
-    final key = _targetKey ?? _transposedKey(source, _semitones);
+    final key = _transposedKey(source, _semitones);
     return _notation == NoteNotation.latin
         ? key.tonic.toLatin().toString()
         : key.toString();
@@ -37,7 +37,7 @@ class _SongDetailPageState extends State<SongDetailPage> {
 
   void _setSemitones(int value) {
     setState(() {
-      _semitones = value % 12;
+      _semitones = (value % 12 + 12) % 12;
       _targetKey = null;
     });
   }
@@ -78,7 +78,10 @@ class _SongDetailPageState extends State<SongDetailPage> {
                   runSpacing: 8,
                   children: [
                     Text('Tono original: $_originalKey'),
-                    Text('Tono actual: $_currentKey'),
+                    Text(
+                      'Tono actual: $_currentKey',
+                      key: const Key('current-key'),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 12),
