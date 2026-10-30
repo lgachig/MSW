@@ -14,11 +14,20 @@ class _FakeSongRepository implements SongRepository {
   @override
   Future<void> delete(int id) => throw UnimplementedError();
   @override
+  Future<List<SongArrangement>> readArrangements(int songId) =>
+      throw UnimplementedError();
+  @override
   Future<SongDocument?> read(int id) => throw UnimplementedError();
   @override
   Future<List<SongDocument>> readAll() async => songs;
   @override
   Future<SongDocument> update(SongDocument song) => throw UnimplementedError();
+  @override
+  Future<SongArrangement> createArrangement(SongArrangement arrangement) =>
+      throw UnimplementedError();
+  @override
+  Future<SongArrangement> updateArrangement(SongArrangement arrangement) =>
+      throw UnimplementedError();
   @override
   Stream<List<SongDocument>> watchAll() => Stream.value(songs);
 }

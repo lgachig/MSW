@@ -15,6 +15,8 @@ class _FakeSongRepository implements SongRepository {
   @override
   Future<void> delete(int id) async {}
   @override
+  Future<List<SongArrangement>> readArrangements(int songId) async => [];
+  @override
   Future<SongDocument?> read(int id) async => song;
   @override
   Future<List<SongDocument>> readAll() async => song == null ? [] : [song!];
@@ -23,6 +25,19 @@ class _FakeSongRepository implements SongRepository {
       Stream.value(song == null ? <SongDocument>[] : [song!]);
   @override
   Future<SongDocument> update(SongDocument value) async => song = value;
+  @override
+  Future<SongArrangement> createArrangement(SongArrangement arrangement) =>
+      Future.value(
+        SongArrangement(
+          id: 1,
+          songId: arrangement.songId,
+          name: arrangement.name,
+          sections: arrangement.sections,
+        ),
+      );
+  @override
+  Future<SongArrangement> updateArrangement(SongArrangement arrangement) =>
+      Future.value(arrangement);
 }
 
 class _FailingSongRepository extends _FakeSongRepository {
