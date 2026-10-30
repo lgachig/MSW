@@ -485,7 +485,7 @@ class $SectionsTable extends Sections with TableInfo<$SectionsTable, Section> {
     type: DriftSqlType.int,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES songs (id)',
+      'REFERENCES songs (id) ON DELETE CASCADE',
     ),
   );
   static const VerificationMeta _nameMeta = const VerificationMeta('name');
@@ -781,7 +781,7 @@ class $LinesTable extends Lines with TableInfo<$LinesTable, Line> {
     type: DriftSqlType.int,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES sections (id)',
+      'REFERENCES sections (id) ON DELETE CASCADE',
     ),
   );
   static const VerificationMeta _contentMeta = const VerificationMeta(
@@ -1078,7 +1078,7 @@ class $ChordPlacementsTable extends ChordPlacements
     type: DriftSqlType.int,
     requiredDuringInsert: true,
     defaultConstraints: GeneratedColumn.constraintIsAlways(
-      'REFERENCES lines (id)',
+      'REFERENCES lines (id) ON DELETE CASCADE',
     ),
   );
   static const VerificationMeta _chordMeta = const VerificationMeta('chord');
@@ -1368,6 +1368,30 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     lines,
     chordPlacements,
   ];
+  @override
+  StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'songs',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('sections', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'sections',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('lines', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'lines',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('chord_placements', kind: UpdateKind.delete)],
+    ),
+  ]);
 }
 
 typedef $$SongsTableCreateCompanionBuilder = SongsCompanion Function({
