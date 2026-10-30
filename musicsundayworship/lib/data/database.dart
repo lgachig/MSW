@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
+import 'package:path_provider/path_provider.dart';
 
 part 'database.g.dart';
 
@@ -59,6 +60,10 @@ class AppDatabase extends _$AppDatabase {
 }
 
 QueryExecutor _openConnection() {
-  final dbFile = File('${Directory.current.path}/musicsundayworship.sqlite');
-  return NativeDatabase.createInBackground(dbFile);
+  return LazyDatabase(() async {
+    final directory = await getApplicationDocumentsDirectory();
+    return NativeDatabase.createInBackground(
+      File('${directory.path}/musicsundayworship.sqlite'),
+    );
+  });
 }
