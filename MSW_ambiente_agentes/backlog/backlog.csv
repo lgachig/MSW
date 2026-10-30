@@ -1,0 +1,987 @@
+﻿"Issue Id","Issue Type","Summary","Description","Epic Name","Parent Id","Priority","Labels","Labels","Story Points","Sprint","Status"
+"MSW-1","Epic","Fase 0: Descubrimiento y entorno","*Objetivo*
+Entorno, repositorio, fotos de prueba y decisiones técnicas listas.
+
+*Sprints previstos*
+S1","Fase 0: Descubrimiento y entorno","","High","fase-0","msw","","","Por hacer"
+"MSW-2","Epic","Fase 1: Motor musical","*Objetivo*
+Notas, acordes, tonos y transposición probados en Dart puro.
+
+*Sprints previstos*
+S1-S2","Fase 1: Motor musical","","High","fase-1","msw","","","Por hacer"
+"MSW-3","Epic","Fase 2: Biblioteca y editor manual","*Objetivo*
+Guardar canciones en el teléfono y editar acordes sobre la letra.
+
+*Sprints previstos*
+S2-S4","Fase 2: Biblioteca y editor manual","","High","fase-2","msw","","","Por hacer"
+"MSW-4","Epic","Fase 3: Captura y digitalización","*Objetivo*
+De foto a canción editable con OCR e IA, con revisión humana.
+
+*Sprints previstos*
+S4-S5","Fase 3: Captura y digitalización","","High","fase-3","msw","","","Por hacer"
+"MSW-5","Epic","Fase 4: Estructura y modo ensayo","*Objetivo*
+Estructura con repeticiones y ensayo con metrónomo.
+
+*Sprints previstos*
+S6-S7","Fase 4: Estructura y modo ensayo","","High","fase-4","msw","","","Por hacer"
+"MSW-6","Epic","Fase 5: Playlists y medleys","*Objetivo*
+Playlists por servicio y medleys con puentes.
+
+*Sprints previstos*
+S7","Fase 5: Playlists y medleys","","High","fase-5","msw","","","Por hacer"
+"MSW-7","Epic","Fase 6: Gobernanza, pulido y beta","*Objetivo*
+Trazabilidad, privacidad, accesibilidad y beta.
+
+*Sprints previstos*
+S8","Fase 6: Gobernanza, pulido y beta","","High","fase-6","msw","","","Por hacer"
+"MSW-8","Epic","Fase 7: Portafolio","*Objetivo*
+README, capturas, video y documento de arquitectura.
+
+*Sprints previstos*
+S8","Fase 7: Portafolio","","High","fase-7","msw","","","Por hacer"
+"MSW-9","Task","Instalar Flutter, Xcode y probar en el iPhone","*Objetivo*
+Tener el entorno funcionando y la app de ejemplo corriendo en el iPhone.
+
+*Pasos específicos*
+1. Instalar Xcode, Flutter, VS Code con extensiones Flutter y Dart y CocoaPods.
+2. Ejecutar flutter doctor y resolver lo que marque en iOS.
+3. Firmar con Personal Team y correr la app de ejemplo en el iPhone.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- flutter doctor no marca errores en Flutter, Xcode ni dispositivo conectado.
+- La app de ejemplo abre en el iPhone.
+
+*Comando de verificación*
+{{flutter doctor}}
+
+*Prueba manual de Luis*
+- Abrir la app de ejemplo en el iPhone y ver el contador.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.","","MSW-1","High","fase-0","msw","3","S1","Hecho"
+"MSW-10","Task","Crear repositorio, ramas y README","*Objetivo*
+Repositorio con develop y qa, README y carpetas por módulo.
+
+*Pasos específicos*
+1. git init -b develop y crear la rama qa.
+2. Agregar README.md y la carpeta docs/ con el PDF del proyecto.
+3. Crear lib/core, data, music_engine y features/* con .gitkeep.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- git branch muestra develop y qa.
+- El README describe visión, estructura y ramas.
+
+*Comando de verificación*
+{{git branch && git status}}
+
+*Prueba manual de Luis*
+- Revisar el README en GitHub.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.","","MSW-1","High","fase-0","msw","2","S1","Hecho"
+"MSW-11","Task","Reunir fotos de canciones para pruebas","*Objetivo*
+Conjunto de pruebas variado para medir el OCR más adelante (meta 10 a 15, ampliable).
+
+*Pasos específicos*
+1. Guardar fotos numeradas (01.png, 02.png...) en docs/fotos-prueba/.
+2. Incluir variedad: papel y captura de pantalla, buena y mala luz, notación latina y americana, acordes simples y con extensiones.
+3. No subir fotos de terceros que no quieras compartir.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- Hay al menos 10 fotos legibles a simple vista.
+- Hay ejemplos de al menos 2 estilos de notación y 2 condiciones de luz.
+
+*Comando de verificación*
+{{ls docs/fotos-prueba | wc -l}}
+
+*Prueba manual de Luis*
+- Confirmar que cada foto se lee bien y que no falta ninguna que uses en el servicio.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.","","MSW-1","Medium","fase-0","msw","2","S1","En curso"
+"MSW-12","Task","Aprobar decisiones técnicas","*Objetivo*
+Dejar por escrito las decisiones técnicas del proyecto.
+
+*Pasos específicos*
+1. Guardar docs/DECISIONES_TECNICAS.md con Flutter 3.47.8, Riverpod, go_router, Drift, pruebas y ramas.
+2. Hacer commit en develop.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- El archivo existe en docs/ y está en el historial de git.
+
+*Comando de verificación*
+{{git log --oneline -5}}
+
+*Prueba manual de Luis*
+- Revisar el documento.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-10","","MSW-1","Medium","fase-0","msw","1","S1","Hecho"
+"MSW-13","Task","Configurar lints y pruebas base","*Objetivo*
+Dejar el proyecto con análisis estático y pruebas funcionando antes de escribir lógica.
+
+*Pasos específicos*
+1. Confirmar flutter_lints en pubspec.yaml y analysis_options.yaml.
+2. Crear test/music_engine/ con una prueba de humo que pase.
+3. Agregar al README los comandos de análisis y pruebas.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- flutter analyze sin errores ni advertencias.
+- flutter test ejecuta y pasa.
+
+*Comando de verificación*
+{{flutter analyze && flutter test}}
+
+*Prueba manual de Luis*
+- Correr flutter test en tu Mac y ver todo en verde.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-12","","MSW-2","High","fase-1","msw","2","S1","Hecho"
+"MSW-14","Story","Modelo de notas y acordes (NoteName y Chord)","*Objetivo*
+Representar notas con su ortografía (Bb vs A#) y acordes con calidad y bajo (Am/G, Cmaj7).
+
+*Pasos específicos*
+1. Copiar lib/music_engine/note_name.dart y chord.dart al proyecto.
+2. Leer y escribir acordes en notación americana.
+3. Soportar sostenidos, bemoles, extensiones y acordes con bajo.
+4. Rechazar texto que no sea un acorde (Hola, am, C/).
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- Pruebas de lectura y escritura de C, Am, G7, Cmaj7, Dsus4, F#m, Bb, Am/G, D/F#, C7b5.
+- Las entradas inválidas devuelven null.
+
+*Comando de verificación*
+{{flutter test test/music_engine/chord_test.dart}}
+
+*Prueba manual de Luis*
+- Ejecutar la prueba y ver todo en verde.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-13","","MSW-2","Highest","fase-1","msw","5","S1","En pruebas"
+"MSW-15","Story","Transposición por semitonos y entre tonos","*Objetivo*
+Subir o bajar acordes, o pasarlos de un tono a otro, con la ortografía correcta del tono destino.
+
+*Pasos específicos*
+1. Copiar music_key.dart, transposer.dart y music_engine.dart.
+2. Transponer raíz y bajo por semitonos, de -12 a +12 y más allá.
+3. Elegir bemoles o sostenidos según el tono destino (Eb usa Bb, D usa F#).
+4. Calcular los semitonos entre dos tonos.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- Subir y bajar n semitonos devuelve el acorde original, para n de 0 a 11.
+- De G a A: Em pasa a F#m. De G a Eb: D pasa a Bb y Em pasa a Cm.
+- Doce semitonos devuelven la misma nota.
+
+*Comando de verificación*
+{{flutter test test/music_engine/transposition_test.dart}}
+
+*Prueba manual de Luis*
+- Ejecutar la prueba y ver todo en verde.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-14","","MSW-2","Highest","fase-1","msw","5","S1","En pruebas"
+"MSW-16","Story","Notación latina y conversión entre notaciones","*Objetivo*
+Leer y escribir Do, Re, Mi y convertir entre latina y americana.
+
+*Pasos específicos*
+1. Leer acordes latinos con alteraciones (Sol#m, Sib, Fa#) y con bajo (Rem/Fa).
+2. Convertir de americana a latina y al revés sin perder calidad ni bajo.
+3. Evitar que las palabras de la letra (la, mi) se lean como acordes.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- Conversión ida y vuelta conserva el acorde.
+- la, mi y Hola devuelven null.
+
+*Comando de verificación*
+{{flutter test test/music_engine}}
+
+*Prueba manual de Luis*
+- Probar 5 acordes de tus canciones en ambas notaciones.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-14","","MSW-2","High","fase-1","msw","3","S2","Por hacer"
+"MSW-17","Story","Acordes complejos y casos límite","*Objetivo*
+Cubrir los acordes que realmente aparecen en las canciones de la iglesia.
+
+*Pasos específicos*
+1. Revisar los acordes de las fotos de prueba y listar los que no se leen.
+2. Soportar add9, sus2, sus4, 6, 9, 11, 13, dim, aug, +, (b5) y paréntesis.
+3. Agregar una prueba por cada caso encontrado.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- Todos los acordes de las fotos de prueba se leen y se escriben igual.
+- Cada caso nuevo tiene su prueba.
+
+*Comando de verificación*
+{{flutter analyze && flutter test}}
+
+*Prueba manual de Luis*
+- Pasarme acordes que la app no reconozca para agregarlos.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-14","","MSW-2","Medium","fase-1","msw","3","S2","Por hacer"
+"MSW-18","Story","Detectar líneas de acordes en un texto","*Objetivo*
+Saber si una línea de texto es de acordes o de letra, para preparar el OCR y el editor.
+
+*Pasos específicos*
+1. Clasificar una línea como acordes si la mayoría de sus palabras son acordes válidos.
+2. Guardar la posición (columna) de cada acorde para alinearlo con la letra de abajo.
+3. Manejar líneas mixtas y con barras o guiones (| - /).
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- Línea 'G   D   Em  C' es acordes y 'Tómalo, tómalo todo' es letra.
+- Las columnas de cada acorde coinciden con el texto original.
+
+*Comando de verificación*
+{{flutter test test/music_engine}}
+
+*Prueba manual de Luis*
+- Pegar 3 canciones de ejemplo y revisar que separe bien acordes y letra.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-16","","MSW-2","High","fase-1","msw","5","S2","Por hacer"
+"MSW-19","Task","Cobertura de pruebas del motor musical al 70% o más","*Objetivo*
+Cumplir la meta del documento: 70% de cobertura en lógica de dominio.
+
+*Pasos específicos*
+1. Ejecutar flutter test --coverage.
+2. Generar el resumen de cobertura de lib/music_engine/.
+3. Agregar pruebas hasta llegar a la meta.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- La cobertura de lib/music_engine/ es de 70% o más.
+
+*Comando de verificación*
+{{flutter test --coverage}}
+
+*Prueba manual de Luis*
+- Revisar el resumen de cobertura.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-17","","MSW-2","Medium","fase-1","msw","2","S2","Por hacer"
+"MSW-20","Story","Esquema de base de datos con Drift","*Objetivo*
+Guardar canciones, secciones, líneas y acordes en SQLite local.
+
+*Pasos específicos*
+1. Agregar drift, drift_dev, sqlite3_flutter_libs y build_runner.
+2. Definir tablas: songs, sections, lines, chord_placements.
+3. Incluir en songs: título, autor, fuente, tono original, tempo, compás.
+4. Generar el código y crear la primera migración.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- La base se crea al abrir la app.
+- Pruebas con base en memoria: insertar y leer una canción completa.
+
+*Comando de verificación*
+{{flutter analyze && flutter test}}
+
+*Prueba manual de Luis*
+- Abrir la app dos veces y comprobar que no falla.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-19","","MSW-3","Highest","fase-2","msw","5","S2","Por hacer"
+"MSW-21","Story","Repositorio de canciones (crear, leer, editar, borrar)","*Objetivo*
+Capa de datos separada de la pantalla.
+
+*Pasos específicos*
+1. Definir la interfaz SongRepository.
+2. Implementar con Drift.
+3. Exponerlo con Riverpod.
+4. Cubrir con pruebas unitarias.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- CRUD completo probado con base en memoria.
+- Borrar una canción borra sus secciones y líneas.
+
+*Comando de verificación*
+{{flutter analyze && flutter test}}
+
+*Prueba manual de Luis*
+- Crear y borrar una canción desde la app.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-20","","MSW-3","High","fase-2","msw","5","S3","Por hacer"
+"MSW-22","Story","Pantalla Biblioteca con búsqueda y filtros","*Objetivo*
+Ver, buscar y ordenar las canciones guardadas.
+
+*Pasos específicos*
+1. Lista con título, autor y tono.
+2. Búsqueda por título o autor.
+3. Filtro y orden por tono y etiqueta.
+4. Estado vacío con botón para agregar la primera canción.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- Pruebas de widget: la lista se filtra al escribir.
+- Funciona sin internet.
+
+*Comando de verificación*
+{{flutter analyze && flutter test}}
+
+*Prueba manual de Luis*
+- Cargar 5 canciones y buscar por nombre.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-21","","MSW-3","High","fase-2","msw","5","S3","Por hacer"
+"MSW-23","Story","Crear y editar canción a mano","*Objetivo*
+Escribir o pegar letra y acordes con autor y fuente.
+
+*Pasos específicos*
+1. Formulario con título, autor, fuente, tono, tempo y compás.
+2. Pegar texto con acordes arriba de la letra y separarlo con la detección de líneas.
+3. Guardar con el repositorio.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- No se guarda sin título ni tono.
+- Autor y fuente quedan guardados y visibles.
+
+*Comando de verificación*
+{{flutter analyze && flutter test}}
+
+*Prueba manual de Luis*
+- Pegar una canción tuya y verla guardada en la biblioteca.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-18, MSW-21","","MSW-3","High","fase-2","msw","5","S3","Por hacer"
+"MSW-24","Story","Editor de acordes sobre la letra","*Objetivo*
+Tocar un punto de la letra para poner un acorde, arrastrarlo, cambiarlo o borrarlo.
+
+*Pasos específicos*
+1. Mostrar la letra con tipografía monoespaciada.
+2. Tocar sobre una sílaba y elegir el acorde.
+3. Arrastrar para mover y deslizar para borrar.
+4. Hacer deshacer y rehacer.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- Pruebas de widget: tocar agrega un acorde en la posición correcta.
+- Mover y borrar actualizan los datos guardados.
+
+*Comando de verificación*
+{{flutter analyze && flutter test}}
+
+*Prueba manual de Luis*
+- Colocar los acordes de una canción tuya y compararla con el original.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-23","","MSW-3","Highest","fase-2","msw","8","S3","Por hacer"
+"MSW-25","Story","Pantalla de detalle con transposición y notación","*Objetivo*
+Ver la canción y cambiar de tono o de notación al instante.
+
+*Pasos específicos*
+1. Botones para subir y bajar semitonos y elegir tono destino.
+2. Mostrar tono original y tono usado por la iglesia.
+3. Cambiar entre notación latina y americana.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- Transponer en pantalla coincide con el motor.
+- Volver al tono original restaura los acordes.
+
+*Comando de verificación*
+{{flutter analyze && flutter test}}
+
+*Prueba manual de Luis*
+- Subir 2 semitonos una canción y revisar 5 acordes.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-15, MSW-24","","MSW-3","High","fase-2","msw","5","S4","Por hacer"
+"MSW-26","Story","Arreglos propios sin perder el original","*Objetivo*
+Guardar versiones de una canción con acordes cambiados.
+
+*Pasos específicos*
+1. Agregar versión de arreglo ligada a la canción.
+2. Elegir qué versión ver y editar.
+3. Copiar una versión como punto de partida.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- Editar el arreglo no cambia el original.
+
+*Comando de verificación*
+{{flutter analyze && flutter test}}
+
+*Prueba manual de Luis*
+- Cambiar un acorde en un arreglo y confirmar que el original sigue igual.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-24","","MSW-3","Medium","fase-2","msw","3","S4","Por hacer"
+"MSW-27","Task","Respuestas correctas de las fotos de prueba","*Objetivo*
+Tener la respuesta esperada de cada foto para medir la precisión.
+
+*Pasos específicos*
+1. Crear docs/fotos-prueba/respuestas/ con un JSON por foto.
+2. Incluir título, autor, tono, líneas de letra y acordes con posición.
+3. Validar los JSON con un script.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- Cada foto tiene su JSON y el script lo valida.
+
+*Comando de verificación*
+{{dart run tool/validate_ground_truth.dart}}
+
+*Prueba manual de Luis*
+- Revisar 3 JSON contra su foto.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-11","","MSW-4","High","fase-3","msw","3","S4","Por hacer"
+"MSW-28","Story","Captura con cámara o galería y recorte guiado","*Objetivo*
+Tomar o elegir una foto y recortarla bien.
+
+*Pasos específicos*
+1. Pedir permisos de cámara y fotos con mensajes claros.
+2. Elegir de galería o tomar foto.
+3. Recorte guiado y guardado del archivo en el teléfono.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- Permiso denegado muestra explicación y alternativa.
+- La foto queda guardada y enlazada a la canción.
+
+*Comando de verificación*
+{{flutter analyze && flutter test}}
+
+*Prueba manual de Luis*
+- Tomar una foto con la cámara y otra desde la galería.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-21","","MSW-4","High","fase-3","msw","5","S4","Por hacer"
+"MSW-29","Story","OCR en el dispositivo","*Objetivo*
+Extraer texto con su posición usando ML Kit o Vision.
+
+*Pasos específicos*
+1. Evaluar ML Kit y Vision con 5 fotos y elegir uno; registrar la decisión.
+2. Extraer bloques de texto con coordenadas.
+3. Entregar el resultado al detector de acordes.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- El texto de 5 fotos de prueba sale con al menos 80% de palabras correctas.
+- Funciona sin internet.
+
+*Comando de verificación*
+{{flutter analyze && flutter test}}
+
+*Prueba manual de Luis*
+- Probar con 3 fotos tuyas y ver el texto extraído.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-27, MSW-28","","MSW-4","Highest","fase-3","msw","8","S4","Por hacer"
+"MSW-30","Story","Servicio intermedio y agente de digitalización","*Objetivo*
+Interpretar la foto con un modelo multimodal sin exponer claves en la app.
+
+*Pasos específicos*
+1. Crear backend ligero con endpoint /digitize.
+2. Guardar las claves en variables de entorno del servidor.
+3. Enviar la imagen y recibir JSON con letra, acordes y secciones.
+4. Validar el JSON con un esquema estricto; rechazar y reintentar si falla.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- Pruebas del endpoint con JSON válido e inválido.
+- La app no contiene claves de API.
+- Límite de uso diario configurado.
+
+*Comando de verificación*
+{{pytest o dart test según el stack del servicio}}
+
+*Prueba manual de Luis*
+- Digitalizar una foto de prueba con internet.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-29","","MSW-4","Highest","fase-3","msw","8","S5","Por hacer"
+"MSW-31","Story","Validar el resultado con el analizador de acordes","*Objetivo*
+Ningún acorde inválido llega a la canción sin avisar.
+
+*Pasos específicos*
+1. Pasar cada acorde del JSON por el motor musical.
+2. Marcar los inválidos para revisión.
+3. Calcular el porcentaje de acordes válidos.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- Un acorde como 'Hx' queda marcado.
+- El porcentaje se calcula bien en pruebas.
+
+*Comando de verificación*
+{{flutter analyze && flutter test}}
+
+*Prueba manual de Luis*
+- Ver acordes dudosos resaltados en la pantalla de revisión.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-30","","MSW-4","High","fase-3","msw","3","S5","Por hacer"
+"MSW-32","Story","Cola de fotos sin internet","*Objetivo*
+Guardar fotos pendientes y procesarlas cuando haya conexión.
+
+*Pasos específicos*
+1. Guardar estado pendiente, procesando, listo o error.
+2. Reintentar al recuperar conexión.
+3. Mostrar el estado en la biblioteca.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- Prueba con conexión simulada caída: la foto queda pendiente y se procesa al volver.
+
+*Comando de verificación*
+{{flutter analyze && flutter test}}
+
+*Prueba manual de Luis*
+- Activar modo avión, subir una foto y verla procesada al volver internet.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-30","","MSW-4","Medium","fase-3","msw","5","S5","Por hacer"
+"MSW-33","Story","Pantalla de revisión y corrección","*Objetivo*
+Comparar la foto con el resultado y corregirlo antes de guardar.
+
+*Pasos específicos*
+1. Foto y resultado lado a lado.
+2. Marcar lo que sugirió la IA.
+3. Aceptar, editar o descartar, y guardar con autor y fuente.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- Nada se guarda sin confirmación.
+- Lo sugerido por IA está marcado.
+
+*Comando de verificación*
+{{flutter analyze && flutter test}}
+
+*Prueba manual de Luis*
+- Digitalizar y corregir 3 canciones de punta a punta.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-31, MSW-24","","MSW-4","Highest","fase-3","msw","5","S5","Por hacer"
+"MSW-34","Task","Medir precisión contra las fotos de prueba","*Objetivo*
+Comprobar la meta de 90% de acordes correctos.
+
+*Pasos específicos*
+1. Script que compara cada resultado con su JSON de respuestas.
+2. Reporte con porcentaje por foto y total.
+3. Guardar el reporte en docs/evaluacion/.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- Reporte generado. Meta: 90% o más de acordes correctos.
+
+*Comando de verificación*
+{{dart run tool/evaluate.dart}}
+
+*Prueba manual de Luis*
+- Revisar el reporte y decidir si la precisión alcanza.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-27, MSW-33","","MSW-4","High","fase-3","msw","3","S5","Por hacer"
+"MSW-35","Story","Modelo de estructura con repeticiones","*Objetivo*
+Representar el orden de las secciones y cuántas veces se repite cada una.
+
+*Pasos específicos*
+1. Secciones: intro, verso, precoro, coro, puente, interludio y final.
+2. Lista ordenada con contador de repeticiones.
+3. Varias versiones de estructura por canción.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- Pruebas: coro x3 se expande a tres coros.
+- Duplicar una estructura no cambia la original.
+
+*Comando de verificación*
+{{flutter analyze && flutter test}}
+
+*Prueba manual de Luis*
+- Armar la estructura de una canción tuya.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-21","","MSW-5","Highest","fase-4","msw","5","S6","Por hacer"
+"MSW-36","Story","Editor de estructura","*Objetivo*
+Arrastrar secciones y definir repeticiones.
+
+*Pasos específicos*
+1. Reordenar arrastrando.
+2. Control de repeticiones.
+3. Colores por tipo de sección.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- Pruebas de widget del reordenamiento.
+
+*Comando de verificación*
+{{flutter analyze && flutter test}}
+
+*Prueba manual de Luis*
+- Cambiar un coro de x2 a x4 y reordenar.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-35","","MSW-5","High","fase-4","msw","5","S6","Por hacer"
+"MSW-37","Story","Estructura propuesta desde la letra","*Objetivo*
+Sugerir secciones a partir de la letra, siempre editable.
+
+*Pasos específicos*
+1. Detectar estrofas y repeticiones de texto.
+2. Agente de estructura para casos difíciles.
+3. Mostrar la propuesta como sugerencia.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- Las sugerencias no se guardan sin confirmar.
+- Pruebas con 3 letras de ejemplo.
+
+*Comando de verificación*
+{{flutter analyze && flutter test}}
+
+*Prueba manual de Luis*
+- Pegar una letra y revisar la estructura sugerida.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-36","","MSW-5","Medium","fase-4","msw","5","S7","Por hacer"
+"MSW-38","Story","Metrónomo de baja latencia","*Objetivo*
+Un pulso exacto, medido con el reloj de audio.
+
+*Pasos específicos*
+1. Evaluar paquetes de audio y registrar la decisión.
+2. Tempo de 40 a 220 BPM y compases 2/4, 3/4, 4/4 y 6/8.
+3. Pulso con acento en el primer tiempo.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- Medición automática: desviación menor a 10 ms en 60 segundos.
+- Sigue sonando con la pantalla bloqueada si el sistema lo permite.
+
+*Comando de verificación*
+{{flutter analyze && flutter test}}
+
+*Prueba manual de Luis*
+- Comparar el pulso con un metrónomo real durante 2 minutos.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-13","","MSW-5","Highest","fase-4","msw","8","S6","Por hacer"
+"MSW-39","Story","Modo ensayo con avance automático","*Objetivo*
+Pantalla completa con sección actual y siguiente, que avanza sola al compás.
+
+*Pasos específicos*
+1. Calcular compases por sección con tempo y repeticiones.
+2. Resaltar sección y acorde actuales.
+3. Pausar, reanudar, saltar y cambiar tempo.
+4. Mantener la pantalla encendida.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- Prueba con reloj simulado: cambia de sección en el compás exacto.
+- Pausar y reanudar no pierde el tiempo.
+
+*Comando de verificación*
+{{flutter analyze && flutter test}}
+
+*Prueba manual de Luis*
+- Ensayar una canción completa y comprobar que cada sección cambia a tiempo.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-36, MSW-38","","MSW-5","Highest","fase-4","msw","8","S6","Por hacer"
+"MSW-40","Story","Playlists por servicio","*Objetivo*
+Armar y reutilizar la lista de canciones del domingo.
+
+*Pasos específicos*
+1. Crear, ordenar y duplicar playlists por fecha.
+2. Tono asignado por canción.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- Duplicar conserva orden y tonos.
+- Funciona sin internet.
+
+*Comando de verificación*
+{{flutter analyze && flutter test}}
+
+*Prueba manual de Luis*
+- Armar la lista del próximo domingo.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-25","","MSW-6","High","fase-5","msw","5","S7","Por hacer"
+"MSW-41","Story","Tono original vs tono de la iglesia","*Objetivo*
+Mostrar el cambio en semitonos por canción.
+
+*Pasos específicos*
+1. Mostrar tono original, tono usado y diferencia.
+2. Transponer todo al abrir la playlist.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- La diferencia en semitonos se calcula bien.
+
+*Comando de verificación*
+{{flutter analyze && flutter test}}
+
+*Prueba manual de Luis*
+- Revisar 5 canciones con tono distinto.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-40","","MSW-6","High","fase-5","msw","3","S7","Por hacer"
+"MSW-42","Story","Editor de medleys con puentes","*Objetivo*
+Unir canciones con puentes y cambios de tono.
+
+*Pasos específicos*
+1. Elegir canciones y secciones.
+2. Definir puente y cambio de tono entre segmentos.
+3. Pasar el medley al modo ensayo.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- Pruebas del modelo de medley.
+- El tono se transpone en cada transición.
+
+*Comando de verificación*
+{{flutter analyze && flutter test}}
+
+*Prueba manual de Luis*
+- Armar un medley de 3 canciones y ensayarlo.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-39","","MSW-6","High","fase-5","msw","8","S7","Por hacer"
+"MSW-43","Story","Medley desde foto y agente de medleys","*Objetivo*
+Crear un medley desde una foto y recibir sugerencias.
+
+*Pasos específicos*
+1. Digitalizar la foto de un medley.
+2. Agente de medleys sugiere orden y tonos compatibles.
+3. Confirmación obligatoria.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- Nada se aplica sin confirmación.
+
+*Comando de verificación*
+{{flutter analyze && flutter test}}
+
+*Prueba manual de Luis*
+- Probar con la foto de un medley.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-42, MSW-33","","MSW-6","Low","fase-5","msw","8","S7","Por hacer"
+"MSW-44","Story","Trazabilidad y límites de uso de la IA","*Objetivo*
+Registrar qué propuso cada agente y limitar el costo.
+
+*Pasos específicos*
+1. Registro de agente, entrada, salida y decisión.
+2. Tope diario y reintentos con espera.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- El tope diario bloquea después del límite.
+- Cada propuesta queda registrada.
+
+*Comando de verificación*
+{{flutter analyze && flutter test}}
+
+*Prueba manual de Luis*
+- Revisar el registro de una digitalización.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-30","","MSW-7","High","fase-6","msw","5","S8","Por hacer"
+"MSW-45","Story","Aviso de privacidad y consentimiento","*Objetivo*
+Avisar antes de enviar imágenes a la nube.
+
+*Pasos específicos*
+1. Aviso en el primer uso.
+2. Opción de procesar solo en el dispositivo.
+3. Ajuste para cambiarlo.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- Sin consentimiento no se envía nada.
+
+*Comando de verificación*
+{{flutter analyze && flutter test}}
+
+*Prueba manual de Luis*
+- Rechazar el aviso y confirmar que no sube la foto.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-30","","MSW-7","High","fase-6","msw","3","S8","Por hacer"
+"MSW-46","Story","Accesibilidad y modo oscuro","*Objetivo*
+Operar con una mano, texto grande y poca luz.
+
+*Pasos específicos*
+1. Soportar tamaño de texto del sistema.
+2. Etiquetas para VoiceOver y TalkBack.
+3. Tema oscuro en todas las pantallas.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- Pruebas de widget con texto grande.
+- Contraste revisado.
+
+*Comando de verificación*
+{{flutter analyze && flutter test}}
+
+*Prueba manual de Luis*
+- Probar la app en el escenario con poca luz.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-39","","MSW-7","Medium","fase-6","msw","5","S8","Por hacer"
+"MSW-47","Task","Versiones QA y producción (flavors)","*Objetivo*
+Tener ambas versiones instaladas a la vez.
+
+*Pasos específicos*
+1. Crear flavors qa y prod con su propio identificador y nombre.
+2. Documentar cómo compilar cada una.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- flutter run --flavor qa y --flavor prod funcionan.
+
+*Comando de verificación*
+{{flutter run --flavor qa}}
+
+*Prueba manual de Luis*
+- Instalar las dos versiones y abrirlas.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-13","","MSW-7","Medium","fase-6","msw","5","S8","Por hacer"
+"MSW-48","Task","Beta por TestFlight","*Objetivo*
+Distribuir la beta al equipo.
+
+*Pasos específicos*
+1. Crear cuenta de desarrollador de Apple (99 USD anuales).
+2. Subir la compilación a TestFlight.
+3. Invitar a los probadores.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- La compilación aparece en TestFlight y se instala en otro iPhone.
+
+*Comando de verificación*
+{{flutter build ipa --flavor qa}}
+
+*Prueba manual de Luis*
+- Instalar desde TestFlight.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-47","","MSW-7","Medium","fase-6","msw","3","S8","Por hacer"
+"MSW-49","Task","README final y capturas","*Objetivo*
+Presentar el proyecto en el portafolio.
+
+*Pasos específicos*
+1. Actualizar el README con funciones y capturas.
+2. Agregar instrucciones para correrlo.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- Un tercero puede correr la app siguiendo el README.
+
+*Comando de verificación*
+{{flutter pub get && flutter run}}
+
+*Prueba manual de Luis*
+- Revisar el README.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-48","","MSW-8","Medium","fase-7","msw","2","S8","Por hacer"
+"MSW-50","Task","Video demostrativo y documento de arquitectura","*Objetivo*
+Mostrar el flujo completo y explicar las decisiones.
+
+*Pasos específicos*
+1. Grabar el flujo de foto a ensayo.
+2. Documento con arquitectura, agentes y decisiones.
+
+*Cómo se verifica (agentes de pruebas y verificación)*
+- Video de 2 a 3 minutos y documento en docs/.
+
+*Comando de verificación*
+{{ls docs}}
+
+*Prueba manual de Luis*
+- Ver el video y leer el documento.
+
+*Definición de terminado*
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
+
+*Depende de*
+MSW-49","","MSW-8","Medium","fase-7","msw","3","S8","Por hacer"
