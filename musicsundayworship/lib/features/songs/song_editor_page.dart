@@ -62,6 +62,31 @@ class SongTextParser {
     return List.unmodifiable(sections);
   }
 
+  static String format(List<SongSection> sections) => sections
+      .expand(
+        (section) => section.lines.expand(
+          (line) => [
+            if (line.chords.isNotEmpty) _formatChordLine(line.chords),
+            line.content,
+          ],
+        ),
+      )
+      .join('\n');
+
+  static String _formatChordLine(List<ChordPlacementData> chords) {
+    final buffer = StringBuffer();
+    for (final chord in chords) {
+      final position = chord.position.clamp(0, 100000);
+      if (buffer.length < position) {
+        buffer.write(' ' * (position - buffer.length));
+      }
+      if (buffer.length > position) {
+        buffer.write(' ');
+      }
+      buffer.write(chord.chord);
+    }
+    return buffer.toString();
+  }
 }
 
 class SongEditorPage extends ConsumerStatefulWidget {
@@ -114,29 +139,10 @@ class _SongEditorPageState extends ConsumerState<SongEditorPage> {
     setState(() => _loading = false);
   }
 
-  String _toText(SongDocument song) => song.sections
-      .expand(
-        (section) => section.lines.expand(
-          (line) => [
-            if (line.chords.isNotEmpty)
-              line.chords.map((chord) => chord.chord).join(' '),
-            line.content,
-          ],
-        ),
-      )
-      .join('\n');
+  String _toText(SongDocument song) => SongTextParser.format(song.sections);
 
-  String _sectionsToText(List<SongSection> sections) => sections
-      .expand(
-        (section) => section.lines.expand(
-          (line) => [
-            if (line.chords.isNotEmpty)
-              line.chords.map((chord) => chord.chord).join(' '),
-            line.content,
-          ],
-        ),
-      )
-      .join('\n');
+  String _sectionsToText(List<SongSection> sections) =>
+      SongTextParser.format(sections);
 
   String? _required(String? value, String label) =>
       value == null || value.trim().isEmpty ? 'Ingresa $label' : null;

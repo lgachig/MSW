@@ -72,6 +72,12 @@ void main() {
     ]);
   });
 
+  test('formats chord placements with their original columns', () {
+    final sections = SongTextParser.parse('A       E/G#       F#m\nLetra');
+
+    expect(SongTextParser.format(sections), 'A       E/G#       F#m\nLetra');
+  });
+
   testWidgets('requires title and key before saving', (tester) async {
     final repository = _FakeSongRepository();
     await tester.pumpWidget(
