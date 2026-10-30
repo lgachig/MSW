@@ -1,0 +1,11 @@
+{
+  "source": "Screenshot 2026-10-28 at 10.30.54 PM.png",
+  "title": "Los Carros Del Faraón",
+  "author": "Danilo Montero",
+  "key": "F",
+  "lines": [
+    {"text": "//Lara lara la-la lara lara la-la lara la la la la la la//", "chords": [{"name": "Dm", "position": 0}, {"name": "Gm", "position": 14}, {"name": "Dm", "position": 30}, {"name": "A7", "position": 34}]},
+    {"text": "//Cantare a Jehová por siempre", "chords": [{"name": "Dm", "position": 0}, {"name": "Gm", "position": 22}]},
+    {"text": "Su diestra es todo poder //", "chords": [{"name": "Dm", "position": 0}, {"name": "A7", "position": 10}, {"name": "Dm", "position": 14}]}
+  ]
+}

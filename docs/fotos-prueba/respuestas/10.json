@@ -1,0 +1,11 @@
+{
+  "source": "Screenshot 2026-10-30 at 12.35.06 AM.png",
+  "title": "Creo En Ti",
+  "author": "Julio Melgar",
+  "key": "D",
+  "lines": [
+    {"text": "Quiero levantar a Ti    mis manos", "chords": [{"name": "G9", "position": 22}]},
+    {"text": "Maravilloso Jesús, milagroso Señor", "chords": [{"name": "D2", "position": 0}, {"name": "A9", "position": 27}]},
+    {"text": "Llena este lugar de Tu    presencia", "chords": [{"name": "Bm", "position": 0}, {"name": "G9", "position": 24}]}
+  ]
+}

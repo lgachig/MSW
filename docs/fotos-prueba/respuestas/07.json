@@ -1,0 +1,11 @@
+{
+  "source": "Screenshot 2026-10-28 at 10.29.52 PM.png",
+  "title": "Al estar en la presencia",
+  "author": "Música Católica",
+  "key": "F#m",
+  "lines": [
+    {"text": "Al estar en la presencia de tu divinidad", "chords": [{"name": "A", "position": 0}, {"name": "E/G#", "position": 22}, {"name": "F#m", "position": 40}]},
+    {"text": "Al contemplar la hermosura de tu santidad", "chords": [{"name": "D", "position": 4}, {"name": "Bm", "position": 19}, {"name": "E/G#", "position": 39}]},
+    {"text": "Mi espíritu se alegra en tu majestad", "chords": [{"name": "A", "position": 0}, {"name": "C#7", "position": 15}, {"name": "D", "position": 29}]}
+  ]
+}

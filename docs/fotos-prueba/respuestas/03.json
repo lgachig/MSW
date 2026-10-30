@@ -1,0 +1,11 @@
+{
+  "source": "Screenshot 2026-10-28 at 10.28.22 PM.png",
+  "title": "Como Zaqueo",
+  "author": "Alexis Peña",
+  "key": "A",
+  "lines": [
+    {"text": "Como Zaqueo, Yo quiero subir", "chords": [{"name": "A", "position": 0}, {"name": "E/G#", "position": 8}, {"name": "F#m7(9)", "position": 19}]},
+    {"text": "A los mas alto, que yo pudiera", "chords": [{"name": "D", "position": 4}, {"name": "A/C#", "position": 23}]},
+    {"text": "Solo para verte, mirar hacia mi", "chords": [{"name": "E/G#", "position": 4}, {"name": "F#m7(9)", "position": 25}]}
+  ]
+}

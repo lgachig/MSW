@@ -468,7 +468,7 @@ Tener la respuesta esperada de cada foto para medir la precisión.
 flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
 
 *Depende de*
-MSW-11","","MSW-4","High","fase-3","msw","3","S4","Por hacer"
+MSW-11","","MSW-4","High","fase-3","msw","3","S4","Listo para prueba de Luis"
 "MSW-28","Story","Captura con cámara o galería y recorte guiado","*Objetivo*
 Tomar o elegir una foto y recortarla bien.
 

@@ -1,0 +1,11 @@
+{
+  "source": "Screenshot 2026-10-28 at 10.28.48 PM.png",
+  "title": "El Borde de Su Manto",
+  "author": "Alvarado",
+  "key": "Am",
+  "lines": [
+    {"text": "Si tan solo tocare el borde de su manto", "chords": [{"name": "Am", "position": 0}, {"name": "G", "position": 18}, {"name": "F", "position": 36}]},
+    {"text": "Si tan solo pudiera ver su rostro", "chords": [{"name": "Am", "position": 0}, {"name": "G", "position": 18}, {"name": "F", "position": 33}]},
+    {"text": "Libre seria, yo se", "chords": [{"name": "C", "position": 0}, {"name": "Dm", "position": 12}, {"name": "G", "position": 18}]}
+  ]
+}
