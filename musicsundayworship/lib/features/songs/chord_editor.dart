@@ -5,10 +5,16 @@ import '../../music_engine/chord.dart';
 
 /// A compact, touch-friendly editor for chord placements over lyric lines.
 class ChordEditor extends StatefulWidget {
-  const ChordEditor({super.key, required this.lines, required this.onChanged});
+  const ChordEditor({
+    super.key,
+    required this.lines,
+    required this.onChanged,
+    this.showHeader = true,
+  });
 
   final List<SongLine> lines;
   final ValueChanged<List<SongLine>> onChanged;
+  final bool showHeader;
 
   @override
   State<ChordEditor> createState() => _ChordEditorState();
@@ -189,28 +195,47 @@ class _ChordEditorState extends State<ChordEditor> {
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
-      Row(
-        children: [
-          const Expanded(
-            child: Text(
-              'Acordes sobre la letra',
-              style: TextStyle(fontWeight: FontWeight.bold),
+      if (widget.showHeader)
+        Row(
+          children: [
+            const Expanded(
+              child: Text(
+                'Acordes sobre la letra',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
-          ),
-          IconButton(
-            key: const Key('undo-chord-edit'),
-            tooltip: 'Deshacer',
-            onPressed: _undo.isEmpty ? null : _undoEdit,
-            icon: const Icon(Icons.undo),
-          ),
-          IconButton(
-            key: const Key('redo-chord-edit'),
-            tooltip: 'Rehacer',
-            onPressed: _redo.isEmpty ? null : _redoEdit,
-            icon: const Icon(Icons.redo),
-          ),
-        ],
-      ),
+            IconButton(
+              key: const Key('undo-chord-edit'),
+              tooltip: 'Deshacer',
+              onPressed: _undo.isEmpty ? null : _undoEdit,
+              icon: const Icon(Icons.undo),
+            ),
+            IconButton(
+              key: const Key('redo-chord-edit'),
+              tooltip: 'Rehacer',
+              onPressed: _redo.isEmpty ? null : _redoEdit,
+              icon: const Icon(Icons.redo),
+            ),
+          ],
+        ),
+      if (!widget.showHeader)
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            IconButton(
+              key: const Key('undo-chord-edit'),
+              tooltip: 'Deshacer',
+              onPressed: _undo.isEmpty ? null : _undoEdit,
+              icon: const Icon(Icons.undo),
+            ),
+            IconButton(
+              key: const Key('redo-chord-edit'),
+              tooltip: 'Rehacer',
+              onPressed: _redo.isEmpty ? null : _redoEdit,
+              icon: const Icon(Icons.redo),
+            ),
+          ],
+        ),
       ...List.generate(_lines.length, (index) {
         final line = _lines[index];
         return DragTarget<_DraggedChord>(

@@ -352,34 +352,41 @@ class _SongEditorPageState extends ConsumerState<SongEditorPage> {
                     .isNotEmpty ??
                 false) ...[
               const SizedBox(height: 12),
-              ChordEditor(
-                lines: _editorSections!
-                    .expand((section) => section.lines)
-                    .toList(),
-                onChanged: (lines) {
-                  final sections = [
-                    SongSection(
-                      name: 'Sección 1',
-                      position: 0,
-                      lines: lines
-                          .asMap()
-                          .entries
-                          .map(
-                            (entry) => SongLine(
-                              content: entry.value.content,
-                              position: entry.key,
-                              chords: entry.value.chords,
-                            ),
-                          )
-                          .toList(growable: false),
-                    ),
-                  ];
-                  setState(() {
-                    _editorSections = sections;
-                    _chordEditorDirty = true;
-                    _lyrics.text = _sectionsToText(sections);
-                  });
-                },
+              ExpansionTile(
+                title: const Text('Editar acordes'),
+                subtitle: const Text('Agregar, mover o borrar acordes'),
+                children: [
+                  ChordEditor(
+                    showHeader: false,
+                    lines: _editorSections!
+                        .expand((section) => section.lines)
+                        .toList(),
+                    onChanged: (lines) {
+                      final sections = [
+                        SongSection(
+                          name: 'Sección 1',
+                          position: 0,
+                          lines: lines
+                              .asMap()
+                              .entries
+                              .map(
+                                (entry) => SongLine(
+                                  content: entry.value.content,
+                                  position: entry.key,
+                                  chords: entry.value.chords,
+                                ),
+                              )
+                              .toList(growable: false),
+                        ),
+                      ];
+                      setState(() {
+                        _editorSections = sections;
+                        _chordEditorDirty = true;
+                        _lyrics.text = _sectionsToText(sections);
+                      });
+                    },
+                  ),
+                ],
               ),
             ],
             const SizedBox(height: 20),
