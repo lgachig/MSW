@@ -2,11 +2,24 @@ import 'note_name.dart';
 
 /// A chord with a root, quality and optional slash bass note.
 class Chord {
-  const Chord({required this.root, this.quality = '', this.bass});
+  const Chord({
+    required this.root,
+    this.quality = '',
+    this.bass,
+    this.transpositionState,
+  });
 
   final NoteName root;
   final String quality;
   final NoteName? bass;
+  final ChordTranspositionState? transpositionState;
+
+  Chord withTranspositionState(ChordTranspositionState? state) => Chord(
+    root: root,
+    quality: quality,
+    bass: bass,
+    transpositionState: state,
+  );
 
   /// Reads a chord in American notation, or returns null for invalid text.
   static Chord? parse(String value) {
@@ -47,4 +60,17 @@ class Chord {
 
   @override
   int get hashCode => Object.hash(root, quality, bass);
+}
+
+/// Retains the original spellings while a chord is being transposed.
+class ChordTranspositionState {
+  const ChordTranspositionState({
+    required this.root,
+    required this.bass,
+    required this.semitones,
+  });
+
+  final NoteName root;
+  final NoteName? bass;
+  final int semitones;
 }
