@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'data/database.dart';
 
 void main() {
-  runApp(const MyApp());
+  final database = AppDatabase();
+  runApp(MyApp(database: database));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({super.key, this.database});
+
+  final AppDatabase? database;
 
   // This widget is the root of your application.
   @override
