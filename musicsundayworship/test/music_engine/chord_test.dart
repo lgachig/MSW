@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:musicsundayworship/music_engine/chord.dart';
+import 'package:musicsundayworship/music_engine/note_name.dart';
 
 void main() {
   group('Chord', () {
@@ -67,6 +68,31 @@ void main() {
     test('does not interpret lyric words as chords', () {
       for (final text in ['la', 'mi', 'Hola']) {
         expect(Chord.parse(text), isNull);
+      }
+    });
+
+    test('supports aliases, equality and transposition state', () {
+      final chord = Chord.fromString('C7/E')!;
+      expect(chord.inAmericanNotation(), chord);
+      expect(chord.inLatinNotation().toString(), 'Do7/Mi');
+      expect(chord, Chord.parse('C7/E'));
+      expect(chord.hashCode, Chord.parse('C7/E')!.hashCode);
+      expect(chord == Chord.parse('C/E'), isFalse);
+      expect(chord == Object(), isFalse);
+
+      const state = ChordTranspositionState(
+        root: NoteName('C'),
+        bass: NoteName('E'),
+        semitones: 2,
+      );
+      final retained = chord.withTranspositionState(state);
+      expect(retained.transpositionState, same(state));
+      expect(retained.toString(), 'C7/E');
+    });
+
+    test('rejects malformed basses and empty values', () {
+      for (final value in ['', 'C/H', 'C//', '/C']) {
+        expect(Chord.parse(value), isNull);
       }
     });
   });

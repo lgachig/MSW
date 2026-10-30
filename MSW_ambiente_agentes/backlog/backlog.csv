@@ -282,7 +282,7 @@ Cumplir la meta del documento: 70% de cobertura en lógica de dominio.
 flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
 
 *Depende de*
-MSW-17","","MSW-2","Medium","fase-1","msw","2","S2","Por hacer"
+MSW-17","","MSW-2","Medium","fase-1","msw","2","S2","Listo para prueba de Luis"
 "MSW-20","Story","Esquema de base de datos con Drift","*Objetivo*
 Guardar canciones, secciones, líneas y acordes en SQLite local.
 

@@ -48,5 +48,20 @@ void main() {
         ['G#m', 'Cmaj7/E', 'Bb7(b5)'],
       );
     });
+
+    test('exposes result aliases, ratios and immutable tokens', () {
+      final detector = const ChordLineDetector();
+      final result = detector.classify('C /');
+      expect(result.source, 'C /');
+      expect(result.chords, same(result.tokens));
+      expect(result.tokenCount, 1);
+      expect(result.chordRatio, 1);
+      expect(result.chords.single.column, 0);
+      expect(
+        () => result.tokens.add(result.chords.single),
+        throwsUnsupportedError,
+      );
+      expect(detector.classify('lyrics').chordRatio, 0);
+    });
   });
 }
