@@ -30,3 +30,4 @@
 - 2026-10-29 23:20: Se generó una compilación iOS nueva correctamente, pero `flutter install` no pudo instalarla porque fue compilada con `--no-codesign`; el dispositivo requiere ejecutar desde Xcode o `flutter run` con firma configurada.
 - 2026-10-29 23:21: `flutter run` compiló con firma automática del equipo `2ZGB4TYW84` y llegó a instalar/lanzar en el iPhone; Flutter no detectó el VM Service después de 60 segundos, por lo que no fue posible ejecutar hot reload ni verificación remota.
 - 2026-10-29 23:36: Mejora visual: el editor táctil ya no aparece abierto por defecto; queda plegado en “Editar acordes” y conserva sus funciones al expandirlo.
+- 2026-10-29 23:39: Cambio de interfaz: se eliminó por completo la sección “Acordes sobre la letra”; la edición queda concentrada en el campo “Letra y acordes (importar)”, que conserva posiciones y espacios al guardar.

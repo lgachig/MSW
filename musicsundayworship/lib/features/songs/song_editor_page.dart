@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/song_repository.dart';
 import '../../music_engine/chord.dart';
-import 'chord_editor.dart';
 
 /// Converts pasted chord-over-lyric text into the ordered song model.
 class SongTextParser {
@@ -183,8 +182,6 @@ class _SongEditorPageState extends ConsumerState<SongEditorPage> {
   bool _saving = false;
   String? _saveError;
   SongDocument? _song;
-  List<SongSection>? _editorSections;
-  bool _chordEditorDirty = false;
 
   bool get editing => widget.songId != null;
 
@@ -207,15 +204,11 @@ class _SongEditorPageState extends ConsumerState<SongEditorPage> {
       _tempo.text = song.tempo?.toString() ?? '';
       _timeSignature.text = song.timeSignature ?? '';
       _lyrics.text = _toText(song);
-      _editorSections = song.sections;
     }
     setState(() => _loading = false);
   }
 
   String _toText(SongDocument song) => SongTextParser.format(song.sections);
-
-  String _sectionsToText(List<SongSection> sections) =>
-      SongTextParser.format(sections);
 
   String? _required(String? value, String label) =>
       value == null || value.trim().isEmpty ? 'Ingresa $label' : null;
@@ -234,9 +227,7 @@ class _SongEditorPageState extends ConsumerState<SongEditorPage> {
       originalKey: _key.text.trim(),
       tempo: int.tryParse(_tempo.text.trim()),
       timeSignature: _optional(_timeSignature.text),
-      sections: _chordEditorDirty
-          ? (_editorSections ?? SongTextParser.parse(_lyrics.text))
-          : SongTextParser.parse(_lyrics.text),
+      sections: SongTextParser.parse(_lyrics.text),
     );
     final repository = ref.read(songRepositoryProvider);
     try {
@@ -339,56 +330,7 @@ class _SongEditorPageState extends ConsumerState<SongEditorPage> {
                 alignLabelWithHint: true,
                 border: OutlineInputBorder(),
               ),
-              onChanged: (value) {
-                final parsed = SongTextParser.parse(value);
-                setState(() {
-                  _editorSections = parsed;
-                  _chordEditorDirty = false;
-                });
-              },
             ),
-            if (_editorSections
-                    ?.expand((section) => section.lines)
-                    .isNotEmpty ??
-                false) ...[
-              const SizedBox(height: 12),
-              ExpansionTile(
-                title: const Text('Editar acordes'),
-                subtitle: const Text('Agregar, mover o borrar acordes'),
-                children: [
-                  ChordEditor(
-                    showHeader: false,
-                    lines: _editorSections!
-                        .expand((section) => section.lines)
-                        .toList(),
-                    onChanged: (lines) {
-                      final sections = [
-                        SongSection(
-                          name: 'Sección 1',
-                          position: 0,
-                          lines: lines
-                              .asMap()
-                              .entries
-                              .map(
-                                (entry) => SongLine(
-                                  content: entry.value.content,
-                                  position: entry.key,
-                                  chords: entry.value.chords,
-                                ),
-                              )
-                              .toList(growable: false),
-                        ),
-                      ];
-                      setState(() {
-                        _editorSections = sections;
-                        _chordEditorDirty = true;
-                        _lyrics.text = _sectionsToText(sections);
-                      });
-                    },
-                  ),
-                ],
-              ),
-            ],
             const SizedBox(height: 20),
             FilledButton.icon(
               onPressed: _saving ? null : _save,
