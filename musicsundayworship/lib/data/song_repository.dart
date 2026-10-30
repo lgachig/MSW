@@ -16,6 +16,7 @@ class SongDocument {
     this.label,
     this.tempo,
     this.timeSignature,
+    this.photoPath,
     this.sections = const [],
   });
 
@@ -27,9 +28,14 @@ class SongDocument {
   final String? label;
   final int? tempo;
   final String? timeSignature;
+  final String? photoPath;
   final List<SongSection> sections;
 
-  SongDocument copyWith({int? id, List<SongSection>? sections}) => SongDocument(
+  SongDocument copyWith({
+    int? id,
+    List<SongSection>? sections,
+    String? photoPath,
+  }) => SongDocument(
     id: id ?? this.id,
     title: title,
     author: author,
@@ -38,6 +44,7 @@ class SongDocument {
     label: label,
     tempo: tempo,
     timeSignature: timeSignature,
+    photoPath: photoPath ?? this.photoPath,
     sections: sections ?? this.sections,
   );
 }
@@ -97,6 +104,7 @@ abstract interface class SongRepository {
   Future<List<SongArrangement>> readArrangements(int songId);
   Future<SongArrangement> createArrangement(SongArrangement arrangement);
   Future<SongArrangement> updateArrangement(SongArrangement arrangement);
+  Future<SongDocument> updatePhotoPath(int songId, String? photoPath);
 }
 
 class DriftSongRepository implements SongRepository {
@@ -118,6 +126,7 @@ class DriftSongRepository implements SongRepository {
               label: Value(song.label),
               tempo: Value(song.tempo),
               timeSignature: Value(song.timeSignature),
+              photoPath: Value(song.photoPath),
             ),
           );
       await _insertSections(songId, song.sections);
@@ -174,6 +183,7 @@ class DriftSongRepository implements SongRepository {
           label: Value(song.label),
           tempo: Value(song.tempo),
           timeSignature: Value(song.timeSignature),
+          photoPath: Value(song.photoPath),
         ),
       );
       await _deleteSections(id);
@@ -191,6 +201,16 @@ class DriftSongRepository implements SongRepository {
         database.songs,
       )..where((table) => table.id.equals(id))).go();
     });
+  }
+
+  @override
+  Future<SongDocument> updatePhotoPath(int songId, String? photoPath) async {
+    final updated =
+        await (database.update(database.songs)
+              ..where((table) => table.id.equals(songId)))
+            .write(SongsCompanion(photoPath: Value(photoPath)));
+    if (updated == 0) throw StateError('Song $songId does not exist');
+    return (await read(songId))!;
   }
 
   @override
@@ -370,6 +390,7 @@ class DriftSongRepository implements SongRepository {
       label: song.label,
       tempo: song.tempo,
       timeSignature: song.timeSignature,
+      photoPath: song.photoPath,
       sections: List.unmodifiable(result),
     );
   }

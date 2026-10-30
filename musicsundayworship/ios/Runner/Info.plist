@@ -8,6 +8,10 @@
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
 	<string>Musicsundayworship</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Necesitamos la cámara para capturar la foto de una canción.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Necesitamos tus fotos para importar una canción.</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>

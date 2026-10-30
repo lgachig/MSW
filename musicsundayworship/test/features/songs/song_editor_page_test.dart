@@ -38,6 +38,9 @@ class _FakeSongRepository implements SongRepository {
   @override
   Future<SongArrangement> updateArrangement(SongArrangement arrangement) =>
       Future.value(arrangement);
+  @override
+  Future<SongDocument> updatePhotoPath(int songId, String? photoPath) async =>
+      (await read(songId))!.copyWith(photoPath: photoPath);
 }
 
 class _FailingSongRepository extends _FakeSongRepository {

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/song_repository.dart';
 import '../../music_engine/music_engine.dart';
 import 'arrangement_editor_page.dart';
+import 'song_photo_page.dart';
 
 class SongDetailPage extends ConsumerStatefulWidget {
   const SongDetailPage({super.key, required this.song});
@@ -20,10 +21,12 @@ class _SongDetailPageState extends ConsumerState<SongDetailPage> {
   MusicKey? _targetKey;
   List<SongArrangement> _arrangements = const [];
   SongArrangement? _selectedArrangement;
+  String? _photoPath;
 
   @override
   void initState() {
     super.initState();
+    _photoPath = widget.song.photoPath;
     _loadArrangements();
   }
 
@@ -82,6 +85,12 @@ class _SongDetailPageState extends ConsumerState<SongDetailPage> {
           onPressed: () => _createArrangement(_selectedArrangement),
           icon: const Icon(Icons.copy),
         ),
+        IconButton(
+          key: const Key('song-photo'),
+          tooltip: 'Agregar foto',
+          onPressed: _editPhoto,
+          icon: const Icon(Icons.photo_camera),
+        ),
       ],
     ),
     body: ListView(
@@ -95,6 +104,15 @@ class _SongDetailPageState extends ConsumerState<SongDetailPage> {
           Text(
             widget.song.author!,
             style: Theme.of(context).textTheme.bodyLarge,
+          ),
+        if (_photoPath != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: Text(
+              'Foto guardada',
+              key: const Key('photo-saved'),
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
           ),
         const SizedBox(height: 16),
         Card(
@@ -234,6 +252,21 @@ class _SongDetailPageState extends ConsumerState<SongDetailPage> {
       _arrangements = [..._arrangements, saved];
       _selectedArrangement = saved;
     });
+  }
+
+  Future<void> _editPhoto() async {
+    final id = widget.song.id;
+    if (id == null) return;
+    final path = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (_) => SongPhotoPage(
+          songId: id,
+          songTitle: widget.song.title,
+          currentPath: _photoPath,
+        ),
+      ),
+    );
+    if (mounted && path != null) setState(() => _photoPath = path);
   }
 
   Future<void> _editArrangement(SongArrangement arrangement) async {

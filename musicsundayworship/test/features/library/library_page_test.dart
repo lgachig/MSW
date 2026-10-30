@@ -29,6 +29,9 @@ class _FakeSongRepository implements SongRepository {
   Future<SongArrangement> updateArrangement(SongArrangement arrangement) =>
       throw UnimplementedError();
   @override
+  Future<SongDocument> updatePhotoPath(int songId, String? photoPath) =>
+      throw UnimplementedError();
+  @override
   Stream<List<SongDocument>> watchAll() => Stream.value(songs);
 }
 
