@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -40,6 +42,20 @@ class SongDocument {
   );
 }
 
+class SongArrangement {
+  const SongArrangement({
+    this.id,
+    required this.songId,
+    required this.name,
+    this.sections = const [],
+  });
+
+  final int? id;
+  final int songId;
+  final String name;
+  final List<SongSection> sections;
+}
+
 class SongSection {
   const SongSection({
     required this.name,
@@ -78,6 +94,9 @@ abstract interface class SongRepository {
   Stream<List<SongDocument>> watchAll();
   Future<SongDocument> update(SongDocument song);
   Future<void> delete(int id);
+  Future<List<SongArrangement>> readArrangements(int songId);
+  Future<SongArrangement> createArrangement(SongArrangement arrangement);
+  Future<SongArrangement> updateArrangement(SongArrangement arrangement);
 }
 
 class DriftSongRepository implements SongRepository {
@@ -172,6 +191,73 @@ class DriftSongRepository implements SongRepository {
         database.songs,
       )..where((table) => table.id.equals(id))).go();
     });
+  }
+
+  @override
+  Future<List<SongArrangement>> readArrangements(int songId) async {
+    final rows =
+        await (database.select(database.arrangements)
+              ..where((table) => table.songId.equals(songId))
+              ..orderBy([(table) => OrderingTerm.asc(table.name)]))
+            .get();
+    return rows
+        .map(
+          (row) => SongArrangement(
+            id: row.id,
+            songId: row.songId,
+            name: row.name,
+            sections: _sectionsFromJson(row.content),
+          ),
+        )
+        .toList(growable: false);
+  }
+
+  @override
+  Future<SongArrangement> createArrangement(SongArrangement arrangement) async {
+    final song = await read(arrangement.songId);
+    if (song == null) {
+      throw StateError('Song ${arrangement.songId} does not exist');
+    }
+    final id = await database
+        .into(database.arrangements)
+        .insert(
+          ArrangementsCompanion.insert(
+            songId: arrangement.songId,
+            name: arrangement.name,
+            content: _sectionsToJson(arrangement.sections),
+          ),
+        );
+    return SongArrangement(
+      id: id,
+      songId: arrangement.songId,
+      name: arrangement.name,
+      sections: arrangement.sections,
+    );
+  }
+
+  @override
+  Future<SongArrangement> updateArrangement(SongArrangement arrangement) async {
+    final id = arrangement.id;
+    if (id == null) {
+      throw ArgumentError.value(
+        arrangement,
+        'arrangement',
+        'An id is required to update',
+      );
+    }
+    final updated =
+        await (database.update(
+          database.arrangements,
+        )..where((table) => table.id.equals(id))).write(
+          ArrangementsCompanion(
+            name: Value(arrangement.name),
+            content: Value(_sectionsToJson(arrangement.sections)),
+          ),
+        );
+    if (updated == 0) {
+      throw StateError('Arrangement $id does not exist');
+    }
+    return arrangement;
   }
 
   Future<void> _insertSections(int songId, List<SongSection> sections) async {
@@ -286,6 +372,61 @@ class DriftSongRepository implements SongRepository {
       timeSignature: song.timeSignature,
       sections: List.unmodifiable(result),
     );
+  }
+
+  String _sectionsToJson(List<SongSection> sections) => jsonEncode(
+    sections
+        .map(
+          (section) => {
+            'name': section.name,
+            'position': section.position,
+            'lines': section.lines
+                .map(
+                  (line) => {
+                    'content': line.content,
+                    'position': line.position,
+                    'chords': line.chords
+                        .map(
+                          (chord) => {
+                            'chord': chord.chord,
+                            'position': chord.position,
+                          },
+                        )
+                        .toList(),
+                  },
+                )
+                .toList(),
+          },
+        )
+        .toList(),
+  );
+
+  List<SongSection> _sectionsFromJson(String content) {
+    final decoded = jsonDecode(content) as List<dynamic>;
+    return decoded
+        .map(
+          (section) => SongSection(
+            name: section['name'] as String,
+            position: section['position'] as int,
+            lines: (section['lines'] as List<dynamic>)
+                .map(
+                  (line) => SongLine(
+                    content: line['content'] as String,
+                    position: line['position'] as int,
+                    chords: (line['chords'] as List<dynamic>)
+                        .map(
+                          (chord) => ChordPlacementData(
+                            chord: chord['chord'] as String,
+                            position: chord['position'] as int,
+                          ),
+                        )
+                        .toList(growable: false),
+                  ),
+                )
+                .toList(growable: false),
+          ),
+        )
+        .toList(growable: false);
   }
 }
 

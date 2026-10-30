@@ -1403,6 +1403,301 @@ class ChordPlacementsCompanion extends UpdateCompanion<ChordPlacement> {
   }
 }
 
+class $ArrangementsTable extends Arrangements
+    with TableInfo<$ArrangementsTable, Arrangement> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $ArrangementsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _songIdMeta = const VerificationMeta('songId');
+  @override
+  late final GeneratedColumn<int> songId = GeneratedColumn<int>(
+    'song_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES songs (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _contentMeta = const VerificationMeta(
+    'content',
+  );
+  @override
+  late final GeneratedColumn<String> content = GeneratedColumn<String>(
+    'content',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, songId, name, content];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'arrangements';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Arrangement> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('song_id')) {
+      context.handle(
+        _songIdMeta,
+        songId.isAcceptableOrUnknown(data['song_id']!, _songIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_songIdMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('content')) {
+      context.handle(
+        _contentMeta,
+        content.isAcceptableOrUnknown(data['content']!, _contentMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_contentMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Arrangement map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Arrangement(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      songId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}song_id'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+      content: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}content'],
+      )!,
+    );
+  }
+
+  @override
+  $ArrangementsTable createAlias(String alias) {
+    return $ArrangementsTable(attachedDatabase, alias);
+  }
+}
+
+class Arrangement extends DataClass implements Insertable<Arrangement> {
+  final int id;
+  final int songId;
+  final String name;
+  final String content;
+  const Arrangement({
+    required this.id,
+    required this.songId,
+    required this.name,
+    required this.content,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['song_id'] = Variable<int>(songId);
+    map['name'] = Variable<String>(name);
+    map['content'] = Variable<String>(content);
+    return map;
+  }
+
+  ArrangementsCompanion toCompanion(bool nullToAbsent) {
+    return ArrangementsCompanion(
+      id: Value(id),
+      songId: Value(songId),
+      name: Value(name),
+      content: Value(content),
+    );
+  }
+
+  factory Arrangement.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Arrangement(
+      id: serializer.fromJson<int>(json['id']),
+      songId: serializer.fromJson<int>(json['songId']),
+      name: serializer.fromJson<String>(json['name']),
+      content: serializer.fromJson<String>(json['content']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'songId': serializer.toJson<int>(songId),
+      'name': serializer.toJson<String>(name),
+      'content': serializer.toJson<String>(content),
+    };
+  }
+
+  Arrangement copyWith({int? id, int? songId, String? name, String? content}) =>
+      Arrangement(
+        id: id ?? this.id,
+        songId: songId ?? this.songId,
+        name: name ?? this.name,
+        content: content ?? this.content,
+      );
+  Arrangement copyWithCompanion(ArrangementsCompanion data) {
+    return Arrangement(
+      id: data.id.present ? data.id.value : this.id,
+      songId: data.songId.present ? data.songId.value : this.songId,
+      name: data.name.present ? data.name.value : this.name,
+      content: data.content.present ? data.content.value : this.content,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Arrangement(')
+          ..write('id: $id, ')
+          ..write('songId: $songId, ')
+          ..write('name: $name, ')
+          ..write('content: $content')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, songId, name, content);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Arrangement &&
+          other.id == this.id &&
+          other.songId == this.songId &&
+          other.name == this.name &&
+          other.content == this.content);
+}
+
+class ArrangementsCompanion extends UpdateCompanion<Arrangement> {
+  final Value<int> id;
+  final Value<int> songId;
+  final Value<String> name;
+  final Value<String> content;
+  const ArrangementsCompanion({
+    this.id = const Value.absent(),
+    this.songId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.content = const Value.absent(),
+  });
+  ArrangementsCompanion.insert({
+    this.id = const Value.absent(),
+    required int songId,
+    required String name,
+    required String content,
+  }) : songId = Value(songId),
+       name = Value(name),
+       content = Value(content);
+  static Insertable<Arrangement> custom({
+    Expression<int>? id,
+    Expression<int>? songId,
+    Expression<String>? name,
+    Expression<String>? content,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (songId != null) 'song_id': songId,
+      if (name != null) 'name': name,
+      if (content != null) 'content': content,
+    });
+  }
+
+  ArrangementsCompanion copyWith({
+    Value<int>? id,
+    Value<int>? songId,
+    Value<String>? name,
+    Value<String>? content,
+  }) {
+    return ArrangementsCompanion(
+      id: id ?? this.id,
+      songId: songId ?? this.songId,
+      name: name ?? this.name,
+      content: content ?? this.content,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (songId.present) {
+      map['song_id'] = Variable<int>(songId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (content.present) {
+      map['content'] = Variable<String>(content.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('ArrangementsCompanion(')
+          ..write('id: $id, ')
+          ..write('songId: $songId, ')
+          ..write('name: $name, ')
+          ..write('content: $content')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -1412,6 +1707,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ChordPlacementsTable chordPlacements = $ChordPlacementsTable(
     this,
   );
+  late final $ArrangementsTable arrangements = $ArrangementsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1421,6 +1717,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     sections,
     lines,
     chordPlacements,
+    arrangements,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -1444,6 +1741,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('chord_placements', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'songs',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('arrangements', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -1487,6 +1791,24 @@ final class $$SongsTableReferences
     ).filter((f) => f.songId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_sectionsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$ArrangementsTable, List<Arrangement>>
+  _arrangementsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.arrangements,
+    aliasName: 'songs__id__arrangements__song_id',
+  );
+
+  $$ArrangementsTableProcessedTableManager get arrangementsRefs {
+    final manager = $$ArrangementsTableTableManager(
+      $_db,
+      $_db.arrangements,
+    ).filter((f) => f.songId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_arrangementsRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -1557,6 +1879,31 @@ class $$SongsTableFilterComposer extends Composer<_$AppDatabase, $SongsTable> {
           }) => $$SectionsTableFilterComposer(
             $db: $db,
             $table: $db.sections,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> arrangementsRefs(
+    Expression<bool> Function($$ArrangementsTableFilterComposer f) f,
+  ) {
+    final $$ArrangementsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.arrangements,
+      getReferencedColumn: (t) => t.songId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ArrangementsTableFilterComposer(
+            $db: $db,
+            $table: $db.arrangements,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -1678,6 +2025,31 @@ class $$SongsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> arrangementsRefs<T extends Object>(
+    Expression<T> Function($$ArrangementsTableAnnotationComposer a) f,
+  ) {
+    final $$ArrangementsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.arrangements,
+      getReferencedColumn: (t) => t.songId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ArrangementsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.arrangements,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$SongsTableTableManager
@@ -1693,7 +2065,7 @@ class $$SongsTableTableManager
           $$SongsTableUpdateCompanionBuilder,
           (Song, $$SongsTableReferences),
           Song,
-          PrefetchHooks Function({bool sectionsRefs})
+          PrefetchHooks Function({bool sectionsRefs, bool arrangementsRefs})
         > {
   $$SongsTableTableManager(_$AppDatabase db, $SongsTable table)
     : super(
@@ -1754,33 +2126,61 @@ class $$SongsTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({sectionsRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [if (sectionsRefs) db.sections],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (sectionsRefs)
-                    await $_getPrefetchedDataByColumns<
-                      Song,
-                      $SongsTable,
-                      Section,
-                      $SectionsTable
-                    >(
-                      currentTable: table,
-                      referencedTable: $$SongsTableReferences
-                          ._sectionsRefsTable(db),
-                      managerFromTypedResult: (p0) =>
-                          $$SongsTableReferences(db, table, p0).sectionsRefs,
-                      currentColumn: 'id',
-                      referencedColumn: 'song_id',
-                      typedResults: items,
-                    ),
-                ];
+          prefetchHooksCallback:
+              ({sectionsRefs = false, arrangementsRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (sectionsRefs) db.sections,
+                    if (arrangementsRefs) db.arrangements,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (sectionsRefs)
+                        await $_getPrefetchedDataByColumns<
+                          Song,
+                          $SongsTable,
+                          Section,
+                          $SectionsTable
+                        >(
+                          currentTable: table,
+                          referencedTable: $$SongsTableReferences
+                              ._sectionsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$SongsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).sectionsRefs,
+                          currentColumn: 'id',
+                          referencedColumn: 'song_id',
+                          typedResults: items,
+                        ),
+                      if (arrangementsRefs)
+                        await $_getPrefetchedDataByColumns<
+                          Song,
+                          $SongsTable,
+                          Arrangement,
+                          $ArrangementsTable
+                        >(
+                          currentTable: table,
+                          referencedTable: $$SongsTableReferences
+                              ._arrangementsRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$SongsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).arrangementsRefs,
+                          currentColumn: 'id',
+                          referencedColumn: 'song_id',
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -1797,7 +2197,7 @@ typedef $$SongsTableProcessedTableManager =
       $$SongsTableUpdateCompanionBuilder,
       (Song, $$SongsTableReferences),
       Song,
-      PrefetchHooks Function({bool sectionsRefs})
+      PrefetchHooks Function({bool sectionsRefs, bool arrangementsRefs})
     >;
 typedef $$SectionsTableCreateCompanionBuilder = SectionsCompanion Function({
   Value<int> id,
@@ -2852,6 +3252,296 @@ typedef $$ChordPlacementsTableProcessedTableManager =
       ChordPlacement,
       PrefetchHooks Function({bool lineId})
     >;
+typedef $$ArrangementsTableCreateCompanionBuilder =
+    ArrangementsCompanion Function({
+      Value<int> id,
+      required int songId,
+      required String name,
+      required String content,
+    });
+typedef $$ArrangementsTableUpdateCompanionBuilder =
+    ArrangementsCompanion Function({
+      Value<int> id,
+      Value<int> songId,
+      Value<String> name,
+      Value<String> content,
+    });
+
+final class $$ArrangementsTableReferences
+    extends BaseReferences<_$AppDatabase, $ArrangementsTable, Arrangement> {
+  $$ArrangementsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $SongsTable _songIdTable(_$AppDatabase db) =>
+      db.songs.createAlias('arrangements__song_id__songs__id');
+
+  $$SongsTableProcessedTableManager get songId {
+    final $_column = $_itemColumn<int>('song_id')!;
+
+    final manager = $$SongsTableTableManager(
+      $_db,
+      $_db.songs,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_songIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$ArrangementsTableFilterComposer
+    extends Composer<_$AppDatabase, $ArrangementsTable> {
+  $$ArrangementsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get content => $composableBuilder(
+    column: $table.content,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$SongsTableFilterComposer get songId {
+    final $$SongsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.songId,
+      referencedTable: $db.songs,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SongsTableFilterComposer(
+            $db: $db,
+            $table: $db.songs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ArrangementsTableOrderingComposer
+    extends Composer<_$AppDatabase, $ArrangementsTable> {
+  $$ArrangementsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get content => $composableBuilder(
+    column: $table.content,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$SongsTableOrderingComposer get songId {
+    final $$SongsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.songId,
+      referencedTable: $db.songs,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SongsTableOrderingComposer(
+            $db: $db,
+            $table: $db.songs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ArrangementsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $ArrangementsTable> {
+  $$ArrangementsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get content =>
+      $composableBuilder(column: $table.content, builder: (column) => column);
+
+  $$SongsTableAnnotationComposer get songId {
+    final $$SongsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.songId,
+      referencedTable: $db.songs,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SongsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.songs,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$ArrangementsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $ArrangementsTable,
+          Arrangement,
+          $$ArrangementsTableFilterComposer,
+          $$ArrangementsTableOrderingComposer,
+          $$ArrangementsTableAnnotationComposer,
+          $$ArrangementsTableCreateCompanionBuilder,
+          $$ArrangementsTableUpdateCompanionBuilder,
+          (Arrangement, $$ArrangementsTableReferences),
+          Arrangement,
+          PrefetchHooks Function({bool songId})
+        > {
+  $$ArrangementsTableTableManager(_$AppDatabase db, $ArrangementsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$ArrangementsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$ArrangementsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$ArrangementsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int> songId = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String> content = const Value.absent(),
+              }) => ArrangementsCompanion(
+                id: id,
+                songId: songId,
+                name: name,
+                content: content,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required int songId,
+                required String name,
+                required String content,
+              }) => ArrangementsCompanion.insert(
+                id: id,
+                songId: songId,
+                name: name,
+                content: content,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$ArrangementsTable, Arrangement>(table),
+                  $$ArrangementsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({songId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (songId) {
+                      state = state.withJoin(
+                        currentTable: table,
+                        currentColumn: table.songId,
+                        referencedTable: $$ArrangementsTableReferences
+                            ._songIdTable(db),
+                        referencedColumn: $$ArrangementsTableReferences
+                            ._songIdTable(db)
+                            .id,
+                      ) as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$ArrangementsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $ArrangementsTable,
+      Arrangement,
+      $$ArrangementsTableFilterComposer,
+      $$ArrangementsTableOrderingComposer,
+      $$ArrangementsTableAnnotationComposer,
+      $$ArrangementsTableCreateCompanionBuilder,
+      $$ArrangementsTableUpdateCompanionBuilder,
+      (Arrangement, $$ArrangementsTableReferences),
+      Arrangement,
+      PrefetchHooks Function({bool songId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -2864,4 +3554,6 @@ class $AppDatabaseManager {
       $$LinesTableTableManager(_db, _db.lines);
   $$ChordPlacementsTableTableManager get chordPlacements =>
       $$ChordPlacementsTableTableManager(_db, _db.chordPlacements);
+  $$ArrangementsTableTableManager get arrangements =>
+      $$ArrangementsTableTableManager(_db, _db.arrangements);
 }

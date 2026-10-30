@@ -41,12 +41,20 @@ class ChordPlacements extends Table {
   IntColumn get position => integer()();
 }
 
-@DriftDatabase(tables: [Songs, Sections, Lines, ChordPlacements])
+class Arrangements extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get songId =>
+      integer().references(Songs, #id, onDelete: KeyAction.cascade)();
+  TextColumn get name => text()();
+  TextColumn get content => text()();
+}
+
+@DriftDatabase(tables: [Songs, Sections, Lines, ChordPlacements, Arrangements])
 class AppDatabase extends _$AppDatabase {
   AppDatabase({QueryExecutor? executor}) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -54,6 +62,9 @@ class AppDatabase extends _$AppDatabase {
     onUpgrade: (Migrator m, int from, int to) async {
       if (from < 2) {
         await m.addColumn(songs, songs.label);
+      }
+      if (from < 3) {
+        await m.createTable(arrangements);
       }
     },
   );

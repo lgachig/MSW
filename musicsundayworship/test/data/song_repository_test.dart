@@ -104,4 +104,85 @@ void main() {
     expect(await database.select(database.lines).get(), isEmpty);
     expect(await database.select(database.chordPlacements).get(), isEmpty);
   });
+
+  test('stores arrangements separately from the original song', () async {
+    final created = await repository.create(
+      const SongDocument(
+        title: 'Original',
+        sections: [
+          SongSection(
+            name: 'Verso',
+            lines: [
+              SongLine(
+                content: 'Letra original',
+                chords: [ChordPlacementData(chord: 'C')],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    final arrangement = await repository.createArrangement(
+      SongArrangement(
+        songId: created.id!,
+        name: 'Capo 2',
+        sections: const [
+          SongSection(
+            name: 'Verso',
+            lines: [
+              SongLine(
+                content: 'Letra arreglada',
+                chords: [ChordPlacementData(chord: 'D')],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    final edited = await repository.updateArrangement(
+      SongArrangement(
+        id: arrangement.id,
+        songId: created.id!,
+        name: 'Capo 2 editado',
+        sections: const [
+          SongSection(
+            name: 'Verso',
+            lines: [
+              SongLine(
+                content: 'Letra arreglada',
+                chords: [ChordPlacementData(chord: 'E')],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    expect(edited.name, 'Capo 2 editado');
+    expect(
+      (await repository.readArrangements(created.id!))
+          .single
+          .sections
+          .single
+          .lines
+          .single
+          .chords
+          .single
+          .chord,
+      'E',
+    );
+    expect(
+      (await repository.read(created.id!))!
+          .sections
+          .single
+          .lines
+          .single
+          .chords
+          .single
+          .chord,
+      'C',
+    );
+  });
 }
