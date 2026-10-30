@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/song_repository.dart';
 import '../../music_engine/chord_line_detector.dart';
+import 'chord_editor.dart';
 
 /// Converts pasted chord-over-lyric text into the ordered song model.
 class SongTextParser {
@@ -60,6 +61,7 @@ class SongTextParser {
     }
     return List.unmodifiable(sections);
   }
+
 }
 
 class SongEditorPage extends ConsumerStatefulWidget {
@@ -84,6 +86,7 @@ class _SongEditorPageState extends ConsumerState<SongEditorPage> {
   bool _saving = false;
   String? _saveError;
   SongDocument? _song;
+  List<SongSection>? _editorSections;
 
   bool get editing => widget.songId != null;
 
@@ -106,11 +109,24 @@ class _SongEditorPageState extends ConsumerState<SongEditorPage> {
       _tempo.text = song.tempo?.toString() ?? '';
       _timeSignature.text = song.timeSignature ?? '';
       _lyrics.text = _toText(song);
+      _editorSections = song.sections;
     }
     setState(() => _loading = false);
   }
 
   String _toText(SongDocument song) => song.sections
+      .expand(
+        (section) => section.lines.expand(
+          (line) => [
+            if (line.chords.isNotEmpty)
+              line.chords.map((chord) => chord.chord).join(' '),
+            line.content,
+          ],
+        ),
+      )
+      .join('\n');
+
+  String _sectionsToText(List<SongSection> sections) => sections
       .expand(
         (section) => section.lines.expand(
           (line) => [
@@ -139,7 +155,7 @@ class _SongEditorPageState extends ConsumerState<SongEditorPage> {
       originalKey: _key.text.trim(),
       tempo: int.tryParse(_tempo.text.trim()),
       timeSignature: _optional(_timeSignature.text),
-      sections: SongTextParser.parse(_lyrics.text),
+      sections: _editorSections ?? SongTextParser.parse(_lyrics.text),
     );
     final repository = ref.read(songRepositoryProvider);
     try {
@@ -236,12 +252,50 @@ class _SongEditorPageState extends ConsumerState<SongEditorPage> {
               minLines: 12,
               maxLines: 20,
               decoration: const InputDecoration(
-                labelText: 'Letra y acordes',
+                labelText: 'Letra y acordes (importar)',
                 hintText: 'G        C\nTu amor no cambia',
                 alignLabelWithHint: true,
                 border: OutlineInputBorder(),
               ),
+              onChanged: (value) {
+                final parsed = SongTextParser.parse(value);
+                setState(() => _editorSections = parsed);
+              },
             ),
+            if (_editorSections
+                    ?.expand((section) => section.lines)
+                    .isNotEmpty ??
+                false) ...[
+              const SizedBox(height: 12),
+              ChordEditor(
+                lines: _editorSections!
+                    .expand((section) => section.lines)
+                    .toList(),
+                onChanged: (lines) {
+                  final sections = [
+                    SongSection(
+                      name: 'Sección 1',
+                      position: 0,
+                      lines: lines
+                          .asMap()
+                          .entries
+                          .map(
+                            (entry) => SongLine(
+                              content: entry.value.content,
+                              position: entry.key,
+                              chords: entry.value.chords,
+                            ),
+                          )
+                          .toList(growable: false),
+                    ),
+                  ];
+                  setState(() {
+                    _editorSections = sections;
+                    _lyrics.text = _sectionsToText(sections);
+                  });
+                },
+              ),
+            ],
             const SizedBox(height: 20),
             FilledButton.icon(
               onPressed: _saving ? null : _save,

@@ -1,0 +1,17 @@
+# Historial de MSW-24
+
+- 2026-10-29 22:53: Estado: Por hacer -> En curso
+- 2026-10-29 22:53: Plan: implementar editor monoespaciado de acordes sobre letra, agregar/mover/borrar posiciones y undo/redo con persistencia y pruebas de widget.
+- 2026-10-29 22:53: Inicio: inspeccionando arquitectura del editor y repositorio.
+- 2026-10-29 22:54: Implementado widget táctil de acordes con posiciones, drag, swipe, validación y undo/redo; integrado al editor.
+- 2026-10-29 22:55: Validación: flutter analyze limpio y pruebas del editor completas; ejecutando suite total.
+- 2026-10-29 22:55: Completado: flutter analyze sin issues; flutter test suite 75 pruebas, todas OK. Sin push ni cambio de rama.
+- 2026-10-29 22:56: Pruebas añadidas para agregar/validar posición, undo/redo y swipe-delete; validación final: analyze OK y 78 tests OK.
+- 2026-10-29 22:56: Estado: En curso -> En pruebas
+- 2026-10-29 22:56: Desarrollo completado; inicia validación independiente de editor de acordes, gestos, persistencia y undo/redo.
+- 2026-10-29 22:57: PASS pruebas independientes en feature/MSW-24: desde musicsundayworship, flutter analyze OK (0 issues) y flutter test OK (78 tests, 0 failures). Verificado por tests/código: letra monoespaciada; tocar agrega acorde en posición correcta; acorde inválido rechazado; undo/redo actualiza modelo; deslizar elimina; arrastre mueve columna implementado; edición de acorde implementada; integración ChordEditor en SongEditorPage y persistencia create/update mediante SongRepository cubierta por pruebas de SongEditorPage. Sin errores.
+- 2026-10-29 22:57: Estado: En pruebas -> En verificación
+- 2026-10-29 22:57: Pruebas independientes PASS: analyze limpio, suite 78/78; editor táctil, posiciones, borrado, persistencia y undo/redo aprobados.
+- 2026-10-29 22:58: PASS verificación final independiente en feature/MSW-24: desde musicsundayworship, flutter analyze sin issues y flutter test 78/78 OK. Revisión de código confirma UI monoespaciada, tap agrega y ordena por columna, edición/cambio valida acordes y muestra 'Acorde no válido', drag mueve conservando columna calculada, swipe elimina, undo/redo emite estados, y SongEditorPage persiste _editorSections vía SongRepository create/update. Integración revisada sin regresión observable de MSW-23; rama sin cambios de checkout ni push.
+- 2026-10-29 22:58: Resumen final de MSW-24: editor táctil monoespaciado integrado en SongEditorPage; tap agrega acordes en posiciones/columnas correctas, edición y validación rechazan acordes inválidos; drag mueve conservando la posición calculada; swipe elimina; undo/redo actualiza el modelo; persistencia de secciones editadas cubierta mediante SongRepository en create/update. Resultados: flutter analyze sin issues y flutter test 78/78 OK. Sin regresiones observables de MSW-23. Listo para prueba manual de Luis.
+- 2026-10-29 22:58: Estado: En verificación -> Listo para prueba de Luis
