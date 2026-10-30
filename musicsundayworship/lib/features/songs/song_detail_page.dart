@@ -1,21 +1,44 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/song_repository.dart';
 import '../../music_engine/music_engine.dart';
+import 'arrangement_editor_page.dart';
 
-class SongDetailPage extends StatefulWidget {
+class SongDetailPage extends ConsumerStatefulWidget {
   const SongDetailPage({super.key, required this.song});
 
   final SongDocument song;
 
   @override
-  State<SongDetailPage> createState() => _SongDetailPageState();
+  ConsumerState<SongDetailPage> createState() => _SongDetailPageState();
 }
 
-class _SongDetailPageState extends State<SongDetailPage> {
+class _SongDetailPageState extends ConsumerState<SongDetailPage> {
   NoteNotation _notation = NoteNotation.american;
   int _semitones = 0;
   MusicKey? _targetKey;
+  List<SongArrangement> _arrangements = const [];
+  SongArrangement? _selectedArrangement;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadArrangements();
+  }
+
+  Future<void> _loadArrangements() async {
+    final id = widget.song.id;
+    if (id == null) return;
+    final arrangements = await ref
+        .read(songRepositoryProvider)
+        .readArrangements(id);
+    if (!mounted) return;
+    setState(() => _arrangements = arrangements);
+  }
+
+  List<SongSection> get _sections =>
+      _selectedArrangement?.sections ?? widget.song.sections;
 
   String get _originalKey => widget.song.originalKey ?? '—';
 
@@ -50,7 +73,17 @@ class _SongDetailPageState extends State<SongDetailPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: Text(widget.song.title)),
+    appBar: AppBar(
+      title: Text(widget.song.title),
+      actions: [
+        IconButton(
+          key: const Key('new-arrangement'),
+          tooltip: 'Crear arreglo',
+          onPressed: _createArrangement,
+          icon: const Icon(Icons.copy),
+        ),
+      ],
+    ),
     body: ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -140,12 +173,89 @@ class _SongDetailPageState extends State<SongDetailPage> {
           ),
         ),
         const SizedBox(height: 16),
-        ...widget.song.sections.expand(
-          (section) => section.lines.map(_buildLine),
-        ),
+        if (_arrangements.isNotEmpty)
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: DropdownButton<SongArrangement?>(
+                      key: const Key('arrangement-selector'),
+                      isExpanded: true,
+                      value: _selectedArrangement,
+                      hint: const Text('Versión original'),
+                      items: [
+                        const DropdownMenuItem<SongArrangement?>(
+                          child: Text('Versión original'),
+                        ),
+                        ..._arrangements.map(
+                          (arrangement) => DropdownMenuItem<SongArrangement?>(
+                            value: arrangement,
+                            child: Text(arrangement.name),
+                          ),
+                        ),
+                      ],
+                      onChanged: (value) =>
+                          setState(() => _selectedArrangement = value),
+                    ),
+                  ),
+                  if (_selectedArrangement != null)
+                    IconButton(
+                      key: const Key('edit-arrangement'),
+                      tooltip: 'Editar arreglo',
+                      onPressed: () => _editArrangement(_selectedArrangement!),
+                      icon: const Icon(Icons.edit),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        const SizedBox(height: 16),
+        ..._sections.expand((section) => section.lines.map(_buildLine)),
       ],
     ),
   );
+
+  Future<void> _createArrangement() async {
+    final id = widget.song.id;
+    if (id == null) return;
+    final saved = await Navigator.of(context).push<SongArrangement>(
+      MaterialPageRoute(
+        builder: (_) => ArrangementEditorPage(
+          songId: id,
+          initialName: 'Arreglo ${_arrangements.length + 1}',
+          sections: widget.song.sections,
+        ),
+      ),
+    );
+    if (!mounted || saved == null) return;
+    setState(() {
+      _arrangements = [..._arrangements, saved];
+      _selectedArrangement = saved;
+    });
+  }
+
+  Future<void> _editArrangement(SongArrangement arrangement) async {
+    final saved = await Navigator.of(context).push<SongArrangement>(
+      MaterialPageRoute(
+        builder: (_) => ArrangementEditorPage(
+          songId: arrangement.songId,
+          arrangementId: arrangement.id,
+          initialName: arrangement.name,
+          sections: arrangement.sections,
+        ),
+      ),
+    );
+    if (!mounted || saved == null) return;
+    setState(() {
+      _arrangements = [
+        for (final item in _arrangements)
+          if (item.id == saved.id) saved else item,
+      ];
+      _selectedArrangement = saved;
+    });
+  }
 
   Widget _buildLine(SongLine line) {
     final chordLine = _formatChords(line.chords);
