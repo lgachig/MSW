@@ -257,6 +257,7 @@ class _SongEditorPageState extends ConsumerState<SongEditorPage> {
               controller: _lyrics,
               minLines: 12,
               maxLines: 20,
+              style: const TextStyle(fontFamily: 'monospace', fontSize: 16),
               decoration: const InputDecoration(
                 labelText: 'Letra y acordes (importar)',
                 hintText: 'G        C\nTu amor no cambia',

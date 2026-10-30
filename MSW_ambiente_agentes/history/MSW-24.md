@@ -18,3 +18,5 @@
 - 2026-10-29 23:00: Corrección: el texto reconstruido ya usa las posiciones persistidas de cada acorde, evitando reemplazar el espaciado original con `join(' ')`.
 - 2026-10-29 23:00: Prueba de regresión añadida para conservar columnas al parsear y serializar líneas de acordes.
 - 2026-10-29 23:00: Validación: `flutter analyze` limpio y `flutter test` 79/79 OK. No hay aplicación Flutter activa para ejecutar hot reload mediante DTD.
+- 2026-10-29 23:07: Corrección adicional: el campo de importación ahora usa fuente monoespaciada para mostrar visualmente las columnas originales de los acordes.
+- 2026-10-29 23:07: Prueba añadida para verificar la fuente monoespaciada del campo de acordes.

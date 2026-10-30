@@ -78,6 +78,26 @@ void main() {
     expect(SongTextParser.format(sections), 'A       E/G#       F#m\nLetra');
   });
 
+  testWidgets('uses a monospaced font for pasted chord text', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          songRepositoryProvider.overrideWithValue(_FakeSongRepository()),
+        ],
+        child: const MaterialApp(home: SongEditorPage()),
+      ),
+    );
+
+    final lyricsField = tester.widget<TextField>(
+      find.descendant(
+        of: find.byType(TextFormField).last,
+        matching: find.byType(TextField),
+      ),
+    );
+
+    expect(lyricsField.style?.fontFamily, 'monospace');
+  });
+
   testWidgets('requires title and key before saving', (tester) async {
     final repository = _FakeSongRepository();
     await tester.pumpWidget(
