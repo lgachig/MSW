@@ -84,6 +84,14 @@ void main() {
     expect(SongTextParser.format(sections), 'A       .       E\nLetra');
   });
 
+  test('preserves punctuation attached to chords and remaining spacing', () {
+    final withPunctuation = SongTextParser.parse('.A       E.\nLetra');
+    final withoutPunctuation = SongTextParser.parse('A       E\nLetra');
+
+    expect(SongTextParser.format(withPunctuation), '.A       E.\nLetra');
+    expect(SongTextParser.format(withoutPunctuation), 'A       E\nLetra');
+  });
+
   testWidgets('uses a monospaced font for pasted chord text', (tester) async {
     await tester.pumpWidget(
       ProviderScope(

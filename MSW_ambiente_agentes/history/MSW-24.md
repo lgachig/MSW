@@ -22,3 +22,5 @@
 - 2026-10-29 23:07: Prueba añadida para verificar la fuente monoespaciada del campo de acordes.
 - 2026-10-29 23:10: Corrección: el parser ya no descarta tokens de puntuación independientes, como `.`, dentro de líneas de acordes; se conservan sus posiciones y espacios originales.
 - 2026-10-29 23:10: Se añadió prueba de regresión para conservar puntuación y columnas al importar y reconstruir acordes.
+- 2026-10-29 23:12: Corrección adicional: el parser reconoce puntuación pegada a acordes, como `.A` y `E.`, sin perder las columnas de los acordes restantes al quitarla.
+- 2026-10-29 23:12: Se añadió prueba de regresión para comparar la serialización con y sin puntuación.

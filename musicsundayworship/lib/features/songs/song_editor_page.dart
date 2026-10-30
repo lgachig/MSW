@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/song_repository.dart';
-import '../../music_engine/chord_line_detector.dart';
+import '../../music_engine/chord.dart';
 import 'chord_editor.dart';
 
 /// Converts pasted chord-over-lyric text into the ordered song model.
@@ -17,11 +17,11 @@ class SongTextParser {
       final pending = <ChordPlacementData>[];
       final sourceLines = blocks[sectionIndex].split('\n');
       for (final sourceLine in sourceLines) {
-        final result = ChordLineDetector.detect(sourceLine);
-        if (result.isChordLine) {
+        final placements = _parseChordLine(sourceLine);
+        if (placements != null) {
           pending
             ..clear()
-            ..addAll(_placementsForChordLine(sourceLine, result));
+            ..addAll(placements);
         } else if (sourceLine.trim().isNotEmpty || pending.isNotEmpty) {
           lines.add(
             SongLine(
@@ -55,25 +55,72 @@ class SongTextParser {
     return List.unmodifiable(sections);
   }
 
-  static List<ChordPlacementData> _placementsForChordLine(
-    String sourceLine,
-    ChordLineResult result,
-  ) {
-    final validPositions = {for (final token in result.tokens) token.start};
-    final placements = <ChordPlacementData>[];
+  static List<ChordPlacementData>? _parseChordLine(String sourceLine) {
     final tokenPattern = RegExp(r'[^\s|–—-]+');
-    for (final match in tokenPattern.allMatches(sourceLine)) {
-      final text = match.group(0)!;
-      final position = match.start;
-      if (validPositions.contains(position) || _isStandalonePunctuation(text)) {
-        placements.add(ChordPlacementData(chord: text, position: position));
+    final tokens = tokenPattern
+        .allMatches(sourceLine)
+        .map((match) => (text: match.group(0)!, start: match.start))
+        .toList();
+    final chordTokens = tokens
+        .map((token) => _splitPunctuation(token.text))
+        .whereType<_ChordToken>()
+        .toList();
+    if (chordTokens.isEmpty || chordTokens.length * 2 <= tokens.length) {
+      return null;
+    }
+
+    final placements = <ChordPlacementData>[];
+    for (final token in tokens) {
+      final parsed = _splitPunctuation(token.text);
+      if (parsed == null) {
+        if (_isStandalonePunctuation(token.text)) {
+          placements.add(
+            ChordPlacementData(chord: token.text, position: token.start),
+          );
+        }
+        continue;
+      }
+      if (parsed.prefix.isNotEmpty) {
+        placements.add(
+          ChordPlacementData(chord: parsed.prefix, position: token.start),
+        );
+      }
+      placements.add(
+        ChordPlacementData(
+          chord: parsed.chord,
+          position: token.start + parsed.prefix.length,
+        ),
+      );
+      if (parsed.suffix.isNotEmpty) {
+        placements.add(
+          ChordPlacementData(
+            chord: parsed.suffix,
+            position: token.start + parsed.prefix.length + parsed.chord.length,
+          ),
+        );
       }
     }
     return placements;
   }
 
+  static _ChordToken? _splitPunctuation(String value) {
+    for (var start = 0; start < value.length; start++) {
+      for (var end = value.length; end > start; end--) {
+        final core = value.substring(start, end);
+        if (Chord.parse(core) == null) continue;
+        final prefix = value.substring(0, start);
+        final suffix = value.substring(end);
+        if (_isStandalonePunctuation(prefix) &&
+            _isStandalonePunctuation(suffix)) {
+          return _ChordToken(prefix: prefix, chord: core, suffix: suffix);
+        }
+      }
+    }
+    return null;
+  }
+
   static bool _isStandalonePunctuation(String value) =>
-      RegExp(r'^[^A-Za-zÁÉÍÓÚáéíóúÑñ0-9]+$').hasMatch(value);
+      value.isEmpty || RegExp(r'^[^A-Za-zÁÉÍÓÚáéíóúÑñ0-9]+$').hasMatch(value);
 
   static String format(List<SongSection> sections) => sections
       .expand(
@@ -100,6 +147,18 @@ class SongTextParser {
     }
     return buffer.toString();
   }
+}
+
+class _ChordToken {
+  const _ChordToken({
+    required this.prefix,
+    required this.chord,
+    required this.suffix,
+  });
+
+  final String prefix;
+  final String chord;
+  final String suffix;
 }
 
 class SongEditorPage extends ConsumerStatefulWidget {
