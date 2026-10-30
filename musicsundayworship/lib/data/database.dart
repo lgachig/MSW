@@ -17,21 +17,24 @@ class Songs extends Table {
 
 class Sections extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get songId => integer().references(Songs, #id)();
+  IntColumn get songId =>
+      integer().references(Songs, #id, onDelete: KeyAction.cascade)();
   TextColumn get name => text()();
   IntColumn get position => integer()();
 }
 
 class Lines extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get sectionId => integer().references(Sections, #id)();
+  IntColumn get sectionId =>
+      integer().references(Sections, #id, onDelete: KeyAction.cascade)();
   TextColumn get content => text()();
   IntColumn get position => integer()();
 }
 
 class ChordPlacements extends Table {
   IntColumn get id => integer().autoIncrement()();
-  IntColumn get lineId => integer().references(Lines, #id)();
+  IntColumn get lineId =>
+      integer().references(Lines, #id, onDelete: KeyAction.cascade)();
   TextColumn get chord => text()();
   IntColumn get position => integer()();
 }

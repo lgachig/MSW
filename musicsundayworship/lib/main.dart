@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'data/database.dart';
+import 'data/song_repository.dart';
 
 void main() {
   final database = AppDatabase();
-  runApp(MyApp(database: database));
+  runApp(
+    ProviderScope(
+      overrides: [appDatabaseProvider.overrideWithValue(database)],
+      child: MyApp(database: database),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
