@@ -38,6 +38,26 @@ void main() {
     expect(loaded?.sections.single.lines.single.chords.single.chord, 'G');
   });
 
+  test('persists author, source and song settings', () async {
+    final created = await repository.create(
+      const SongDocument(
+        title: 'Fuente',
+        author: 'Autor visible',
+        source: 'Libro de cantos',
+        originalKey: 'D',
+        tempo: 92,
+        timeSignature: '4/4',
+      ),
+    );
+
+    final loaded = await repository.read(created.id!);
+    expect(loaded?.author, 'Autor visible');
+    expect(loaded?.source, 'Libro de cantos');
+    expect(loaded?.originalKey, 'D');
+    expect(loaded?.tempo, 92);
+    expect(loaded?.timeSignature, '4/4');
+  });
+
   test('watchAll emits the initial library state', () async {
     expect(await repository.watchAll().first, isEmpty);
 

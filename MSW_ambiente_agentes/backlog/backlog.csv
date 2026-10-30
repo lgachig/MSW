@@ -377,7 +377,7 @@ Escribir o pegar letra y acordes con autor y fuente.
 flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
 
 *Depende de*
-MSW-18, MSW-21","","MSW-3","High","fase-2","msw","5","S3","Por hacer"
+MSW-18, MSW-21","","MSW-3","High","fase-2","msw","5","S3","Listo para prueba de Luis"
 "MSW-24","Story","Editor de acordes sobre la letra","*Objetivo*
 Tocar un punto de la letra para poner un acorde, arrastrarlo, cambiarlo o borrarlo.
 
