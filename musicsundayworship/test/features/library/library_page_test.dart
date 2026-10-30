@@ -49,6 +49,21 @@ void main() {
     expect(find.text('Santo'), findsOneWidget);
   });
 
+  testWidgets('shows author and source for each song', (tester) async {
+    await tester.pumpWidget(
+      _app([
+        const SongDocument(
+          title: 'Canción visible',
+          author: 'Autor visible',
+          source: 'Fuente visible',
+        ),
+      ]),
+    );
+    await tester.pump();
+
+    expect(find.text('Autor visible · Fuente visible'), findsOneWidget);
+  });
+
   testWidgets('shows empty state and first-song action', (tester) async {
     var pressed = false;
     await tester.pumpWidget(

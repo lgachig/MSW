@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/song_repository.dart';
+import '../songs/song_editor_page.dart';
 
 enum LibrarySort { title, author, key, label }
 
@@ -9,6 +10,16 @@ class LibraryPage extends ConsumerStatefulWidget {
   const LibraryPage({super.key, this.onAddSong});
 
   final VoidCallback? onAddSong;
+
+  void _addSong(BuildContext context) {
+    if (onAddSong != null) {
+      onAddSong!();
+    } else {
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute<void>(builder: (_) => const SongEditorPage()));
+    }
+  }
 
   @override
   ConsumerState<LibraryPage> createState() => _LibraryPageState();
@@ -109,7 +120,7 @@ class _LibraryPageState extends ConsumerState<LibraryPage> {
                 child: visible.isEmpty
                     ? _EmptyState(
                         hasSongs: allSongs.isNotEmpty,
-                        onAddSong: widget.onAddSong,
+                        onAddSong: () => widget._addSong(context),
                       )
                     : ListView.builder(
                         itemCount: visible.length,
@@ -117,8 +128,21 @@ class _LibraryPageState extends ConsumerState<LibraryPage> {
                           final song = visible[index];
                           return ListTile(
                             title: Text(song.title),
-                            subtitle: Text(song.author ?? 'Autor desconocido'),
+                            subtitle: Text(
+                              [
+                                song.author ?? 'Autor desconocido',
+                                if (song.source != null) song.source!,
+                              ].join(' · '),
+                            ),
                             trailing: Text(song.originalKey ?? '—'),
+                            onTap: song.id == null
+                                ? null
+                                : () => Navigator.of(context).push(
+                                    MaterialPageRoute<void>(
+                                      builder: (_) =>
+                                          SongEditorPage(songId: song.id),
+                                    ),
+                                  ),
                           );
                         },
                       ),
@@ -128,7 +152,7 @@ class _LibraryPageState extends ConsumerState<LibraryPage> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: widget.onAddSong,
+        onPressed: () => widget._addSong(context),
         tooltip: 'Agregar canción',
         child: const Icon(Icons.add),
       ),
