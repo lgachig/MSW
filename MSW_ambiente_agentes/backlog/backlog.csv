@@ -166,7 +166,7 @@ Representar notas con su ortografía (Bb vs A#) y acordes con calidad y bajo (Am
 flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
 
 *Depende de*
-MSW-13","","MSW-2","Highest","fase-1","msw","5","S1","En pruebas"
+MSW-13","","MSW-2","Highest","fase-1","msw","5","S1","Listo para prueba de Luis"
 "MSW-15","Story","Transposición por semitonos y entre tonos","*Objetivo*
 Subir o bajar acordes, o pasarlos de un tono a otro, con la ortografía correcta del tono destino.
 
