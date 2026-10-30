@@ -237,7 +237,7 @@ Cubrir los acordes que realmente aparecen en las canciones de la iglesia.
 flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
 
 *Depende de*
-MSW-14","","MSW-2","Medium","fase-1","msw","3","S2","Por hacer"
+MSW-14","","MSW-2","Medium","fase-1","msw","3","S2","Listo para prueba de Luis"
 "MSW-18","Story","Detectar líneas de acordes en un texto","*Objetivo*
 Saber si una línea de texto es de acordes o de letra, para preparar el OCR y el editor.
 

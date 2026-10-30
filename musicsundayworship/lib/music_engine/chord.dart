@@ -90,9 +90,10 @@ class Chord {
     if (quality.isEmpty) return true;
     // Keep the accepted vocabulary explicit so ordinary words are not chords.
     return RegExp(
-      r'^(?:m|min|maj|dim|aug|sus2|sus4|add[0-9]+|[0-9]+|'
-      r'(?:m|min|maj|dim|aug)?[0-9]+(?:b5|#5|b9|#9|add[0-9]+)*|'
-      r'(?:sus2|sus4)(?:add[0-9]+)*)$',
+      r'^(?:(?:(?:m|min|maj|dim|aug|sus2|sus4)?'
+      r'(?:6|7|9|11|13)|m|min|maj|dim|aug|\+|sus2|sus4|add9)'
+      r'(?:add9|b5|#5|b9|#9|\((?:add9|b5|#5|b9|#9)\))*'
+      r'|\((?:add9|b5|#5|b9|#9)\)+)$',
     ).hasMatch(quality);
   }
 
