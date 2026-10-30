@@ -9,6 +9,17 @@ void main() {
       'G7',
       'Cmaj7',
       'Dsus4',
+      'Cadd9',
+      'Csus2',
+      'C6',
+      'C9',
+      'C11',
+      'C13',
+      'Cdim',
+      'Caug',
+      'C+',
+      'C(b5)',
+      'C7(b5)',
       'F#m',
       'Bb',
       'Am/G',
@@ -20,7 +31,18 @@ void main() {
       });
     }
 
-    for (final text in ['Hola', 'am', 'C/', 'C//G', 'H7', 'C#b']) {
+    for (final text in [
+      'Hola',
+      'am',
+      'C/',
+      'C//G',
+      'H7',
+      'C#b',
+      'C123',
+      'Cadd11',
+      'C7(foo)',
+      'C()',
+    ]) {
       test('rejects $text', () {
         expect(Chord.parse(text), isNull);
       });
@@ -37,6 +59,9 @@ void main() {
       expect(latin.toAmerican().toString(), 'Dm/F');
       expect(latin.toAmerican().toLatin().toString(), 'Rem/Fa');
       expect(Chord.parse('Cmaj7/E')!.toLatin().toString(), 'Domaj7/Mi');
+      final complex = Chord.parse('Soladd9/Sib')!;
+      expect(complex.toAmerican().toString(), 'Gadd9/Bb');
+      expect(complex.toAmerican().toLatin().toString(), 'Soladd9/Sib');
     });
 
     test('does not interpret lyric words as chords', () {
