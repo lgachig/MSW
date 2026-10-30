@@ -24,6 +24,21 @@ class NoteName {
 
   static NoteName? fromString(String value) => parse(value);
 
+  /// The pitch class of this note, with C represented by zero.
+  int get semitone => NoteName.pitchClass(this);
+
+  static int pitchClass(NoteName note) {
+    const natural = {'C': 0, 'D': 2, 'E': 4, 'F': 5, 'G': 7, 'A': 9, 'B': 11};
+    final offset = note.accidental == '#'
+        ? 1
+        : note.accidental == 'b'
+        ? -1
+        : 0;
+    return (natural[note.letter]! + offset) % 12 < 0
+        ? (natural[note.letter]! + offset) % 12 + 12
+        : (natural[note.letter]! + offset) % 12;
+  }
+
   @override
   String toString() => '$letter$accidental';
 

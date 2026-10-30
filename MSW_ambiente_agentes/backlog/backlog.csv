@@ -191,7 +191,7 @@ Subir o bajar acordes, o pasarlos de un tono a otro, con la ortografía correcta
 flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
 
 *Depende de*
-MSW-14","","MSW-2","Highest","fase-1","msw","5","S1","En pruebas"
+MSW-14","","MSW-2","Highest","fase-1","msw","5","S1","Listo para prueba de Luis"
 "MSW-16","Story","Notación latina y conversión entre notaciones","*Objetivo*
 Leer y escribir Do, Re, Mi y convertir entre latina y americana.
 
