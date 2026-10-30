@@ -11,6 +11,7 @@ class Songs extends Table {
   TextColumn get author => text().nullable()();
   TextColumn get source => text().nullable()();
   TextColumn get originalKey => text().nullable()();
+  TextColumn get label => text().nullable()();
   IntColumn get tempo => integer().nullable()();
   TextColumn get timeSignature => text().nullable()();
 }
@@ -44,12 +45,16 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase({QueryExecutor? executor}) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (Migrator m) => m.createAll(),
-    onUpgrade: (Migrator m, int from, int to) async {},
+    onUpgrade: (Migrator m, int from, int to) async {
+      if (from < 2) {
+        await m.addColumn(songs, songs.label);
+      }
+    },
   );
 }
 

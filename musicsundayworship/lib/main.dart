@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'data/database.dart';
 import 'data/song_repository.dart';
+import 'features/library/library_page.dart';
 
 void main() {
   final database = AppDatabase();
@@ -42,7 +43,9 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: .fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: database == null
+          ? const MyHomePage(title: 'Flutter Demo Home Page')
+          : const LibraryPage(),
     );
   }
 }
