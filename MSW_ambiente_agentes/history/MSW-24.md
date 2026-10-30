@@ -1,0 +1,33 @@
+# Historial de MSW-24
+
+- 2026-10-29 22:53: Estado: Por hacer -> En curso
+- 2026-10-29 22:53: Plan: implementar editor monoespaciado de acordes sobre letra, agregar/mover/borrar posiciones y undo/redo con persistencia y pruebas de widget.
+- 2026-10-29 22:53: Inicio: inspeccionando arquitectura del editor y repositorio.
+- 2026-10-29 22:54: Implementado widget táctil de acordes con posiciones, drag, swipe, validación y undo/redo; integrado al editor.
+- 2026-10-29 22:55: Validación: flutter analyze limpio y pruebas del editor completas; ejecutando suite total.
+- 2026-10-29 22:55: Completado: flutter analyze sin issues; flutter test suite 75 pruebas, todas OK. Sin push ni cambio de rama.
+- 2026-10-29 22:56: Pruebas añadidas para agregar/validar posición, undo/redo y swipe-delete; validación final: analyze OK y 78 tests OK.
+- 2026-10-29 22:56: Estado: En curso -> En pruebas
+- 2026-10-29 22:56: Desarrollo completado; inicia validación independiente de editor de acordes, gestos, persistencia y undo/redo.
+- 2026-10-29 22:57: PASS pruebas independientes en feature/MSW-24: desde musicsundayworship, flutter analyze OK (0 issues) y flutter test OK (78 tests, 0 failures). Verificado por tests/código: letra monoespaciada; tocar agrega acorde en posición correcta; acorde inválido rechazado; undo/redo actualiza modelo; deslizar elimina; arrastre mueve columna implementado; edición de acorde implementada; integración ChordEditor en SongEditorPage y persistencia create/update mediante SongRepository cubierta por pruebas de SongEditorPage. Sin errores.
+- 2026-10-29 22:57: Estado: En pruebas -> En verificación
+- 2026-10-29 22:57: Pruebas independientes PASS: analyze limpio, suite 78/78; editor táctil, posiciones, borrado, persistencia y undo/redo aprobados.
+- 2026-10-29 22:58: PASS verificación final independiente en feature/MSW-24: desde musicsundayworship, flutter analyze sin issues y flutter test 78/78 OK. Revisión de código confirma UI monoespaciada, tap agrega y ordena por columna, edición/cambio valida acordes y muestra 'Acorde no válido', drag mueve conservando columna calculada, swipe elimina, undo/redo emite estados, y SongEditorPage persiste _editorSections vía SongRepository create/update. Integración revisada sin regresión observable de MSW-23; rama sin cambios de checkout ni push.
+- 2026-10-29 22:58: Resumen final de MSW-24: editor táctil monoespaciado integrado en SongEditorPage; tap agrega acordes en posiciones/columnas correctas, edición y validación rechazan acordes inválidos; drag mueve conservando la posición calculada; swipe elimina; undo/redo actualiza el modelo; persistencia de secciones editadas cubierta mediante SongRepository en create/update. Resultados: flutter analyze sin issues y flutter test 78/78 OK. Sin regresiones observables de MSW-23. Listo para prueba manual de Luis.
+- 2026-10-29 22:58: Estado: En verificación -> Listo para prueba de Luis
+- 2026-10-29 23:00: Corrección: el texto reconstruido ya usa las posiciones persistidas de cada acorde, evitando reemplazar el espaciado original con `join(' ')`.
+- 2026-10-29 23:00: Prueba de regresión añadida para conservar columnas al parsear y serializar líneas de acordes.
+- 2026-10-29 23:00: Validación: `flutter analyze` limpio y `flutter test` 79/79 OK. No hay aplicación Flutter activa para ejecutar hot reload mediante DTD.
+- 2026-10-29 23:07: Corrección adicional: el campo de importación ahora usa fuente monoespaciada para mostrar visualmente las columnas originales de los acordes.
+- 2026-10-29 23:07: Prueba añadida para verificar la fuente monoespaciada del campo de acordes.
+- 2026-10-29 23:10: Corrección: el parser ya no descarta tokens de puntuación independientes, como `.`, dentro de líneas de acordes; se conservan sus posiciones y espacios originales.
+- 2026-10-29 23:10: Se añadió prueba de regresión para conservar puntuación y columnas al importar y reconstruir acordes.
+- 2026-10-29 23:12: Corrección adicional: el parser reconoce puntuación pegada a acordes, como `.A` y `E.`, sin perder las columnas de los acordes restantes al quitarla.
+- 2026-10-29 23:12: Se añadió prueba de regresión para comparar la serialización con y sin puntuación.
+- 2026-10-29 23:17: Corrección de flujo: mientras el usuario solo pega o edita texto, el guardado usa el texto actual como fuente principal; el modelo táctil solo se usa después de mover, agregar, editar o borrar acordes.
+- 2026-10-29 23:17: Se añadió prueba widget que guarda `A.          F#m` conservando exactamente sus columnas.
+- 2026-10-29 23:20: Verificación adicional: el flujo widget guarda también `A          F#m` sin puntuación y conserva sus columnas; la suite enfocada pasó 12/12.
+- 2026-10-29 23:20: Se generó una compilación iOS nueva correctamente, pero `flutter install` no pudo instalarla porque fue compilada con `--no-codesign`; el dispositivo requiere ejecutar desde Xcode o `flutter run` con firma configurada.
+- 2026-10-29 23:21: `flutter run` compiló con firma automática del equipo `2ZGB4TYW84` y llegó a instalar/lanzar en el iPhone; Flutter no detectó el VM Service después de 60 segundos, por lo que no fue posible ejecutar hot reload ni verificación remota.
+- 2026-10-29 23:36: Mejora visual: el editor táctil ya no aparece abierto por defecto; queda plegado en “Editar acordes” y conserva sus funciones al expandirlo.
+- 2026-10-29 23:39: Cambio de interfaz: se eliminó por completo la sección “Acordes sobre la letra”; la edición queda concentrada en el campo “Letra y acordes (importar)”, que conserva posiciones y espacios al guardar.
