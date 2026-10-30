@@ -6,5 +6,6 @@
 - 2026-10-30 00:35: Agregados métodos de repositorio para crear, listar y actualizar arreglos sin modificar la canción original.
 - 2026-10-30 00:35: El detalle permite crear un arreglo como copia, elegir entre arreglos y versión original, y editar el arreglo seleccionado.
 - 2026-10-30 00:35: Añadida prueba de repositorio que edita un arreglo y confirma que el original conserva sus acordes.
+- 2026-10-30 00:40: Corrección de alcance: el botón de copia ahora usa el arreglo seleccionado como punto de partida; si no hay uno seleccionado, copia el original.
 - 2026-10-30 00:26: Estado: Por hacer -> Listo para prueba de Luis
 - 2026-10-30 00:26: Arreglos separados persistidos con Drift; se pueden crear como copia, seleccionar, editar y volver a la versión original. flutter analyze y flutter test: 91 pruebas OK.

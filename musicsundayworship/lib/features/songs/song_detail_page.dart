@@ -79,7 +79,7 @@ class _SongDetailPageState extends ConsumerState<SongDetailPage> {
         IconButton(
           key: const Key('new-arrangement'),
           tooltip: 'Crear arreglo',
-          onPressed: _createArrangement,
+          onPressed: () => _createArrangement(_selectedArrangement),
           icon: const Icon(Icons.copy),
         ),
       ],
@@ -217,7 +217,7 @@ class _SongDetailPageState extends ConsumerState<SongDetailPage> {
     ),
   );
 
-  Future<void> _createArrangement() async {
+  Future<void> _createArrangement(SongArrangement? source) async {
     final id = widget.song.id;
     if (id == null) return;
     final saved = await Navigator.of(context).push<SongArrangement>(
@@ -225,7 +225,7 @@ class _SongDetailPageState extends ConsumerState<SongDetailPage> {
         builder: (_) => ArrangementEditorPage(
           songId: id,
           initialName: 'Arreglo ${_arrangements.length + 1}',
-          sections: widget.song.sections,
+          sections: source?.sections ?? widget.song.sections,
         ),
       ),
     );
