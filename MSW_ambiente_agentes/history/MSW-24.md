@@ -26,3 +26,5 @@
 - 2026-10-29 23:12: Se añadió prueba de regresión para comparar la serialización con y sin puntuación.
 - 2026-10-29 23:17: Corrección de flujo: mientras el usuario solo pega o edita texto, el guardado usa el texto actual como fuente principal; el modelo táctil solo se usa después de mover, agregar, editar o borrar acordes.
 - 2026-10-29 23:17: Se añadió prueba widget que guarda `A.          F#m` conservando exactamente sus columnas.
+- 2026-10-29 23:20: Verificación adicional: el flujo widget guarda también `A          F#m` sin puntuación y conserva sus columnas; la suite enfocada pasó 12/12.
+- 2026-10-29 23:20: Se generó una compilación iOS nueva correctamente, pero `flutter install` no pudo instalarla porque fue compilada con `--no-codesign`; el dispositivo requiere ejecutar desde Xcode o `flutter run` con firma configurada.
