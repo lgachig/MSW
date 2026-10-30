@@ -59,6 +59,15 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, Song> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _labelMeta = const VerificationMeta('label');
+  @override
+  late final GeneratedColumn<String> label = GeneratedColumn<String>(
+    'label',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _tempoMeta = const VerificationMeta('tempo');
   @override
   late final GeneratedColumn<int> tempo = GeneratedColumn<int>(
@@ -86,6 +95,7 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, Song> {
     author,
     source,
     originalKey,
+    label,
     tempo,
     timeSignature,
   ];
@@ -133,6 +143,12 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, Song> {
         ),
       );
     }
+    if (data.containsKey('label')) {
+      context.handle(
+        _labelMeta,
+        label.isAcceptableOrUnknown(data['label']!, _labelMeta),
+      );
+    }
     if (data.containsKey('tempo')) {
       context.handle(
         _tempoMeta,
@@ -177,6 +193,10 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, Song> {
         DriftSqlType.string,
         data['${effectivePrefix}original_key'],
       ),
+      label: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}label'],
+      ),
       tempo: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}tempo'],
@@ -200,6 +220,7 @@ class Song extends DataClass implements Insertable<Song> {
   final String? author;
   final String? source;
   final String? originalKey;
+  final String? label;
   final int? tempo;
   final String? timeSignature;
   const Song({
@@ -208,6 +229,7 @@ class Song extends DataClass implements Insertable<Song> {
     this.author,
     this.source,
     this.originalKey,
+    this.label,
     this.tempo,
     this.timeSignature,
   });
@@ -224,6 +246,9 @@ class Song extends DataClass implements Insertable<Song> {
     }
     if (!nullToAbsent || originalKey != null) {
       map['original_key'] = Variable<String>(originalKey);
+    }
+    if (!nullToAbsent || label != null) {
+      map['label'] = Variable<String>(label);
     }
     if (!nullToAbsent || tempo != null) {
       map['tempo'] = Variable<int>(tempo);
@@ -247,6 +272,9 @@ class Song extends DataClass implements Insertable<Song> {
       originalKey: originalKey == null && nullToAbsent
           ? const Value.absent()
           : Value(originalKey),
+      label: label == null && nullToAbsent
+          ? const Value.absent()
+          : Value(label),
       tempo: tempo == null && nullToAbsent
           ? const Value.absent()
           : Value(tempo),
@@ -267,6 +295,7 @@ class Song extends DataClass implements Insertable<Song> {
       author: serializer.fromJson<String?>(json['author']),
       source: serializer.fromJson<String?>(json['source']),
       originalKey: serializer.fromJson<String?>(json['originalKey']),
+      label: serializer.fromJson<String?>(json['label']),
       tempo: serializer.fromJson<int?>(json['tempo']),
       timeSignature: serializer.fromJson<String?>(json['timeSignature']),
     );
@@ -280,6 +309,7 @@ class Song extends DataClass implements Insertable<Song> {
       'author': serializer.toJson<String?>(author),
       'source': serializer.toJson<String?>(source),
       'originalKey': serializer.toJson<String?>(originalKey),
+      'label': serializer.toJson<String?>(label),
       'tempo': serializer.toJson<int?>(tempo),
       'timeSignature': serializer.toJson<String?>(timeSignature),
     };
@@ -291,6 +321,7 @@ class Song extends DataClass implements Insertable<Song> {
     Value<String?> author = const Value.absent(),
     Value<String?> source = const Value.absent(),
     Value<String?> originalKey = const Value.absent(),
+    Value<String?> label = const Value.absent(),
     Value<int?> tempo = const Value.absent(),
     Value<String?> timeSignature = const Value.absent(),
   }) => Song(
@@ -299,6 +330,7 @@ class Song extends DataClass implements Insertable<Song> {
     author: author.present ? author.value : this.author,
     source: source.present ? source.value : this.source,
     originalKey: originalKey.present ? originalKey.value : this.originalKey,
+    label: label.present ? label.value : this.label,
     tempo: tempo.present ? tempo.value : this.tempo,
     timeSignature: timeSignature.present
         ? timeSignature.value
@@ -313,6 +345,7 @@ class Song extends DataClass implements Insertable<Song> {
       originalKey: data.originalKey.present
           ? data.originalKey.value
           : this.originalKey,
+      label: data.label.present ? data.label.value : this.label,
       tempo: data.tempo.present ? data.tempo.value : this.tempo,
       timeSignature: data.timeSignature.present
           ? data.timeSignature.value
@@ -328,6 +361,7 @@ class Song extends DataClass implements Insertable<Song> {
           ..write('author: $author, ')
           ..write('source: $source, ')
           ..write('originalKey: $originalKey, ')
+          ..write('label: $label, ')
           ..write('tempo: $tempo, ')
           ..write('timeSignature: $timeSignature')
           ..write(')'))
@@ -335,8 +369,16 @@ class Song extends DataClass implements Insertable<Song> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, title, author, source, originalKey, tempo, timeSignature);
+  int get hashCode => Object.hash(
+    id,
+    title,
+    author,
+    source,
+    originalKey,
+    label,
+    tempo,
+    timeSignature,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -346,6 +388,7 @@ class Song extends DataClass implements Insertable<Song> {
           other.author == this.author &&
           other.source == this.source &&
           other.originalKey == this.originalKey &&
+          other.label == this.label &&
           other.tempo == this.tempo &&
           other.timeSignature == this.timeSignature);
 }
@@ -356,6 +399,7 @@ class SongsCompanion extends UpdateCompanion<Song> {
   final Value<String?> author;
   final Value<String?> source;
   final Value<String?> originalKey;
+  final Value<String?> label;
   final Value<int?> tempo;
   final Value<String?> timeSignature;
   const SongsCompanion({
@@ -364,6 +408,7 @@ class SongsCompanion extends UpdateCompanion<Song> {
     this.author = const Value.absent(),
     this.source = const Value.absent(),
     this.originalKey = const Value.absent(),
+    this.label = const Value.absent(),
     this.tempo = const Value.absent(),
     this.timeSignature = const Value.absent(),
   });
@@ -373,6 +418,7 @@ class SongsCompanion extends UpdateCompanion<Song> {
     this.author = const Value.absent(),
     this.source = const Value.absent(),
     this.originalKey = const Value.absent(),
+    this.label = const Value.absent(),
     this.tempo = const Value.absent(),
     this.timeSignature = const Value.absent(),
   }) : title = Value(title);
@@ -382,6 +428,7 @@ class SongsCompanion extends UpdateCompanion<Song> {
     Expression<String>? author,
     Expression<String>? source,
     Expression<String>? originalKey,
+    Expression<String>? label,
     Expression<int>? tempo,
     Expression<String>? timeSignature,
   }) {
@@ -391,6 +438,7 @@ class SongsCompanion extends UpdateCompanion<Song> {
       if (author != null) 'author': author,
       if (source != null) 'source': source,
       if (originalKey != null) 'original_key': originalKey,
+      if (label != null) 'label': label,
       if (tempo != null) 'tempo': tempo,
       if (timeSignature != null) 'time_signature': timeSignature,
     });
@@ -402,6 +450,7 @@ class SongsCompanion extends UpdateCompanion<Song> {
     Value<String?>? author,
     Value<String?>? source,
     Value<String?>? originalKey,
+    Value<String?>? label,
     Value<int?>? tempo,
     Value<String?>? timeSignature,
   }) {
@@ -411,6 +460,7 @@ class SongsCompanion extends UpdateCompanion<Song> {
       author: author ?? this.author,
       source: source ?? this.source,
       originalKey: originalKey ?? this.originalKey,
+      label: label ?? this.label,
       tempo: tempo ?? this.tempo,
       timeSignature: timeSignature ?? this.timeSignature,
     );
@@ -434,6 +484,9 @@ class SongsCompanion extends UpdateCompanion<Song> {
     if (originalKey.present) {
       map['original_key'] = Variable<String>(originalKey.value);
     }
+    if (label.present) {
+      map['label'] = Variable<String>(label.value);
+    }
     if (tempo.present) {
       map['tempo'] = Variable<int>(tempo.value);
     }
@@ -451,6 +504,7 @@ class SongsCompanion extends UpdateCompanion<Song> {
           ..write('author: $author, ')
           ..write('source: $source, ')
           ..write('originalKey: $originalKey, ')
+          ..write('label: $label, ')
           ..write('tempo: $tempo, ')
           ..write('timeSignature: $timeSignature')
           ..write(')'))
@@ -1400,6 +1454,7 @@ typedef $$SongsTableCreateCompanionBuilder = SongsCompanion Function({
   Value<String?> author,
   Value<String?> source,
   Value<String?> originalKey,
+  Value<String?> label,
   Value<int?> tempo,
   Value<String?> timeSignature,
 });
@@ -1409,6 +1464,7 @@ typedef $$SongsTableUpdateCompanionBuilder = SongsCompanion Function({
   Value<String?> author,
   Value<String?> source,
   Value<String?> originalKey,
+  Value<String?> label,
   Value<int?> tempo,
   Value<String?> timeSignature,
 });
@@ -1467,6 +1523,11 @@ class $$SongsTableFilterComposer extends Composer<_$AppDatabase, $SongsTable> {
 
   ColumnFilters<String> get originalKey => $composableBuilder(
     column: $table.originalKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get label => $composableBuilder(
+    column: $table.label,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1540,6 +1601,11 @@ class $$SongsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get label => $composableBuilder(
+    column: $table.label,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<int> get tempo => $composableBuilder(
     column: $table.tempo,
     builder: (column) => ColumnOrderings(column),
@@ -1576,6 +1642,9 @@ class $$SongsTableAnnotationComposer
     column: $table.originalKey,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get label =>
+      $composableBuilder(column: $table.label, builder: (column) => column);
 
   GeneratedColumn<int> get tempo =>
       $composableBuilder(column: $table.tempo, builder: (column) => column);
@@ -1644,6 +1713,7 @@ class $$SongsTableTableManager
                 Value<String?> author = const Value.absent(),
                 Value<String?> source = const Value.absent(),
                 Value<String?> originalKey = const Value.absent(),
+                Value<String?> label = const Value.absent(),
                 Value<int?> tempo = const Value.absent(),
                 Value<String?> timeSignature = const Value.absent(),
               }) => SongsCompanion(
@@ -1652,6 +1722,7 @@ class $$SongsTableTableManager
                 author: author,
                 source: source,
                 originalKey: originalKey,
+                label: label,
                 tempo: tempo,
                 timeSignature: timeSignature,
               ),
@@ -1662,6 +1733,7 @@ class $$SongsTableTableManager
                 Value<String?> author = const Value.absent(),
                 Value<String?> source = const Value.absent(),
                 Value<String?> originalKey = const Value.absent(),
+                Value<String?> label = const Value.absent(),
                 Value<int?> tempo = const Value.absent(),
                 Value<String?> timeSignature = const Value.absent(),
               }) => SongsCompanion.insert(
@@ -1670,6 +1742,7 @@ class $$SongsTableTableManager
                 author: author,
                 source: source,
                 originalKey: originalKey,
+                label: label,
                 tempo: tempo,
                 timeSignature: timeSignature,
               ),

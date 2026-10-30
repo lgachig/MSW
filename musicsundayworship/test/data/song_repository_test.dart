@@ -38,6 +38,14 @@ void main() {
     expect(loaded?.sections.single.lines.single.chords.single.chord, 'G');
   });
 
+  test('watchAll emits the initial library state', () async {
+    expect(await repository.watchAll().first, isEmpty);
+
+    await repository.create(const SongDocument(title: 'Nueva canción'));
+
+    expect((await repository.watchAll().first).single.title, 'Nueva canción');
+  });
+
   test('updates content and metadata as one document', () async {
     final created = await repository.create(
       const SongDocument(title: 'Borrador'),

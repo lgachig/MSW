@@ -11,6 +11,7 @@ class SongDocument {
     this.author,
     this.source,
     this.originalKey,
+    this.label,
     this.tempo,
     this.timeSignature,
     this.sections = const [],
@@ -21,6 +22,7 @@ class SongDocument {
   final String? author;
   final String? source;
   final String? originalKey;
+  final String? label;
   final int? tempo;
   final String? timeSignature;
   final List<SongSection> sections;
@@ -31,6 +33,7 @@ class SongDocument {
     author: author,
     source: source,
     originalKey: originalKey,
+    label: label,
     tempo: tempo,
     timeSignature: timeSignature,
     sections: sections ?? this.sections,
@@ -93,6 +96,7 @@ class DriftSongRepository implements SongRepository {
               author: Value(song.author),
               source: Value(song.source),
               originalKey: Value(song.originalKey),
+              label: Value(song.label),
               tempo: Value(song.tempo),
               timeSignature: Value(song.timeSignature),
             ),
@@ -148,6 +152,7 @@ class DriftSongRepository implements SongRepository {
           author: Value(song.author),
           source: Value(song.source),
           originalKey: Value(song.originalKey),
+          label: Value(song.label),
           tempo: Value(song.tempo),
           timeSignature: Value(song.timeSignature),
         ),
@@ -276,6 +281,7 @@ class DriftSongRepository implements SongRepository {
       author: song.author,
       source: song.source,
       originalKey: song.originalKey,
+      label: song.label,
       tempo: song.tempo,
       timeSignature: song.timeSignature,
       sections: List.unmodifiable(result),
