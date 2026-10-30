@@ -1,0 +1,11 @@
+{
+  "source": "Screenshot 2026-10-28 at 10.27.24 PM.png",
+  "title": "Grita, canta, danza",
+  "author": "Ministerio Restauración",
+  "key": "Cm",
+  "lines": [
+    {"text": "Grita, canta, danza alegremente en su presencia", "chords": [{"name": "Cm", "position": 0}, {"name": "Ab", "position": 45}]},
+    {"text": "Gira, salta dando vueltas para Cristo", "chords": [{"name": "Bb", "position": 34}]},
+    {"text": "Él vive y vive para siempre es el Rey", "chords": [{"name": "G7", "position": 6}, {"name": "Cm", "position": 28}, {"name": "G7", "position": 33}]}
+  ]
+}

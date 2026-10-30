@@ -1,0 +1,11 @@
+{
+  "source": "Screenshot 2026-10-28 at 10.30.33 PM.png",
+  "title": "Vamos a cantar",
+  "author": "Chris Tomlin",
+  "key": "D#",
+  "lines": [
+    {"text": "//Vamos a cantar con la música del cielo", "chords": [{"name": "D#", "position": 0}]},
+    {"text": "Vamos a cantar alegres porque escuchas", "chords": [{"name": "Cm", "position": 10}]},
+    {"text": "Cuando cantamos para exaltar tu nombre //", "chords": [{"name": "Bb", "position": 8}, {"name": "G#", "position": 21}, {"name": "D#", "position": 36}]}
+  ]
+}

@@ -98,7 +98,7 @@ Conjunto de pruebas variado para medir el OCR más adelante (meta 10 a 15, ampli
 - Confirmar que cada foto se lee bien y que no falta ninguna que uses en el servicio.
 
 *Definición de terminado*
-flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.","","MSW-1","Medium","fase-0","msw","2","S1","En curso"
+flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.","","MSW-1","Medium","fase-0","msw","2","S1","Hecho"
 "MSW-12","Task","Aprobar decisiones técnicas","*Objetivo*
 Dejar por escrito las decisiones técnicas del proyecto.
 
@@ -468,7 +468,7 @@ Tener la respuesta esperada de cada foto para medir la precisión.
 flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
 
 *Depende de*
-MSW-11","","MSW-4","High","fase-3","msw","3","S4","Por hacer"
+MSW-11","","MSW-4","High","fase-3","msw","3","S4","Listo para prueba de Luis"
 "MSW-28","Story","Captura con cámara o galería y recorte guiado","*Objetivo*
 Tomar o elegir una foto y recortarla bien.
 
