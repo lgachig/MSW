@@ -28,3 +28,4 @@
 - 2026-10-29 23:17: Se añadió prueba widget que guarda `A.          F#m` conservando exactamente sus columnas.
 - 2026-10-29 23:20: Verificación adicional: el flujo widget guarda también `A          F#m` sin puntuación y conserva sus columnas; la suite enfocada pasó 12/12.
 - 2026-10-29 23:20: Se generó una compilación iOS nueva correctamente, pero `flutter install` no pudo instalarla porque fue compilada con `--no-codesign`; el dispositivo requiere ejecutar desde Xcode o `flutter run` con firma configurada.
+- 2026-10-29 23:21: `flutter run` compiló con firma automática del equipo `2ZGB4TYW84` y llegó a instalar/lanzar en el iPhone; Flutter no detectó el VM Service después de 60 segundos, por lo que no fue posible ejecutar hot reload ni verificación remota.
