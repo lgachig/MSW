@@ -66,11 +66,9 @@ class _LibraryPageState extends ConsumerState<LibraryPage> {
       ),
       body: StreamBuilder<List<SongDocument>>(
         stream: songs,
+        initialData: const [],
         builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          final allSongs = snapshot.data!;
+          final allSongs = snapshot.data ?? const <SongDocument>[];
           final visible = _visible(allSongs);
           final keys =
               allSongs

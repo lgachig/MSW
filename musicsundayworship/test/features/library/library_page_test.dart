@@ -66,6 +66,21 @@ void main() {
     expect(pressed, isTrue);
   });
 
+  testWidgets('shows empty state before the repository stream emits', (
+    tester,
+  ) async {
+    final repository = _NeverEmitsSongRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [songRepositoryProvider.overrideWithValue(repository)],
+        child: const MaterialApp(home: LibraryPage()),
+      ),
+    );
+
+    expect(find.text('Tu biblioteca está vacía'), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+  });
+
   testWidgets('filters by key and sorts by title', (tester) async {
     await tester.pumpWidget(
       _app([
@@ -90,4 +105,11 @@ void main() {
     expect(find.text('Alfa'), findsOneWidget);
     expect(find.text('Zeta'), findsNothing);
   });
+}
+
+class _NeverEmitsSongRepository extends _FakeSongRepository {
+  _NeverEmitsSongRepository() : super([]);
+
+  @override
+  Stream<List<SongDocument>> watchAll() => const Stream.empty();
 }
