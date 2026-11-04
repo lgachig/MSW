@@ -1,74 +1,97 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
 
-import '../../data/song_repository.dart';
-
-class SongPhotoPage extends ConsumerStatefulWidget {
+class SongPhotoPage extends StatefulWidget {
   const SongPhotoPage({
     super.key,
-    required this.songId,
     required this.songTitle,
-    this.currentPath,
+    this.songId,
+    this.onImageCropped,
   });
 
-  final int songId;
+  final int? songId;
   final String songTitle;
-  final String? currentPath;
+  final ValueChanged<String>? onImageCropped;
 
   @override
-  ConsumerState<SongPhotoPage> createState() => _SongPhotoPageState();
+  State<SongPhotoPage> createState() => _SongPhotoPageState();
 }
 
-class _SongPhotoPageState extends ConsumerState<SongPhotoPage> {
+class _SongPhotoPageState extends State<SongPhotoPage> {
   final _picker = ImagePicker();
-  String? _path;
-  bool _saving = false;
+  String? _croppedPath;
+  bool _loading = false;
   String? _error;
 
   @override
-  void initState() {
-    super.initState();
-    _path = widget.currentPath;
-  }
-
-  @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Foto de la canción')),
+    appBar: AppBar(title: const Text('Capturar y recortar')),
     body: ListView(
       padding: const EdgeInsets.all(16),
       children: [
         Text(widget.songTitle, style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 16),
-        if (_path != null)
-          Image.file(
-            File(_path!),
-            key: const Key('song-photo-preview'),
-            fit: BoxFit.contain,
-            height: 360,
-            errorBuilder: (_, _, _) => const Text('No se pudo mostrar la foto'),
-          )
-        else
-          const Card(
-            child: Padding(
-              padding: EdgeInsets.all(24),
-              child: Text('Todavía no hay una foto guardada.'),
+        const SizedBox(height: 12),
+        const Card(
+          child: Padding(
+            padding: EdgeInsets.all(14),
+            child: Text(
+              'Toma una foto o elígela de la galería y recorta la sección con letra y acordes. '
+              'La imagen se utilizará para extraer el contenido mediante OCR.',
             ),
           ),
+        ),
         const SizedBox(height: 16),
+        if (_croppedPath != null && File(_croppedPath!).existsSync()) ...[
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.file(
+              File(_croppedPath!),
+              key: const Key('song-photo-preview'),
+              fit: BoxFit.contain,
+              height: 320,
+              errorBuilder: (_, _, _) => const SizedBox.shrink(),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.green.shade50,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.green.shade200),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.green.shade700),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Foto recortada con éxito y lista para digitalizar con OCR.',
+                    style: TextStyle(
+                      color: Colors.green.shade900,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
         FilledButton.icon(
           key: const Key('pick-from-gallery'),
-          onPressed: _saving ? null : () => _select(ImageSource.gallery),
+          onPressed: _loading ? null : () => _select(ImageSource.gallery),
           icon: const Icon(Icons.photo_library),
           label: const Text('Elegir de galería'),
         ),
+        const SizedBox(height: 8),
         FilledButton.icon(
           key: const Key('take-photo'),
-          onPressed: _saving ? null : () => _select(ImageSource.camera),
+          onPressed: _loading ? null : () => _select(ImageSource.camera),
           icon: const Icon(Icons.camera_alt),
           label: const Text('Tomar foto'),
         ),
@@ -85,10 +108,8 @@ class _SongPhotoPageState extends ConsumerState<SongPhotoPage> {
     setState(() => _error = null);
     try {
       final selected = await _picker.pickImage(source: source);
-      if (selected == null) {
-        _showPermissionHelp(source);
-        return;
-      }
+      if (selected == null) return;
+
       final cropped = await ImageCropper().cropImage(
         sourcePath: selected.path,
         uiSettings: [
@@ -100,34 +121,29 @@ class _SongPhotoPageState extends ConsumerState<SongPhotoPage> {
         ],
       );
       if (cropped == null) return;
-      await _save(cropped.path);
+
+      if (!mounted) return;
+      setState(() {
+        _croppedPath = cropped.path;
+        _loading = false;
+      });
+
+      widget.onImageCropped?.call(cropped.path);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Foto recortada correctamente')),
+      );
+    } on PlatformException catch (e) {
+      if (e.code.toLowerCase().contains('denied') ||
+          e.code.toLowerCase().contains('permission')) {
+        _showPermissionHelp(source);
+      } else {
+        _setError('No se pudo abrir la cámara o fotos: ${e.message}');
+      }
     } on UnimplementedError {
       _setError('La captura de fotos está disponible en iOS y Android.');
     } on Exception catch (error) {
       _setError('No se pudo obtener la foto: $error');
-    }
-  }
-
-  Future<void> _save(String sourcePath) async {
-    setState(() => _saving = true);
-    try {
-      final directory = await getApplicationDocumentsDirectory();
-      final photos = Directory('${directory.path}/song_photos');
-      await photos.create(recursive: true);
-      final destination = File('${photos.path}/song_${widget.songId}.jpg');
-      await File(sourcePath).copy(destination.path);
-      await ref
-          .read(songRepositoryProvider)
-          .updatePhotoPath(widget.songId, destination.path);
-      if (!mounted) return;
-      setState(() {
-        _path = destination.path;
-        _saving = false;
-      });
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Foto guardada')));
-    } on Exception catch (error) {
-      _setError('No se pudo guardar la foto: $error');
     }
   }
 
@@ -142,7 +158,7 @@ class _SongPhotoPageState extends ConsumerState<SongPhotoPage> {
   void _setError(String message) {
     if (!mounted) return;
     setState(() {
-      _saving = false;
+      _loading = false;
       _error = message;
     });
   }
