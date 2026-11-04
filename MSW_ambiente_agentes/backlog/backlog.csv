@@ -468,7 +468,7 @@ Tener la respuesta esperada de cada foto para medir la precisión.
 flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
 
 *Depende de*
-MSW-11","","MSW-4","High","fase-3","msw","3","S4","Listo para prueba de Luis"
+MSW-11","","MSW-4","High","fase-3","msw","3","S4","Hecho"
 "MSW-28","Story","Captura con cámara o galería y recorte guiado","*Objetivo*
 Tomar o elegir una foto y recortarla bien.
 
@@ -491,7 +491,7 @@ Tomar o elegir una foto y recortarla bien.
 flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
 
 *Depende de*
-MSW-21","","MSW-4","High","fase-3","msw","5","S4","Listo para prueba de Luis"
+MSW-21","","MSW-4","High","fase-3","msw","5","S4","Hecho"
 "MSW-29","Story","OCR en el dispositivo","*Objetivo*
 Extraer texto con su posición usando ML Kit o Vision.
 
