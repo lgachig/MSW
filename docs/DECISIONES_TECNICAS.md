@@ -14,10 +14,10 @@
 | Calidad de código | `flutter_lints` activado. `flutter analyze` sin errores antes de pasar de `develop` a `qa`. | Mantener el código consistente. |
 | Ramas | `develop` (trabajo diario), `qa` (pruebas), `feature/nombre` (ramas cortas). Sin `main` por ahora. | Flujo simple para un proyecto individual. |
 | Commits | Mensajes cortos y claros, por ejemplo "Agrega transposición por semitonos". | Historial legible. |
+| OCR en dispositivo | Google ML Kit (`google_mlkit_text_recognition`) en alfabeto latino | Funciona 100% offline en el dispositivo, es multiplataforma para iOS y Android (manteniendo una sola base de código) y provee coordenadas exactas (boundingBox) por bloque, línea y palabra para clasificar acordes y letra. |
 
 ## Pendiente de decidir más adelante
 
 - Paquete de audio para el metrónomo de baja latencia (Fase 4).
-- Servicio de OCR en el dispositivo: ML Kit o Vision (Fase 3).
 - Proveedor del modelo multimodal y backend ligero para los agentes (Fase 3).
 - Flavors de Flutter para tener QA y producción instaladas a la vez (Fase 6).

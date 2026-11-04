@@ -161,9 +161,18 @@ class _ChordToken {
 }
 
 class SongEditorPage extends ConsumerStatefulWidget {
-  const SongEditorPage({super.key, this.songId});
+  const SongEditorPage({
+    super.key,
+    this.songId,
+    this.initialTitle,
+    this.initialKey,
+    this.initialLyrics,
+  });
 
   final int? songId;
+  final String? initialTitle;
+  final String? initialKey;
+  final String? initialLyrics;
 
   @override
   ConsumerState<SongEditorPage> createState() => _SongEditorPageState();
@@ -188,6 +197,9 @@ class _SongEditorPageState extends ConsumerState<SongEditorPage> {
   @override
   void initState() {
     super.initState();
+    if (widget.initialTitle != null) _title.text = widget.initialTitle!;
+    if (widget.initialKey != null) _key.text = widget.initialKey!;
+    if (widget.initialLyrics != null) _lyrics.text = widget.initialLyrics!;
     if (widget.songId != null) _load();
   }
 
