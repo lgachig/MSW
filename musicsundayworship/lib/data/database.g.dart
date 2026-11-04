@@ -88,6 +88,17 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, Song> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _photoPathMeta = const VerificationMeta(
+    'photoPath',
+  );
+  @override
+  late final GeneratedColumn<String> photoPath = GeneratedColumn<String>(
+    'photo_path',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -98,6 +109,7 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, Song> {
     label,
     tempo,
     timeSignature,
+    photoPath,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -164,6 +176,12 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, Song> {
         ),
       );
     }
+    if (data.containsKey('photo_path')) {
+      context.handle(
+        _photoPathMeta,
+        photoPath.isAcceptableOrUnknown(data['photo_path']!, _photoPathMeta),
+      );
+    }
     return context;
   }
 
@@ -205,6 +223,10 @@ class $SongsTable extends Songs with TableInfo<$SongsTable, Song> {
         DriftSqlType.string,
         data['${effectivePrefix}time_signature'],
       ),
+      photoPath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}photo_path'],
+      ),
     );
   }
 
@@ -223,6 +245,7 @@ class Song extends DataClass implements Insertable<Song> {
   final String? label;
   final int? tempo;
   final String? timeSignature;
+  final String? photoPath;
   const Song({
     required this.id,
     required this.title,
@@ -232,6 +255,7 @@ class Song extends DataClass implements Insertable<Song> {
     this.label,
     this.tempo,
     this.timeSignature,
+    this.photoPath,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -255,6 +279,9 @@ class Song extends DataClass implements Insertable<Song> {
     }
     if (!nullToAbsent || timeSignature != null) {
       map['time_signature'] = Variable<String>(timeSignature);
+    }
+    if (!nullToAbsent || photoPath != null) {
+      map['photo_path'] = Variable<String>(photoPath);
     }
     return map;
   }
@@ -281,6 +308,9 @@ class Song extends DataClass implements Insertable<Song> {
       timeSignature: timeSignature == null && nullToAbsent
           ? const Value.absent()
           : Value(timeSignature),
+      photoPath: photoPath == null && nullToAbsent
+          ? const Value.absent()
+          : Value(photoPath),
     );
   }
 
@@ -298,6 +328,7 @@ class Song extends DataClass implements Insertable<Song> {
       label: serializer.fromJson<String?>(json['label']),
       tempo: serializer.fromJson<int?>(json['tempo']),
       timeSignature: serializer.fromJson<String?>(json['timeSignature']),
+      photoPath: serializer.fromJson<String?>(json['photoPath']),
     );
   }
   @override
@@ -312,6 +343,7 @@ class Song extends DataClass implements Insertable<Song> {
       'label': serializer.toJson<String?>(label),
       'tempo': serializer.toJson<int?>(tempo),
       'timeSignature': serializer.toJson<String?>(timeSignature),
+      'photoPath': serializer.toJson<String?>(photoPath),
     };
   }
 
@@ -324,6 +356,7 @@ class Song extends DataClass implements Insertable<Song> {
     Value<String?> label = const Value.absent(),
     Value<int?> tempo = const Value.absent(),
     Value<String?> timeSignature = const Value.absent(),
+    Value<String?> photoPath = const Value.absent(),
   }) => Song(
     id: id ?? this.id,
     title: title ?? this.title,
@@ -335,6 +368,7 @@ class Song extends DataClass implements Insertable<Song> {
     timeSignature: timeSignature.present
         ? timeSignature.value
         : this.timeSignature,
+    photoPath: photoPath.present ? photoPath.value : this.photoPath,
   );
   Song copyWithCompanion(SongsCompanion data) {
     return Song(
@@ -350,6 +384,7 @@ class Song extends DataClass implements Insertable<Song> {
       timeSignature: data.timeSignature.present
           ? data.timeSignature.value
           : this.timeSignature,
+      photoPath: data.photoPath.present ? data.photoPath.value : this.photoPath,
     );
   }
 
@@ -363,7 +398,8 @@ class Song extends DataClass implements Insertable<Song> {
           ..write('originalKey: $originalKey, ')
           ..write('label: $label, ')
           ..write('tempo: $tempo, ')
-          ..write('timeSignature: $timeSignature')
+          ..write('timeSignature: $timeSignature, ')
+          ..write('photoPath: $photoPath')
           ..write(')'))
         .toString();
   }
@@ -378,6 +414,7 @@ class Song extends DataClass implements Insertable<Song> {
     label,
     tempo,
     timeSignature,
+    photoPath,
   );
   @override
   bool operator ==(Object other) =>
@@ -390,7 +427,8 @@ class Song extends DataClass implements Insertable<Song> {
           other.originalKey == this.originalKey &&
           other.label == this.label &&
           other.tempo == this.tempo &&
-          other.timeSignature == this.timeSignature);
+          other.timeSignature == this.timeSignature &&
+          other.photoPath == this.photoPath);
 }
 
 class SongsCompanion extends UpdateCompanion<Song> {
@@ -402,6 +440,7 @@ class SongsCompanion extends UpdateCompanion<Song> {
   final Value<String?> label;
   final Value<int?> tempo;
   final Value<String?> timeSignature;
+  final Value<String?> photoPath;
   const SongsCompanion({
     this.id = const Value.absent(),
     this.title = const Value.absent(),
@@ -411,6 +450,7 @@ class SongsCompanion extends UpdateCompanion<Song> {
     this.label = const Value.absent(),
     this.tempo = const Value.absent(),
     this.timeSignature = const Value.absent(),
+    this.photoPath = const Value.absent(),
   });
   SongsCompanion.insert({
     this.id = const Value.absent(),
@@ -421,6 +461,7 @@ class SongsCompanion extends UpdateCompanion<Song> {
     this.label = const Value.absent(),
     this.tempo = const Value.absent(),
     this.timeSignature = const Value.absent(),
+    this.photoPath = const Value.absent(),
   }) : title = Value(title);
   static Insertable<Song> custom({
     Expression<int>? id,
@@ -431,6 +472,7 @@ class SongsCompanion extends UpdateCompanion<Song> {
     Expression<String>? label,
     Expression<int>? tempo,
     Expression<String>? timeSignature,
+    Expression<String>? photoPath,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -441,6 +483,7 @@ class SongsCompanion extends UpdateCompanion<Song> {
       if (label != null) 'label': label,
       if (tempo != null) 'tempo': tempo,
       if (timeSignature != null) 'time_signature': timeSignature,
+      if (photoPath != null) 'photo_path': photoPath,
     });
   }
 
@@ -453,6 +496,7 @@ class SongsCompanion extends UpdateCompanion<Song> {
     Value<String?>? label,
     Value<int?>? tempo,
     Value<String?>? timeSignature,
+    Value<String?>? photoPath,
   }) {
     return SongsCompanion(
       id: id ?? this.id,
@@ -463,6 +507,7 @@ class SongsCompanion extends UpdateCompanion<Song> {
       label: label ?? this.label,
       tempo: tempo ?? this.tempo,
       timeSignature: timeSignature ?? this.timeSignature,
+      photoPath: photoPath ?? this.photoPath,
     );
   }
 
@@ -493,6 +538,9 @@ class SongsCompanion extends UpdateCompanion<Song> {
     if (timeSignature.present) {
       map['time_signature'] = Variable<String>(timeSignature.value);
     }
+    if (photoPath.present) {
+      map['photo_path'] = Variable<String>(photoPath.value);
+    }
     return map;
   }
 
@@ -506,7 +554,8 @@ class SongsCompanion extends UpdateCompanion<Song> {
           ..write('originalKey: $originalKey, ')
           ..write('label: $label, ')
           ..write('tempo: $tempo, ')
-          ..write('timeSignature: $timeSignature')
+          ..write('timeSignature: $timeSignature, ')
+          ..write('photoPath: $photoPath')
           ..write(')'))
         .toString();
   }
@@ -1761,6 +1810,7 @@ typedef $$SongsTableCreateCompanionBuilder = SongsCompanion Function({
   Value<String?> label,
   Value<int?> tempo,
   Value<String?> timeSignature,
+  Value<String?> photoPath,
 });
 typedef $$SongsTableUpdateCompanionBuilder = SongsCompanion Function({
   Value<int> id,
@@ -1771,6 +1821,7 @@ typedef $$SongsTableUpdateCompanionBuilder = SongsCompanion Function({
   Value<String?> label,
   Value<int?> tempo,
   Value<String?> timeSignature,
+  Value<String?> photoPath,
 });
 
 final class $$SongsTableReferences
@@ -1860,6 +1911,11 @@ class $$SongsTableFilterComposer extends Composer<_$AppDatabase, $SongsTable> {
 
   ColumnFilters<String> get timeSignature => $composableBuilder(
     column: $table.timeSignature,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get photoPath => $composableBuilder(
+    column: $table.photoPath,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1962,6 +2018,11 @@ class $$SongsTableOrderingComposer
     column: $table.timeSignature,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get photoPath => $composableBuilder(
+    column: $table.photoPath,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$SongsTableAnnotationComposer
@@ -2000,6 +2061,9 @@ class $$SongsTableAnnotationComposer
     column: $table.timeSignature,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get photoPath =>
+      $composableBuilder(column: $table.photoPath, builder: (column) => column);
 
   Expression<T> sectionsRefs<T extends Object>(
     Expression<T> Function($$SectionsTableAnnotationComposer a) f,
@@ -2088,6 +2152,7 @@ class $$SongsTableTableManager
                 Value<String?> label = const Value.absent(),
                 Value<int?> tempo = const Value.absent(),
                 Value<String?> timeSignature = const Value.absent(),
+                Value<String?> photoPath = const Value.absent(),
               }) => SongsCompanion(
                 id: id,
                 title: title,
@@ -2097,6 +2162,7 @@ class $$SongsTableTableManager
                 label: label,
                 tempo: tempo,
                 timeSignature: timeSignature,
+                photoPath: photoPath,
               ),
           createCompanionCallback:
               ({
@@ -2108,6 +2174,7 @@ class $$SongsTableTableManager
                 Value<String?> label = const Value.absent(),
                 Value<int?> tempo = const Value.absent(),
                 Value<String?> timeSignature = const Value.absent(),
+                Value<String?> photoPath = const Value.absent(),
               }) => SongsCompanion.insert(
                 id: id,
                 title: title,
@@ -2117,6 +2184,7 @@ class $$SongsTableTableManager
                 label: label,
                 tempo: tempo,
                 timeSignature: timeSignature,
+                photoPath: photoPath,
               ),
           withReferenceMapper: (p0) => p0
               .map(

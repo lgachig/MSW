@@ -15,6 +15,7 @@ class Songs extends Table {
   TextColumn get label => text().nullable()();
   IntColumn get tempo => integer().nullable()();
   TextColumn get timeSignature => text().nullable()();
+  TextColumn get photoPath => text().nullable()();
 }
 
 class Sections extends Table {
@@ -54,7 +55,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase({QueryExecutor? executor}) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -65,6 +66,9 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 3) {
         await m.createTable(arrangements);
+      }
+      if (from < 4) {
+        await m.addColumn(songs, songs.photoPath);
       }
     },
   );

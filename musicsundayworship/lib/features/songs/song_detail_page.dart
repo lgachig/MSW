@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/song_repository.dart';
 import '../../music_engine/music_engine.dart';
 import 'arrangement_editor_page.dart';
+import 'song_photo_page.dart';
 
 class SongDetailPage extends ConsumerStatefulWidget {
   const SongDetailPage({super.key, required this.song});
@@ -81,6 +82,12 @@ class _SongDetailPageState extends ConsumerState<SongDetailPage> {
           tooltip: 'Crear arreglo',
           onPressed: () => _createArrangement(_selectedArrangement),
           icon: const Icon(Icons.copy),
+        ),
+        IconButton(
+          key: const Key('song-photo'),
+          tooltip: 'Capturar foto para digitalizar',
+          onPressed: _editPhoto,
+          icon: const Icon(Icons.photo_camera),
         ),
       ],
     ),
@@ -234,6 +241,19 @@ class _SongDetailPageState extends ConsumerState<SongDetailPage> {
       _arrangements = [..._arrangements, saved];
       _selectedArrangement = saved;
     });
+  }
+
+  Future<void> _editPhoto() async {
+    final id = widget.song.id;
+    if (id == null) return;
+    await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (_) => SongPhotoPage(
+          songId: id,
+          songTitle: widget.song.title,
+        ),
+      ),
+    );
   }
 
   Future<void> _editArrangement(SongArrangement arrangement) async {
