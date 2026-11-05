@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/song_repository.dart';
 import '../../music_engine/music_engine.dart';
+import '../structure/song_structure_editor_page.dart';
 import 'arrangement_editor_page.dart';
 import 'song_photo_page.dart';
 
@@ -21,11 +22,14 @@ class _SongDetailPageState extends ConsumerState<SongDetailPage> {
   MusicKey? _targetKey;
   List<SongArrangement> _arrangements = const [];
   SongArrangement? _selectedArrangement;
+  List<SongStructure> _structures = const [];
+  SongStructure? _selectedStructure;
 
   @override
   void initState() {
     super.initState();
     _loadArrangements();
+    _loadStructures();
   }
 
   Future<void> _loadArrangements() async {
@@ -36,6 +40,26 @@ class _SongDetailPageState extends ConsumerState<SongDetailPage> {
         .readArrangements(id);
     if (!mounted) return;
     setState(() => _arrangements = arrangements);
+  }
+
+  Future<void> _loadStructures() async {
+    final id = widget.song.id;
+    if (id == null) return;
+    try {
+      final structures = await ref
+          .read(songRepositoryProvider)
+          .readStructures(id);
+      if (!mounted) return;
+      setState(() {
+        _structures = structures;
+        if (_selectedStructure == null && structures.isNotEmpty) {
+          _selectedStructure = structures.firstWhere(
+            (s) => s.isDefault,
+            orElse: () => structures.first,
+          );
+        }
+      });
+    } catch (_) {}
   }
 
   List<SongSection> get _sections =>
@@ -77,6 +101,12 @@ class _SongDetailPageState extends ConsumerState<SongDetailPage> {
     appBar: AppBar(
       title: Text(widget.song.title),
       actions: [
+        IconButton(
+          key: const Key('edit-structure'),
+          tooltip: 'Estructura y repeticiones',
+          onPressed: _openStructureEditor,
+          icon: const Icon(Icons.reorder),
+        ),
         IconButton(
           key: const Key('new-arrangement'),
           tooltip: 'Crear arreglo',
@@ -219,10 +249,105 @@ class _SongDetailPageState extends ConsumerState<SongDetailPage> {
             ),
           ),
         const SizedBox(height: 16),
+        if (_selectedStructure != null) ...[
+          Card(
+            key: const Key('song-structure-card'),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.reorder, size: 18),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _structures.length > 1
+                            ? DropdownButton<SongStructure>(
+                                isExpanded: true,
+                                value: _selectedStructure,
+                                underline: const SizedBox.shrink(),
+                                items: [
+                                  for (final s in _structures)
+                                    DropdownMenuItem(
+                                      value: s,
+                                      child: Text(
+                                        'Estructura: ${s.name}',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                                onChanged: (value) => setState(() {
+                                  _selectedStructure = value;
+                                }),
+                              )
+                            : Text(
+                                'Estructura: ${_selectedStructure!.name}',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                      ),
+                      IconButton(
+                        key: const Key('edit-current-structure'),
+                        tooltip: 'Editar estructura',
+                        iconSize: 18,
+                        onPressed: _openStructureEditor,
+                        icon: const Icon(Icons.edit),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
+                    children: [
+                      for (final item in _selectedStructure!.items)
+                        Chip(
+                          visualDensity: VisualDensity.compact,
+                          backgroundColor: SectionStyle.backgroundColor(item.type),
+                          side: BorderSide(color: SectionStyle.borderColor(item.type)),
+                          label: Text(
+                            item.repeatCount > 1
+                                ? '${item.name} (${item.repeatCount}x)'
+                                : item.name,
+                            style: TextStyle(
+                              color: SectionStyle.textColor(item.type),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
         ..._sections.expand((section) => section.lines.map(_buildLine)),
       ],
     ),
   );
+
+  Future<void> _openStructureEditor() async {
+    final saved = await Navigator.of(context).push<SongStructure>(
+      MaterialPageRoute(
+        builder: (_) => SongStructureEditorPage(
+          song: widget.song,
+          initialStructure: _selectedStructure,
+        ),
+      ),
+    );
+    if (!mounted || saved == null) return;
+    await _loadStructures();
+    setState(() {
+      _selectedStructure = saved;
+    });
+  }
 
   Future<void> _createArrangement(SongArrangement? source) async {
     final id = widget.song.id;
