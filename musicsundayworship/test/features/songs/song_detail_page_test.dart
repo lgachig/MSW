@@ -95,4 +95,16 @@ void main() {
 
     expect(find.text('Tono actual: Bm'), findsOneWidget);
   });
+
+  testWidgets('opens structure editor from action button', (tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(home: SongDetailPage(song: _song)),
+    );
+
+    expect(find.byKey(const Key('edit-structure')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('edit-structure')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Editor de estructura'), findsOneWidget);
+  });
 }
