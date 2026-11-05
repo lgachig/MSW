@@ -80,6 +80,29 @@ class _EditorHost extends StatelessWidget {
 }
 
 void main() {
+  testWidgets('shows the OCR title, detected key and extracted lyrics', (tester) async {
+    const extractedLyrics = 'G       C\nTu amor no cambia';
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          songRepositoryProvider.overrideWithValue(_FakeSongRepository()),
+        ],
+        child: const MaterialApp(
+          home: SongEditorPage(
+            initialTitle: 'Canción OCR',
+            initialKey: 'G',
+            initialLyrics: extractedLyrics,
+          ),
+        ),
+      ),
+    );
+
+    final fields = tester.widgetList<TextFormField>(find.byType(TextFormField));
+    expect(fields.elementAt(0).controller!.text, 'Canción OCR');
+    expect(fields.elementAt(3).controller!.text, 'G');
+    expect(fields.last.controller!.text, extractedLyrics);
+  });
+
   test('parses chord lines into placements above lyric lines', () {
     final sections = SongTextParser.parse('G       C\nTu amor no cambia');
 

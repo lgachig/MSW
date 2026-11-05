@@ -2,34 +2,43 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
-class SongPhotoPage extends StatefulWidget {
+import '../capture/device_ocr_service.dart';
+import '../capture/ocr_models.dart';
+import 'song_editor_page.dart';
+
+class SongPhotoPage extends ConsumerStatefulWidget {
   const SongPhotoPage({
     super.key,
     required this.songTitle,
     this.songId,
     this.onImageCropped,
+    this.onDocumentExtracted,
   });
 
   final int? songId;
   final String songTitle;
   final ValueChanged<String>? onImageCropped;
+  final ValueChanged<OcrDocument>? onDocumentExtracted;
 
   @override
-  State<SongPhotoPage> createState() => _SongPhotoPageState();
+  ConsumerState<SongPhotoPage> createState() => _SongPhotoPageState();
 }
 
-class _SongPhotoPageState extends State<SongPhotoPage> {
+class _SongPhotoPageState extends ConsumerState<SongPhotoPage> {
   final _picker = ImagePicker();
   String? _croppedPath;
   bool _loading = false;
+  bool _ocrProcessing = false;
   String? _error;
+  OcrDocument? _ocrDocument;
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Capturar y recortar')),
+    appBar: AppBar(title: const Text('Digitalizar desde foto')),
     body: ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -40,7 +49,7 @@ class _SongPhotoPageState extends State<SongPhotoPage> {
             padding: EdgeInsets.all(14),
             child: Text(
               'Toma una foto o elígela de la galería y recorta la sección con letra y acordes. '
-              'La imagen se utilizará para extraer el contenido mediante OCR.',
+              'El OCR en el dispositivo procesará la imagen sin conexión a internet.',
             ),
           ),
         ),
@@ -52,11 +61,34 @@ class _SongPhotoPageState extends State<SongPhotoPage> {
               File(_croppedPath!),
               key: const Key('song-photo-preview'),
               fit: BoxFit.contain,
-              height: 320,
+              height: 260,
               errorBuilder: (_, _, _) => const SizedBox.shrink(),
             ),
           ),
           const SizedBox(height: 12),
+          if (!_ocrProcessing && _ocrDocument == null)
+            FilledButton.icon(
+              key: const Key('digitize-ocr'),
+              onPressed: _loading ? null : _processOcr,
+              icon: const Icon(Icons.document_scanner),
+              label: const Text('Digitalizar con OCR (en el dispositivo)'),
+            ),
+          if (_ocrProcessing)
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Center(
+                child: Column(
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 12),
+                    Text('Extrayendo texto y acordes sin internet...'),
+                  ],
+                ),
+              ),
+            ),
+          const SizedBox(height: 12),
+        ],
+        if (_ocrDocument != null) ...[
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -64,18 +96,46 @@ class _SongPhotoPageState extends State<SongPhotoPage> {
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: Colors.green.shade200),
             ),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.check_circle, color: Colors.green.shade700),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Foto recortada con éxito y lista para digitalizar con OCR.',
-                    style: TextStyle(
-                      color: Colors.green.shade900,
-                      fontWeight: FontWeight.w500,
+                Row(
+                  children: [
+                    Icon(Icons.check_circle, color: Colors.green.shade700),
+                    const SizedBox(width: 8),
+                    Text(
+                      'OCR completado (${_ocrDocument!.lines.length} líneas detectadas)',
+                      style: TextStyle(
+                        color: Colors.green.shade900,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Líneas con acordes: ${_ocrDocument!.processedLines.where((l) => l.isChordLine).length}',
+                  style: TextStyle(color: Colors.green.shade900),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: Colors.grey.shade300),
                   ),
+                  child: Text(
+                    _ocrDocument!.toChordOverLyricText(),
+                    style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                FilledButton.icon(
+                  key: const Key('open-in-editor'),
+                  onPressed: _openInEditor,
+                  icon: const Icon(Icons.edit_note),
+                  label: const Text('Abrir en el editor de canción'),
                 ),
               ],
             ),
@@ -84,14 +144,14 @@ class _SongPhotoPageState extends State<SongPhotoPage> {
         ],
         FilledButton.icon(
           key: const Key('pick-from-gallery'),
-          onPressed: _loading ? null : () => _select(ImageSource.gallery),
+          onPressed: _loading || _ocrProcessing ? null : () => _select(ImageSource.gallery),
           icon: const Icon(Icons.photo_library),
           label: const Text('Elegir de galería'),
         ),
         const SizedBox(height: 8),
         FilledButton.icon(
           key: const Key('take-photo'),
-          onPressed: _loading ? null : () => _select(ImageSource.camera),
+          onPressed: _loading || _ocrProcessing ? null : () => _select(ImageSource.camera),
           icon: const Icon(Icons.camera_alt),
           label: const Text('Tomar foto'),
         ),
@@ -105,7 +165,10 @@ class _SongPhotoPageState extends State<SongPhotoPage> {
   );
 
   Future<void> _select(ImageSource source) async {
-    setState(() => _error = null);
+    setState(() {
+      _error = null;
+      _ocrDocument = null;
+    });
     try {
       final selected = await _picker.pickImage(source: source);
       if (selected == null) return;
@@ -147,6 +210,67 @@ class _SongPhotoPageState extends State<SongPhotoPage> {
     }
   }
 
+  Future<void> _processOcr() async {
+    final path = _croppedPath;
+    if (path == null) return;
+
+    setState(() {
+      _ocrProcessing = true;
+      _error = null;
+    });
+
+    try {
+      final ocrService = ref.read(deviceOcrServiceProvider);
+      final document = await ocrService.processImage(path);
+      if (!mounted) return;
+
+      setState(() {
+        _ocrDocument = document;
+        _ocrProcessing = false;
+      });
+
+      widget.onDocumentExtracted?.call(document);
+    } on Exception catch (e) {
+      _setError('Error al procesar la imagen con OCR: $e');
+    }
+  }
+
+  Future<void> _openInEditor() async {
+    final doc = _ocrDocument;
+    if (doc == null) return;
+
+    String? detectedKey;
+    for (final line in doc.processedLines) {
+      if (line.isChordLine && line.chords.isNotEmpty) {
+        detectedKey = line.chords.first.text;
+        break;
+      }
+    }
+
+    final formattedLyrics = doc.toChordOverLyricText();
+    if (formattedLyrics.trim().isEmpty) {
+      _setError('No se detectó texto para enviar al editor.');
+      return;
+    }
+
+    final result = await Navigator.of(context).push<dynamic>(
+      MaterialPageRoute<dynamic>(
+        builder: (_) => SongEditorPage(
+          songId: widget.songId,
+          initialTitle: widget.songTitle.isEmpty || widget.songTitle == 'Nueva canción'
+              ? null
+              : widget.songTitle,
+          initialKey: detectedKey,
+          initialLyrics: formattedLyrics,
+        ),
+      ),
+    );
+
+    if (mounted && result != null) {
+      Navigator.of(context).pop(result);
+    }
+  }
+
   void _showPermissionHelp(ImageSource source) {
     final permission = source == ImageSource.camera ? 'cámara' : 'fotos';
     _setError(
@@ -159,6 +283,7 @@ class _SongPhotoPageState extends State<SongPhotoPage> {
     if (!mounted) return;
     setState(() {
       _loading = false;
+      _ocrProcessing = false;
       _error = message;
     });
   }
