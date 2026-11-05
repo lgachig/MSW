@@ -607,7 +607,7 @@ Comparar la foto con el resultado y corregirlo antes de guardar.
 flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
 
 *Depende de*
-MSW-31, MSW-24","","MSW-4","Highest","fase-3","msw","5","S5","Listo para prueba de Luis"
+MSW-31, MSW-24","","MSW-4","Highest","fase-3","msw","5","S5","Hecho"
 "MSW-34","Task","Medir precisión contra las fotos de prueba","*Objetivo*
 Comprobar la meta de 90% de acordes correctos.
 
