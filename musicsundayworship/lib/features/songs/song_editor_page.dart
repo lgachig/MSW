@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/song_repository.dart';
 import '../../music_engine/chord.dart';
+import 'song_photo_page.dart';
 
 /// Converts pasted chord-over-lyric text into the ordered song model.
 class SongTextParser {
@@ -317,7 +318,25 @@ class _SongEditorPageState extends ConsumerState<SongEditorPage> {
       );
     }
     return Scaffold(
-      appBar: AppBar(title: Text(editing ? 'Editar canción' : 'Nueva canción')),
+      appBar: AppBar(
+        title: Text(editing ? 'Editar canción' : 'Nueva canción'),
+        actions: [
+          IconButton(
+            key: const Key('editor-photo-button'),
+            tooltip: 'Cargar desde foto',
+            icon: const Icon(Icons.document_scanner),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => SongPhotoPage(
+                  songTitle:
+                      _title.text.isNotEmpty ? _title.text : 'Nueva canción',
+                  songId: widget.songId,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
       body: Form(
         key: _formKey,
         child: ListView(

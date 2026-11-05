@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/song_repository.dart';
-import '../songs/song_editor_page.dart';
+import '../capture/offline_photo_queue.dart';
 import '../songs/song_detail_page.dart';
+import '../songs/song_editor_page.dart';
+import '../songs/song_photo_page.dart';
 
 enum LibrarySort { title, author, key, label }
 
@@ -26,11 +28,36 @@ class LibraryPage extends ConsumerStatefulWidget {
   ConsumerState<LibraryPage> createState() => _LibraryPageState();
 }
 
-class _LibraryPageState extends ConsumerState<LibraryPage> {
+class _LibraryPageState extends ConsumerState<LibraryPage>
+    with WidgetsBindingObserver {
   String _query = '';
   String? _keyFilter;
   String? _labelFilter;
   LibrarySort _sort = LibrarySort.title;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ref.read(photoQueueProcessorProvider).processPendingQueue();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      ref.read(photoQueueProcessorProvider).processPendingQueue();
+    }
+  }
 
   List<SongDocument> _visible(List<SongDocument> songs) {
     final query = _query.trim().toLowerCase();
@@ -58,10 +85,23 @@ class _LibraryPageState extends ConsumerState<LibraryPage> {
   @override
   Widget build(BuildContext context) {
     final songs = ref.watch(songRepositoryProvider).watchAll();
+    final queueAsync = ref.watch(photoQueueStreamProvider);
+    final queueItems = queueAsync.value ?? const <PhotoQueueItem>[];
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Biblioteca'),
         actions: [
+          IconButton(
+            key: const Key('library-camera-button'),
+            tooltip: 'Digitalizar desde foto',
+            icon: const Icon(Icons.document_scanner),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const SongPhotoPage(songTitle: 'Nueva canción'),
+              ),
+            ),
+          ),
           PopupMenuButton<LibrarySort>(
             tooltip: 'Ordenar',
             icon: const Icon(Icons.sort),
@@ -117,6 +157,8 @@ class _LibraryPageState extends ConsumerState<LibraryPage> {
                 onKeyChanged: (value) => setState(() => _keyFilter = value),
                 onLabelChanged: (value) => setState(() => _labelFilter = value),
               ),
+              if (queueItems.isNotEmpty)
+                _OfflineQueueSection(items: queueItems),
               Expanded(
                 child: visible.isEmpty
                     ? _EmptyState(
@@ -224,23 +266,223 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Center(
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          hasSongs
-              ? 'No hay canciones que coincidan'
-              : 'Tu biblioteca está vacía',
-        ),
-        if (!hasSongs) ...[
-          const SizedBox(height: 12),
-          FilledButton.icon(
-            onPressed: onAddSong,
-            icon: const Icon(Icons.add),
-            label: const Text('Agregar primera canción'),
+    child: SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            hasSongs
+                ? 'No hay canciones que coincidan'
+                : 'Tu biblioteca está vacía',
           ),
+          if (!hasSongs) ...[
+            const SizedBox(height: 12),
+            FilledButton.icon(
+              onPressed: onAddSong,
+              icon: const Icon(Icons.add),
+              label: const Text('Agregar primera canción'),
+            ),
+          ],
         ],
-      ],
+      ),
     ),
   );
+}
+
+class _OfflineQueueSection extends ConsumerWidget {
+  const _OfflineQueueSection({required this.items});
+
+  final List<PhotoQueueItem> items;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Card(
+      key: const Key('offline-queue-section'),
+      margin: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+      elevation: 1,
+      color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.cloud_sync_outlined,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Cola de digitalización (${items.length})',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                IconButton(
+                  key: const Key('sync-queue-button'),
+                  tooltip: 'Sincronizar cola',
+                  icon: const Icon(Icons.sync),
+                  onPressed: () {
+                    ref.read(photoQueueProcessorProvider).processPendingQueue();
+                  },
+                ),
+              ],
+            ),
+            const Divider(height: 12),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 220),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: items
+                      .map((item) => _QueueItemTile(item: item))
+                      .toList(),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _QueueItemTile extends ConsumerWidget {
+  const _QueueItemTile({required this.item});
+
+  final PhotoQueueItem item;
+
+  Color _statusColor() => switch (item.status) {
+    QueueStatus.pending => Colors.amber.shade800,
+    QueueStatus.processing => Colors.blue.shade700,
+    QueueStatus.ready => Colors.green.shade700,
+    QueueStatus.error => Colors.red.shade700,
+  };
+
+  Widget _statusIcon() => switch (item.status) {
+    QueueStatus.pending => Icon(
+      Icons.hourglass_empty,
+      color: _statusColor(),
+      size: 20,
+      key: Key('status-pending-${item.id}'),
+    ),
+    QueueStatus.processing => SizedBox(
+      width: 18,
+      height: 18,
+      child: CircularProgressIndicator(
+        strokeWidth: 2,
+        valueColor: AlwaysStoppedAnimation(_statusColor()),
+        key: Key('status-processing-${item.id}'),
+      ),
+    ),
+    QueueStatus.ready => Icon(
+      Icons.check_circle,
+      color: _statusColor(),
+      size: 20,
+      key: Key('status-ready-${item.id}'),
+    ),
+    QueueStatus.error => Icon(
+      Icons.error_outline,
+      color: _statusColor(),
+      size: 20,
+      key: Key('status-error-${item.id}'),
+    ),
+  };
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final title = item.songTitle?.isNotEmpty == true
+        ? item.songTitle!
+        : 'Foto #${item.id}';
+
+    return Container(
+      key: Key('queue-item-${item.id}'),
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: _statusColor().withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          _statusIcon(),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                ),
+                Text(
+                  item.status == QueueStatus.error && item.errorMessage != null
+                      ? 'Error: ${item.errorMessage}'
+                      : 'Estado: ${item.status.label}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: _statusColor(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (item.status == QueueStatus.ready)
+            FilledButton.tonal(
+              key: Key('open-queue-item-${item.id}'),
+              style: FilledButton.styleFrom(
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+              ),
+              onPressed: () => _openReadyItem(context, ref, item),
+              child: const Text('Revisar'),
+            ),
+          if (item.status == QueueStatus.pending || item.status == QueueStatus.error)
+            IconButton(
+              key: Key('retry-queue-item-${item.id}'),
+              icon: const Icon(Icons.replay, size: 20),
+              tooltip: 'Reintentar',
+              onPressed: () => ref.read(photoQueueProcessorProvider).retryItem(item),
+            ),
+          IconButton(
+            key: Key('delete-queue-item-${item.id}'),
+            icon: const Icon(Icons.close, size: 18),
+            tooltip: 'Eliminar de la cola',
+            onPressed: () => ref.read(photoQueueRepositoryProvider).delete(item.id),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _openReadyItem(
+    BuildContext context,
+    WidgetRef ref,
+    PhotoQueueItem item,
+  ) async {
+    final digitized = item.digitizedSong;
+    final title = (digitized?.title?.isNotEmpty == true)
+        ? digitized!.title
+        : item.songTitle;
+
+    final saved = await Navigator.of(context).push<dynamic>(
+      MaterialPageRoute<dynamic>(
+        builder: (_) => SongEditorPage(
+          initialTitle: title,
+          initialKey: digitized?.key,
+          initialLyrics: digitized?.chordOverLyricText,
+        ),
+      ),
+    );
+
+    if (saved is SongDocument && context.mounted) {
+      await ref.read(photoQueueRepositoryProvider).delete(item.id);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Canción guardada en la biblioteca')),
+      );
+    }
+  }
 }

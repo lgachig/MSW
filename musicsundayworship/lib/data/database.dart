@@ -50,12 +50,32 @@ class Arrangements extends Table {
   TextColumn get content => text()();
 }
 
-@DriftDatabase(tables: [Songs, Sections, Lines, ChordPlacements, Arrangements])
+class PhotoQueueItems extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get filePath => text()();
+  TextColumn get songTitle => text().nullable()();
+  TextColumn get status => text()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  TextColumn get errorMessage => text().nullable()();
+  TextColumn get resultJson => text().nullable()();
+}
+
+@DriftDatabase(
+  tables: [
+    Songs,
+    Sections,
+    Lines,
+    ChordPlacements,
+    Arrangements,
+    PhotoQueueItems,
+  ],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase({QueryExecutor? executor}) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -69,6 +89,9 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 4) {
         await m.addColumn(songs, songs.photoPath);
+      }
+      if (from < 5) {
+        await m.createTable(photoQueueItems);
       }
     },
   );

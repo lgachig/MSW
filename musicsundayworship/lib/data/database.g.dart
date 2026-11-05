@@ -1747,6 +1747,516 @@ class ArrangementsCompanion extends UpdateCompanion<Arrangement> {
   }
 }
 
+class $PhotoQueueItemsTable extends PhotoQueueItems
+    with TableInfo<$PhotoQueueItemsTable, PhotoQueueItem> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PhotoQueueItemsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _filePathMeta = const VerificationMeta(
+    'filePath',
+  );
+  @override
+  late final GeneratedColumn<String> filePath = GeneratedColumn<String>(
+    'file_path',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _songTitleMeta = const VerificationMeta(
+    'songTitle',
+  );
+  @override
+  late final GeneratedColumn<String> songTitle = GeneratedColumn<String>(
+    'song_title',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _errorMessageMeta = const VerificationMeta(
+    'errorMessage',
+  );
+  @override
+  late final GeneratedColumn<String> errorMessage = GeneratedColumn<String>(
+    'error_message',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _resultJsonMeta = const VerificationMeta(
+    'resultJson',
+  );
+  @override
+  late final GeneratedColumn<String> resultJson = GeneratedColumn<String>(
+    'result_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    filePath,
+    songTitle,
+    status,
+    createdAt,
+    updatedAt,
+    errorMessage,
+    resultJson,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'photo_queue_items';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PhotoQueueItem> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('file_path')) {
+      context.handle(
+        _filePathMeta,
+        filePath.isAcceptableOrUnknown(data['file_path']!, _filePathMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_filePathMeta);
+    }
+    if (data.containsKey('song_title')) {
+      context.handle(
+        _songTitleMeta,
+        songTitle.isAcceptableOrUnknown(data['song_title']!, _songTitleMeta),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('error_message')) {
+      context.handle(
+        _errorMessageMeta,
+        errorMessage.isAcceptableOrUnknown(
+          data['error_message']!,
+          _errorMessageMeta,
+        ),
+      );
+    }
+    if (data.containsKey('result_json')) {
+      context.handle(
+        _resultJsonMeta,
+        resultJson.isAcceptableOrUnknown(data['result_json']!, _resultJsonMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  PhotoQueueItem map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PhotoQueueItem(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      filePath: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}file_path'],
+      )!,
+      songTitle: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}song_title'],
+      ),
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      errorMessage: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}error_message'],
+      ),
+      resultJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}result_json'],
+      ),
+    );
+  }
+
+  @override
+  $PhotoQueueItemsTable createAlias(String alias) {
+    return $PhotoQueueItemsTable(attachedDatabase, alias);
+  }
+}
+
+class PhotoQueueItem extends DataClass implements Insertable<PhotoQueueItem> {
+  final int id;
+  final String filePath;
+  final String? songTitle;
+  final String status;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final String? errorMessage;
+  final String? resultJson;
+  const PhotoQueueItem({
+    required this.id,
+    required this.filePath,
+    this.songTitle,
+    required this.status,
+    required this.createdAt,
+    required this.updatedAt,
+    this.errorMessage,
+    this.resultJson,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['file_path'] = Variable<String>(filePath);
+    if (!nullToAbsent || songTitle != null) {
+      map['song_title'] = Variable<String>(songTitle);
+    }
+    map['status'] = Variable<String>(status);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || errorMessage != null) {
+      map['error_message'] = Variable<String>(errorMessage);
+    }
+    if (!nullToAbsent || resultJson != null) {
+      map['result_json'] = Variable<String>(resultJson);
+    }
+    return map;
+  }
+
+  PhotoQueueItemsCompanion toCompanion(bool nullToAbsent) {
+    return PhotoQueueItemsCompanion(
+      id: Value(id),
+      filePath: Value(filePath),
+      songTitle: songTitle == null && nullToAbsent
+          ? const Value.absent()
+          : Value(songTitle),
+      status: Value(status),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      errorMessage: errorMessage == null && nullToAbsent
+          ? const Value.absent()
+          : Value(errorMessage),
+      resultJson: resultJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(resultJson),
+    );
+  }
+
+  factory PhotoQueueItem.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PhotoQueueItem(
+      id: serializer.fromJson<int>(json['id']),
+      filePath: serializer.fromJson<String>(json['filePath']),
+      songTitle: serializer.fromJson<String?>(json['songTitle']),
+      status: serializer.fromJson<String>(json['status']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      errorMessage: serializer.fromJson<String?>(json['errorMessage']),
+      resultJson: serializer.fromJson<String?>(json['resultJson']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'filePath': serializer.toJson<String>(filePath),
+      'songTitle': serializer.toJson<String?>(songTitle),
+      'status': serializer.toJson<String>(status),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'errorMessage': serializer.toJson<String?>(errorMessage),
+      'resultJson': serializer.toJson<String?>(resultJson),
+    };
+  }
+
+  PhotoQueueItem copyWith({
+    int? id,
+    String? filePath,
+    Value<String?> songTitle = const Value.absent(),
+    String? status,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    Value<String?> errorMessage = const Value.absent(),
+    Value<String?> resultJson = const Value.absent(),
+  }) => PhotoQueueItem(
+    id: id ?? this.id,
+    filePath: filePath ?? this.filePath,
+    songTitle: songTitle.present ? songTitle.value : this.songTitle,
+    status: status ?? this.status,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    errorMessage: errorMessage.present ? errorMessage.value : this.errorMessage,
+    resultJson: resultJson.present ? resultJson.value : this.resultJson,
+  );
+  PhotoQueueItem copyWithCompanion(PhotoQueueItemsCompanion data) {
+    return PhotoQueueItem(
+      id: data.id.present ? data.id.value : this.id,
+      filePath: data.filePath.present ? data.filePath.value : this.filePath,
+      songTitle: data.songTitle.present ? data.songTitle.value : this.songTitle,
+      status: data.status.present ? data.status.value : this.status,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      errorMessage: data.errorMessage.present
+          ? data.errorMessage.value
+          : this.errorMessage,
+      resultJson: data.resultJson.present
+          ? data.resultJson.value
+          : this.resultJson,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PhotoQueueItem(')
+          ..write('id: $id, ')
+          ..write('filePath: $filePath, ')
+          ..write('songTitle: $songTitle, ')
+          ..write('status: $status, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('errorMessage: $errorMessage, ')
+          ..write('resultJson: $resultJson')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    filePath,
+    songTitle,
+    status,
+    createdAt,
+    updatedAt,
+    errorMessage,
+    resultJson,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PhotoQueueItem &&
+          other.id == this.id &&
+          other.filePath == this.filePath &&
+          other.songTitle == this.songTitle &&
+          other.status == this.status &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.errorMessage == this.errorMessage &&
+          other.resultJson == this.resultJson);
+}
+
+class PhotoQueueItemsCompanion extends UpdateCompanion<PhotoQueueItem> {
+  final Value<int> id;
+  final Value<String> filePath;
+  final Value<String?> songTitle;
+  final Value<String> status;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<String?> errorMessage;
+  final Value<String?> resultJson;
+  const PhotoQueueItemsCompanion({
+    this.id = const Value.absent(),
+    this.filePath = const Value.absent(),
+    this.songTitle = const Value.absent(),
+    this.status = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.errorMessage = const Value.absent(),
+    this.resultJson = const Value.absent(),
+  });
+  PhotoQueueItemsCompanion.insert({
+    this.id = const Value.absent(),
+    required String filePath,
+    this.songTitle = const Value.absent(),
+    required String status,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.errorMessage = const Value.absent(),
+    this.resultJson = const Value.absent(),
+  }) : filePath = Value(filePath),
+       status = Value(status),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<PhotoQueueItem> custom({
+    Expression<int>? id,
+    Expression<String>? filePath,
+    Expression<String>? songTitle,
+    Expression<String>? status,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<String>? errorMessage,
+    Expression<String>? resultJson,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (filePath != null) 'file_path': filePath,
+      if (songTitle != null) 'song_title': songTitle,
+      if (status != null) 'status': status,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (errorMessage != null) 'error_message': errorMessage,
+      if (resultJson != null) 'result_json': resultJson,
+    });
+  }
+
+  PhotoQueueItemsCompanion copyWith({
+    Value<int>? id,
+    Value<String>? filePath,
+    Value<String?>? songTitle,
+    Value<String>? status,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<String?>? errorMessage,
+    Value<String?>? resultJson,
+  }) {
+    return PhotoQueueItemsCompanion(
+      id: id ?? this.id,
+      filePath: filePath ?? this.filePath,
+      songTitle: songTitle ?? this.songTitle,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      errorMessage: errorMessage ?? this.errorMessage,
+      resultJson: resultJson ?? this.resultJson,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (filePath.present) {
+      map['file_path'] = Variable<String>(filePath.value);
+    }
+    if (songTitle.present) {
+      map['song_title'] = Variable<String>(songTitle.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (errorMessage.present) {
+      map['error_message'] = Variable<String>(errorMessage.value);
+    }
+    if (resultJson.present) {
+      map['result_json'] = Variable<String>(resultJson.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PhotoQueueItemsCompanion(')
+          ..write('id: $id, ')
+          ..write('filePath: $filePath, ')
+          ..write('songTitle: $songTitle, ')
+          ..write('status: $status, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('errorMessage: $errorMessage, ')
+          ..write('resultJson: $resultJson')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -1757,6 +2267,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     this,
   );
   late final $ArrangementsTable arrangements = $ArrangementsTable(this);
+  late final $PhotoQueueItemsTable photoQueueItems = $PhotoQueueItemsTable(
+    this,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1767,6 +2280,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     lines,
     chordPlacements,
     arrangements,
+    photoQueueItems,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -3610,6 +4124,276 @@ typedef $$ArrangementsTableProcessedTableManager =
       Arrangement,
       PrefetchHooks Function({bool songId})
     >;
+typedef $$PhotoQueueItemsTableCreateCompanionBuilder =
+    PhotoQueueItemsCompanion Function({
+      Value<int> id,
+      required String filePath,
+      Value<String?> songTitle,
+      required String status,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<String?> errorMessage,
+      Value<String?> resultJson,
+    });
+typedef $$PhotoQueueItemsTableUpdateCompanionBuilder =
+    PhotoQueueItemsCompanion Function({
+      Value<int> id,
+      Value<String> filePath,
+      Value<String?> songTitle,
+      Value<String> status,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<String?> errorMessage,
+      Value<String?> resultJson,
+    });
+
+class $$PhotoQueueItemsTableFilterComposer
+    extends Composer<_$AppDatabase, $PhotoQueueItemsTable> {
+  $$PhotoQueueItemsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get filePath => $composableBuilder(
+    column: $table.filePath,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get songTitle => $composableBuilder(
+    column: $table.songTitle,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get errorMessage => $composableBuilder(
+    column: $table.errorMessage,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get resultJson => $composableBuilder(
+    column: $table.resultJson,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$PhotoQueueItemsTableOrderingComposer
+    extends Composer<_$AppDatabase, $PhotoQueueItemsTable> {
+  $$PhotoQueueItemsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get filePath => $composableBuilder(
+    column: $table.filePath,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get songTitle => $composableBuilder(
+    column: $table.songTitle,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get errorMessage => $composableBuilder(
+    column: $table.errorMessage,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get resultJson => $composableBuilder(
+    column: $table.resultJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PhotoQueueItemsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PhotoQueueItemsTable> {
+  $$PhotoQueueItemsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get filePath =>
+      $composableBuilder(column: $table.filePath, builder: (column) => column);
+
+  GeneratedColumn<String> get songTitle =>
+      $composableBuilder(column: $table.songTitle, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get errorMessage => $composableBuilder(
+    column: $table.errorMessage,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get resultJson => $composableBuilder(
+    column: $table.resultJson,
+    builder: (column) => column,
+  );
+}
+
+class $$PhotoQueueItemsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PhotoQueueItemsTable,
+          PhotoQueueItem,
+          $$PhotoQueueItemsTableFilterComposer,
+          $$PhotoQueueItemsTableOrderingComposer,
+          $$PhotoQueueItemsTableAnnotationComposer,
+          $$PhotoQueueItemsTableCreateCompanionBuilder,
+          $$PhotoQueueItemsTableUpdateCompanionBuilder,
+          (
+            PhotoQueueItem,
+            BaseReferences<
+              _$AppDatabase,
+              $PhotoQueueItemsTable,
+              PhotoQueueItem
+            >,
+          ),
+          PhotoQueueItem,
+          PrefetchHooks Function()
+        > {
+  $$PhotoQueueItemsTableTableManager(
+    _$AppDatabase db,
+    $PhotoQueueItemsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PhotoQueueItemsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PhotoQueueItemsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PhotoQueueItemsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<String> filePath = const Value.absent(),
+                Value<String?> songTitle = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<String?> errorMessage = const Value.absent(),
+                Value<String?> resultJson = const Value.absent(),
+              }) => PhotoQueueItemsCompanion(
+                id: id,
+                filePath: filePath,
+                songTitle: songTitle,
+                status: status,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                errorMessage: errorMessage,
+                resultJson: resultJson,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                required String filePath,
+                Value<String?> songTitle = const Value.absent(),
+                required String status,
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<String?> errorMessage = const Value.absent(),
+                Value<String?> resultJson = const Value.absent(),
+              }) => PhotoQueueItemsCompanion.insert(
+                id: id,
+                filePath: filePath,
+                songTitle: songTitle,
+                status: status,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                errorMessage: errorMessage,
+                resultJson: resultJson,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$PhotoQueueItemsTable, PhotoQueueItem>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $PhotoQueueItemsTable,
+                    PhotoQueueItem
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PhotoQueueItemsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PhotoQueueItemsTable,
+      PhotoQueueItem,
+      $$PhotoQueueItemsTableFilterComposer,
+      $$PhotoQueueItemsTableOrderingComposer,
+      $$PhotoQueueItemsTableAnnotationComposer,
+      $$PhotoQueueItemsTableCreateCompanionBuilder,
+      $$PhotoQueueItemsTableUpdateCompanionBuilder,
+      (
+        PhotoQueueItem,
+        BaseReferences<_$AppDatabase, $PhotoQueueItemsTable, PhotoQueueItem>,
+      ),
+      PhotoQueueItem,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -3624,4 +4408,6 @@ class $AppDatabaseManager {
       $$ChordPlacementsTableTableManager(_db, _db.chordPlacements);
   $$ArrangementsTableTableManager get arrangements =>
       $$ArrangementsTableTableManager(_db, _db.arrangements);
+  $$PhotoQueueItemsTableTableManager get photoQueueItems =>
+      $$PhotoQueueItemsTableTableManager(_db, _db.photoQueueItems);
 }
