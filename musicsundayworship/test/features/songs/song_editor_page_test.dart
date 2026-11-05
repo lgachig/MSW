@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:musicsundayworship/data/song_repository.dart';
+import 'package:musicsundayworship/music_engine/song_structure.dart';
 import 'package:musicsundayworship/features/songs/song_editor_page.dart';
 
 class _FakeSongRepository implements SongRepository {
@@ -41,6 +42,17 @@ class _FakeSongRepository implements SongRepository {
   @override
   Future<SongDocument> updatePhotoPath(int songId, String? photoPath) async =>
       (await read(songId))!.copyWith(photoPath: photoPath);
+  @override
+  Future<SongStructure> createStructure(SongStructure s) async => s;
+  @override
+  Future<List<SongStructure>> readStructures(int songId) async => [];
+  @override
+  Future<SongStructure> updateStructure(SongStructure s) async => s;
+  @override
+  Future<void> deleteStructure(int id) async {}
+  @override
+  Future<SongStructure> duplicateStructure(int id, {String? newName}) async =>
+      SongStructure(name: newName ?? 'Copia');
 }
 
 class _FailingSongRepository extends _FakeSongRepository {

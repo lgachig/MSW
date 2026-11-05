@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:drift/drift.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../music_engine/song_structure.dart';
 import 'database.dart';
 
 /// Metadata and ordered content of a song, independent of the database.
@@ -105,6 +106,11 @@ abstract interface class SongRepository {
   Future<SongArrangement> createArrangement(SongArrangement arrangement);
   Future<SongArrangement> updateArrangement(SongArrangement arrangement);
   Future<SongDocument> updatePhotoPath(int songId, String? photoPath);
+  Future<SongStructure> createStructure(SongStructure structure);
+  Future<List<SongStructure>> readStructures(int songId);
+  Future<SongStructure> updateStructure(SongStructure structure);
+  Future<void> deleteStructure(int id);
+  Future<SongStructure> duplicateStructure(int structureId, {String? newName});
 }
 
 class DriftSongRepository implements SongRepository {
@@ -278,6 +284,139 @@ class DriftSongRepository implements SongRepository {
       throw StateError('Arrangement $id does not exist');
     }
     return arrangement;
+  }
+
+  @override
+  Future<SongStructure> createStructure(SongStructure structure) async {
+    final songId = structure.songId;
+    if (songId == null) {
+      throw ArgumentError.notNull('structure.songId');
+    }
+    final song = await read(songId);
+    if (song == null) {
+      throw StateError('Song $songId does not exist');
+    }
+    final id = await database.into(database.arrangements).insert(
+          ArrangementsCompanion.insert(
+            songId: songId,
+            name: structure.name,
+            content: jsonEncode(structure.toJson()),
+          ),
+        );
+    return structure.copyWith(id: id);
+  }
+
+  @override
+  Future<List<SongStructure>> readStructures(int songId) async {
+    final rows = await (database.select(database.arrangements)
+          ..where((table) => table.songId.equals(songId)))
+        .get();
+    final list = <SongStructure>[];
+    for (final r in rows) {
+      try {
+        final decoded = jsonDecode(r.content);
+        if (decoded is Map<String, dynamic> && decoded.containsKey('items')) {
+          list.add(
+            SongStructure.fromJson(decoded).copyWith(
+              id: r.id,
+              songId: r.songId,
+              name: r.name,
+            ),
+          );
+        } else {
+          final sections = _sectionsFromJson(r.content);
+          list.add(
+            SongStructure(
+              id: r.id,
+              songId: r.songId,
+              name: r.name,
+              items: sections
+                  .map(
+                    (s) => StructureItem(
+                      id: 'sec_${s.position}',
+                      type: SectionType.fromString(s.name),
+                      name: s.name,
+                      repeatCount: 1,
+                    ),
+                  )
+                  .toList(),
+            ),
+          );
+        }
+      } catch (_) {}
+    }
+    return list;
+  }
+
+  @override
+  Future<SongStructure> updateStructure(SongStructure structure) async {
+    final id = structure.id;
+    if (id == null) {
+      throw ArgumentError.value(
+        structure,
+        'structure',
+        'An id is required to update',
+      );
+    }
+    final updated = await (database.update(
+      database.arrangements,
+    )..where((table) => table.id.equals(id))).write(
+      ArrangementsCompanion(
+        name: Value(structure.name),
+        content: Value(jsonEncode(structure.toJson())),
+      ),
+    );
+    if (updated == 0) {
+      throw StateError('Structure $id does not exist');
+    }
+    return structure;
+  }
+
+  @override
+  Future<void> deleteStructure(int id) async {
+    await (database.delete(database.arrangements)
+          ..where((table) => table.id.equals(id)))
+        .go();
+  }
+
+  @override
+  Future<SongStructure> duplicateStructure(
+    int structureId, {
+    String? newName,
+  }) async {
+    final rows = await (database.select(database.arrangements)
+          ..where((table) => table.id.equals(structureId)))
+        .get();
+    if (rows.isEmpty) {
+      throw StateError('Structure $structureId does not exist');
+    }
+    final originalRow = rows.first;
+    SongStructure original;
+    try {
+      final decoded = jsonDecode(originalRow.content);
+      if (decoded is Map<String, dynamic>) {
+        original = SongStructure.fromJson(decoded);
+      } else {
+        original = SongStructure(
+          id: originalRow.id,
+          songId: originalRow.songId,
+          name: originalRow.name,
+        );
+      }
+    } catch (_) {
+      original = SongStructure(
+        id: originalRow.id,
+        songId: originalRow.songId,
+        name: originalRow.name,
+      );
+    }
+
+    final clone = original.duplicate(
+      newName: newName ?? '${originalRow.name} (Copia)',
+      newSongId: originalRow.songId,
+    );
+
+    return createStructure(clone);
   }
 
   Future<void> _insertSections(int songId, List<SongSection> sections) async {
