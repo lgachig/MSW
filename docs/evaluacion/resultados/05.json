@@ -1,0 +1,50 @@
+{
+  "title": "Le Llaman Guerrero",
+  "key": "Em",
+  "sections": [
+    {
+      "name": "Verso",
+      "lines": [
+        {
+          "text": "Cuentan de un Dios que hace maravillas",
+          "chords": [
+            {
+              "chord": "Em",
+              "position": 0
+            },
+            {
+              "chord": "C",
+              "position": 37
+            }
+          ]
+        },
+        {
+          "text": "Dandole poder a Su pueblo",
+          "chords": [
+            {
+              "chord": "D",
+              "position": 8
+            },
+            {
+              "chord": "Em",
+              "position": 25
+            }
+          ]
+        },
+        {
+          "text": "Gracias a el conquistaron Reinos",
+          "chords": [
+            {
+              "chord": "Em",
+              "position": 8
+            },
+            {
+              "chord": "C",
+              "position": 29
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

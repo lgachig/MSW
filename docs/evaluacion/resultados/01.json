@@ -1,0 +1,111 @@
+{
+  "title": "Grita, canta, danza",
+  "key": "Cm",
+  "sections": [
+    {
+      "name": "Section 1",
+      "lines": [
+        {
+          "text": "Grita, canta, danza alegremente en su presencia",
+          "chords": [
+            {
+              "chord": "Cm",
+              "position": 0
+            },
+            {
+              "chord": "Ab",
+              "position": 38
+            }
+          ]
+        },
+        {
+          "text": "Gira, salta dando vueltas para Cristo",
+          "chords": [
+            {
+              "chord": "Bb",
+              "position": 27
+            }
+          ]
+        },
+        {
+          "text": "Él vive y vive para siempre es el Rey",
+          "chords": [
+            {
+              "chord": "G7",
+              "position": 9
+            },
+            {
+              "chord": "Cm",
+              "position": 26
+            },
+            {
+              "chord": "G7",
+              "position": 33
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Section 2",
+      "lines": [
+        {
+          "text": "Te alabaré, te exaltaré y te agradeceré",
+          "chords": [
+            {
+              "chord": "Cm",
+              "position": 7
+            },
+            {
+              "chord": "Bb",
+              "position": 27
+            }
+          ]
+        },
+        {
+          "text": "Tu grande amor Jesús",
+          "chords": [
+            {
+              "chord": "Eb",
+              "position": 4
+            }
+          ]
+        },
+        {
+          "text": "Cambiaste mi lamento en alabanza",
+          "chords": [
+            {
+              "chord": "Ab",
+              "position": 3
+            },
+            {
+              "chord": "Cm",
+              "position": 22
+            }
+          ]
+        },
+        {
+          "text": "Sanaste mi herido corazón",
+          "chords": [
+            {
+              "chord": "Bb",
+              "position": 2
+            },
+            {
+              "chord": "G7",
+              "position": 11
+            },
+            {
+              "chord": "Cm",
+              "position": 19
+            },
+            {
+              "chord": "G7",
+              "position": 24
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
