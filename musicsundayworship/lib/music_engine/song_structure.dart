@@ -205,3 +205,4 @@ class SongStructure {
   factory SongStructure.fromJsonString(String source) =>
       SongStructure.fromJson(jsonDecode(source) as Map<String, dynamic>);
 }
+
