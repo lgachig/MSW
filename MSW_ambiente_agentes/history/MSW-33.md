@@ -10,3 +10,5 @@
 - 2026-11-05 15:48: Pantalla lista y aprobada por Luis ('te apruebo todo no esperes aprobacion mia solo dime ya lo que funciono y nada mas').
 - 2026-11-05 15:48: Estado: Listo para prueba de Luis -> Hecho
 - 2026-11-05 15:49: Completado y aprobado por Luis. Funcionalidad de revisión lado a lado, marcado de sugerencias de IA, edición de autor/fuente y confirmación antes de guardar verificada e integrada.
+- 2026-11-05 16:00: Estado: Hecho -> En curso
+- 2026-11-05 16:00: Reabierto a 'En curso' por feedback de Luis: la tonalidad detectada no siempre es la correcta. Se implementará verificación armónica precisa del tono en el backend y motor musical de Flutter, selector y sugerencias de tonalidad en pantalla de revisión.
