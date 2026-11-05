@@ -224,7 +224,8 @@ class GeminiSongDigitizer:
                 key_error = response.status_code == 400 and any(
                     term in message.lower() for term in ("api key", "api_key", "key not valid")
                 )
-                if response.status_code not in {401, 403, 429} and not key_error:
+                retryable_status = response.status_code in {401, 403, 429, 500, 502, 503, 504}
+                if not retryable_status and not key_error:
                     raise RuntimeError(f"Gemini HTTP {response.status_code}: {message}")
                 last_error = httpx.HTTPStatusError(
                     f"Gemini HTTP {response.status_code}: {message}",

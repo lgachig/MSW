@@ -67,6 +67,22 @@ class GeminiProviderTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(len(FakeAsyncClient.calls), 1)
 
+    async def test_rotates_keys_when_model_is_temporarily_unavailable(self):
+        FakeAsyncClient.responses = [
+            response(503, {"error": {"message": "high demand"}}),
+            response(200, {"candidates": [{"content": {"parts": [{"text": "{}"}]}}]}),
+        ]
+        provider = GeminiSongDigitizer(["first-test-key", "second-test-key"], "test-model")
+
+        with patch("app.provider.httpx.AsyncClient", FakeAsyncClient):
+            result = await provider.generate(b"image", "image/png")
+
+        self.assertEqual(result, "{}")
+        self.assertEqual(
+            [call["headers"]["x-goog-api-key"] for call in FakeAsyncClient.calls],
+            ["first-test-key", "second-test-key"],
+        )
+
     def test_converts_nullable_json_schema_types_for_gemini(self):
         schema = _gemini_schema({"type": "object", "properties": {
             "title": {"type": ["string", "null"]},

@@ -31,7 +31,7 @@ authentication, and can be bypassed by rotating IP addresses.
 
 Choose `AI_PROVIDER=gemini` or `AI_PROVIDER=openai`. For Gemini, set
 `GEMINI_API_KEYS` to a comma-separated list of keys (or `GEMINI_API_KEY` for one
-key) and optionally `GEMINI_MODEL` (defaults to `gemini-3.8-flash`). The service
+key) and optionally `GEMINI_MODEL` (defaults to `gemini-3.5-flash`). The service
 tries the next key when Gemini rejects a key or reports exhausted quota (401,
 403, or 429), and starts the next request with the next key in the list.
 For OpenAI, set `OPENAI_API_KEY` and optionally `OPENAI_MODEL`. Also configurable:

@@ -15,7 +15,7 @@ class Settings:
     quota_database_path: str
     provider: str = "openai"
     gemini_api_key: str = ""
-    gemini_model: str = "gemini-3.8-flash"
+    gemini_model: str = "gemini-3.5-flash"
     gemini_api_keys: tuple[str, ...] = ()
 
     @classmethod
@@ -28,7 +28,7 @@ class Settings:
             quota_database_path=os.getenv("QUOTA_DATABASE_PATH", "./data/quotas.sqlite3"),
             provider=os.getenv("AI_PROVIDER", "openai").strip().lower(),
             gemini_api_key=os.getenv("GEMINI_API_KEY", "").strip(),
-            gemini_model=os.getenv("GEMINI_MODEL", "gemini-3.8-flash").strip(),
+            gemini_model=os.getenv("GEMINI_MODEL", "gemini-3.5-flash").strip(),
             gemini_api_keys=tuple(
                 key.strip()
                 for key in os.getenv("GEMINI_API_KEYS", "").replace("\n", ",").split(",")
