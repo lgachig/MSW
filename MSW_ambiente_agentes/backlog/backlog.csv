@@ -674,7 +674,7 @@ Arrastrar secciones y definir repeticiones.
 flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
 
 *Depende de*
-MSW-35","","MSW-5","High","fase-4","msw","5","S6","Listo para prueba de Luis"
+MSW-35","","MSW-5","High","fase-4","msw","5","S6","Hecho"
 "MSW-37","Story","Estructura propuesta desde la letra","*Objetivo*
 Sugerir secciones a partir de la letra, siempre editable.
 
