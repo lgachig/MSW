@@ -12,3 +12,4 @@ void main(List<String> args) async {
   );
   exitCode = await proc.exitCode;
 }
+

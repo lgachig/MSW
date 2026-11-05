@@ -489,3 +489,4 @@ class _DetectedChordPlacement {
         position: json['position'] as int? ?? 0,
       );
 }
+
