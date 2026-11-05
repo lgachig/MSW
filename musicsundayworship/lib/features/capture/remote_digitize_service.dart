@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
 import '../../music_engine/chord.dart';
+import '../../music_engine/music_key_detector.dart';
 
 class DigitizeException implements Exception {
   const DigitizeException(this.message);
@@ -100,13 +101,24 @@ class DigitizedSong {
   double get validChordPercentage =>
       chordCount == 0 ? 0 : validChordCount * 100 / chordCount;
 
-  factory DigitizedSong.fromJson(Map<String, dynamic> json) => DigitizedSong(
-    title: json['title'] as String?,
-    key: json['key'] as String?,
-    sections: (json['sections'] as List<dynamic>)
+  factory DigitizedSong.fromJson(Map<String, dynamic> json) {
+    final sections = (json['sections'] as List<dynamic>)
         .map((item) => DigitizedSection.fromJson(item as Map<String, dynamic>))
-        .toList(growable: false),
-  );
+        .toList(growable: false);
+    final rawKey = json['key'] as String?;
+    final chords = sections
+        .expand((s) => s.lines.expand((l) => l.chords.map((c) => c.chord)));
+    final detectedFallback = MusicKeyDetector.detectKey(chords);
+    final key = (rawKey != null && rawKey.trim().isNotEmpty)
+        ? rawKey.trim()
+        : detectedFallback;
+
+    return DigitizedSong(
+      title: json['title'] as String?,
+      key: key,
+      sections: sections,
+    );
+  }
 
   String get chordOverLyricText => sections
       .map(

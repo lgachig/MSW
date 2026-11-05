@@ -6,6 +6,7 @@ import '../capture/offline_photo_queue.dart';
 import '../songs/song_detail_page.dart';
 import '../songs/song_editor_page.dart';
 import '../songs/song_photo_page.dart';
+import '../songs/song_review_correction_page.dart';
 
 enum LibrarySort { title, author, key, label }
 
@@ -463,26 +464,17 @@ class _QueueItemTile extends ConsumerWidget {
     PhotoQueueItem item,
   ) async {
     final digitized = item.digitizedSong;
-    final title = (digitized?.title?.isNotEmpty == true)
-        ? digitized!.title
-        : item.songTitle;
+    if (digitized == null) return;
 
-    final saved = await Navigator.of(context).push<dynamic>(
+    await Navigator.of(context).push<dynamic>(
       MaterialPageRoute<dynamic>(
-        builder: (_) => SongEditorPage(
-          initialTitle: title,
-          initialKey: digitized?.key,
-          initialLyrics: digitized?.chordOverLyricText,
+        builder: (_) => SongReviewCorrectionPage(
+          imagePath: item.filePath,
+          digitizedSong: digitized,
+          initialSongTitle: item.songTitle,
+          queueItemId: item.id,
         ),
       ),
     );
-
-    if (saved is SongDocument && context.mounted) {
-      await ref.read(photoQueueRepositoryProvider).delete(item.id);
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Canción guardada en la biblioteca')),
-      );
-    }
   }
 }

@@ -10,7 +10,9 @@ import '../capture/device_ocr_service.dart';
 import '../capture/ocr_models.dart';
 import '../capture/offline_photo_queue.dart';
 import '../capture/remote_digitize_service.dart';
+import '../../music_engine/music_key_detector.dart';
 import 'song_editor_page.dart';
+import 'song_review_correction_page.dart';
 
 class SongPhotoPage extends ConsumerStatefulWidget {
   const SongPhotoPage({
@@ -414,15 +416,15 @@ class _SongPhotoPageState extends ConsumerState<SongPhotoPage> {
     if (song == null) return;
     final result = await Navigator.of(context).push<dynamic>(
       MaterialPageRoute<dynamic>(
-        builder: (_) => SongEditorPage(
+        builder: (_) => SongReviewCorrectionPage(
+          imagePath: _croppedPath ?? '',
+          digitizedSong: song,
           songId: widget.songId,
-          initialTitle:
+          initialSongTitle:
               song.title ??
               (widget.songTitle.isEmpty || widget.songTitle == 'Nueva canción'
                   ? null
                   : widget.songTitle),
-          initialKey: song.key,
-          initialLyrics: song.chordOverLyricText,
         ),
       ),
     );
@@ -433,13 +435,10 @@ class _SongPhotoPageState extends ConsumerState<SongPhotoPage> {
     final doc = _ocrDocument;
     if (doc == null) return;
 
-    String? detectedKey;
-    for (final line in doc.processedLines) {
-      if (line.isChordLine && line.chords.isNotEmpty) {
-        detectedKey = line.chords.first.text;
-        break;
-      }
-    }
+    final allChords = doc.processedLines
+        .where((line) => line.isChordLine)
+        .expand((line) => line.chords.map((c) => c.text));
+    final detectedKey = MusicKeyDetector.detectKey(allChords);
 
     final formattedLyrics = doc.toChordOverLyricText();
     if (formattedLyrics.trim().isEmpty) {

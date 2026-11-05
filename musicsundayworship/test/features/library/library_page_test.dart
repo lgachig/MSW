@@ -5,7 +5,7 @@ import 'package:musicsundayworship/data/song_repository.dart';
 import 'package:musicsundayworship/features/capture/offline_photo_queue.dart';
 import 'package:musicsundayworship/features/capture/remote_digitize_service.dart';
 import 'package:musicsundayworship/features/library/library_page.dart';
-import 'package:musicsundayworship/features/songs/song_editor_page.dart';
+import 'package:musicsundayworship/features/songs/song_review_correction_page.dart';
 
 class _FakeSongRepository implements SongRepository {
   _FakeSongRepository(this.songs);
@@ -213,7 +213,9 @@ void main() {
     },
   );
 
-  testWidgets('opens ready queue item into SongEditorPage', (tester) async {
+  testWidgets('opens ready queue item into SongReviewCorrectionPage', (
+    tester,
+  ) async {
     final now = DateTime.now();
     final items = [
       PhotoQueueItem(
@@ -245,8 +247,11 @@ void main() {
     await tester.tap(find.byKey(const Key('open-queue-item-10')));
     await tester.pumpAndSettle();
 
-    expect(find.byType(SongEditorPage), findsOneWidget);
-    expect(find.widgetWithText(TextFormField, 'Grande y Fuerte'), findsOneWidget);
+    expect(find.byType(SongReviewCorrectionPage), findsOneWidget);
+    expect(
+      find.widgetWithText(TextFormField, 'Grande y Fuerte'),
+      findsOneWidget,
+    );
     expect(find.widgetWithText(TextFormField, 'Am'), findsOneWidget);
   });
 }
