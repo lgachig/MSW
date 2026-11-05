@@ -15,7 +15,11 @@ class SongTextParser {
       final lines = <SongLine>[];
       final pending = <ChordPlacementData>[];
       final sourceLines = blocks[sectionIndex].split('\n');
-      for (final sourceLine in sourceLines) {
+      final headingMatch = RegExp(r'^##\s+(.+?)\s*$')
+          .firstMatch(sourceLines.first.trim());
+      final sectionName =
+          headingMatch?.group(1) ?? 'Sección ${sections.length + 1}';
+      for (final sourceLine in sourceLines.skip(headingMatch == null ? 0 : 1)) {
         final placements = _parseChordLine(sourceLine);
         if (placements != null) {
           pending
@@ -44,7 +48,7 @@ class SongTextParser {
       if (lines.isNotEmpty) {
         sections.add(
           SongSection(
-            name: 'Sección ${sections.length + 1}',
+            name: sectionName,
             position: sections.length,
             lines: List.unmodifiable(lines),
           ),
@@ -121,16 +125,20 @@ class SongTextParser {
   static bool _isStandalonePunctuation(String value) =>
       value.isEmpty || RegExp(r'^[^A-Za-zÁÉÍÓÚáéíóúÑñ0-9]+$').hasMatch(value);
 
-  static String format(List<SongSection> sections) => sections
-      .expand(
-        (section) => section.lines.expand(
-          (line) => [
-            if (line.chords.isNotEmpty) _formatChordLine(line.chords),
-            line.content,
-          ],
-        ),
-      )
-      .join('\n');
+  static String format(List<SongSection> sections) => [
+    for (var sectionIndex = 0; sectionIndex < sections.length; sectionIndex++)
+      if (sections[sectionIndex].lines.isNotEmpty)
+        [
+          if (sections[sectionIndex].name != 'Sección ${sectionIndex + 1}')
+            '## ${sections[sectionIndex].name}',
+          ...sections[sectionIndex].lines.expand(
+            (line) => [
+              if (line.chords.isNotEmpty) _formatChordLine(line.chords),
+              line.content,
+            ],
+          ),
+        ].join('\n'),
+  ].join('\n\n');
 
   static String _formatChordLine(List<ChordPlacementData> chords) {
     final buffer = StringBuffer();
@@ -233,7 +241,8 @@ class _SongEditorPageState extends ConsumerState<SongEditorPage> {
       if (_timeSignature.text.trim().isEmpty) {
         _timeSignature.text = song.timeSignature ?? '';
       }
-      if (widget.initialLyrics == null || widget.initialLyrics!.trim().isEmpty) {
+      if (widget.initialLyrics == null ||
+          widget.initialLyrics!.trim().isEmpty) {
         _lyrics.text = _toText(song);
       }
     }

@@ -8,11 +8,11 @@ Eres el agente de pruebas de MusicSundayWorship.
 
 ## Qué haces
 
-1. Lee el ticket (`python3 tool/ticket.py show MSW-n`), en especial **Cómo se verifica** y **Comando de verificación**.
+1. Lee el ticket (`python3 MSW_ambiente_agentes/tool/ticket.py show MSW-n`), en especial **Cómo se verifica** y **Comando de verificación**.
 2. Revisa si cada criterio tiene una prueba automática. Si falta alguna, escríbela en `test/`.
 3. Ejecuta `flutter analyze` y las pruebas del ticket; si es relevante, `flutter test` completo.
 4. Si el ticket pide cobertura, ejecuta `flutter test --coverage` y reporta el porcentaje.
-5. Registra el resultado con `python3 tool/ticket.py log MSW-n "pruebas: N pasaron, N fallaron, analyze: ..."`.
+5. Registra el resultado con `python3 MSW_ambiente_agentes/tool/ticket.py log MSW-n "pruebas: N pasaron, N fallaron, analyze: ..."`.
 
 ## Reglas
 

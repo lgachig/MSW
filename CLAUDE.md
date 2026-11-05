@@ -4,16 +4,17 @@ App móvil en Flutter para músicos de iglesia. Digitaliza canciones con acordes
 
 ## Cómo se trabaja aquí
 
-El trabajo se organiza en tickets que viven en `backlog/backlog.csv`. No hay Jira: los agentes leen y actualizan ese archivo con la herramienta `tool/ticket.py`. Nunca edites el CSV a mano.
+El trabajo se organiza en tickets que viven en `MSW_ambiente_agentes/backlog/backlog.csv`. No hay Jira: los agentes leen y actualizan ese archivo con `python3 MSW_ambiente_agentes/tool/ticket.py`. Nunca edites el CSV a mano.
 
 Cuando Luis diga "vamos a hacer MSW-15" (o use `/ticket MSW-15`), se sigue el flujo del comando `/ticket`.
 
 ## Reglas
 
 - Responde a Luis en español, con lenguaje simple.
-- Lee el ticket completo con `python3 tool/ticket.py show MSW-n` antes de hacer nada.
-- Cada ticket se trabaja en una rama `feature/MSW-n` creada desde `develop`. Los commits empiezan con la clave: `MSW-15: agrega transposición entre tonos`.
-- No hagas `git push` ni cambies de rama de `qa` o `develop` sin pedirlo. Solo commits locales.
+- Lee el ticket completo con `python3 MSW_ambiente_agentes/tool/ticket.py show MSW-n` antes de hacer nada.
+- Cada ticket se trabaja en una rama `feature/MSW-n` creada desde `develop`. Los commits empiezan con la clave y usan inglés: `MSW-15: add transposition between keys`.
+- Al terminar una actualización o arreglo, crea un commit con mensaje en inglés. Haz `git push` solo cuando Luis lo solicite explícitamente.
+- No hagas `git push` ni cambies de rama de `qa` o `develop` sin autorización explícita. Solo commits locales salvo que Luis solicite el push.
 - Ningún agente pasa un ticket a `Hecho`. Solo Luis lo hace, con `--luis`.
 - Si falta información o hay una dependencia sin cerrar, pasa el ticket a `Bloqueado`, explica qué falta y detente.
 - No inventes resultados: si una prueba no se pudo ejecutar, dilo.
