@@ -328,7 +328,8 @@ class _SongDetailPageState extends ConsumerState<SongDetailPage> {
           ),
           const SizedBox(height: 16),
         ],
-        ..._sections.expand((section) => section.lines.map(_buildLine)),
+        for (final section in _sections)
+          _buildSectionCard(section),
       ],
     ),
   );
@@ -400,6 +401,57 @@ class _SongDetailPageState extends ConsumerState<SongDetailPage> {
       ];
       _selectedArrangement = saved;
     });
+  }
+
+  Widget _buildSectionCard(SongSection section) {
+    final type = SectionType.fromString(section.name);
+    final borderColor = SectionStyle.borderColor(type);
+    final bgColor = SectionStyle.backgroundColor(type);
+    final textColor = SectionStyle.textColor(type);
+
+    return Container(
+      key: Key('section-card-${section.position}'),
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: bgColor.withValues(alpha: 0.35),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: borderColor.withValues(alpha: 0.8), width: 1.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+            decoration: BoxDecoration(
+              color: bgColor,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+            ),
+            child: Row(
+              children: [
+                Icon(SectionStyle.icon(type), size: 16, color: textColor),
+                const SizedBox(width: 8),
+                Text(
+                  section.name.trim().isEmpty ? 'Sección' : section.name,
+                  style: TextStyle(
+                    color: textColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: section.lines.map(_buildLine).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildLine(SongLine line) {

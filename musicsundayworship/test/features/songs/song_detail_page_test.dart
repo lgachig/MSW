@@ -107,4 +107,16 @@ void main() {
 
     expect(find.text('Editor de estructura'), findsOneWidget);
   });
+
+  testWidgets('renders sections framed in styled cards with headers', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(home: SongDetailPage(song: _song)),
+    );
+
+    expect(find.byKey(const Key('section-card-0')), findsOneWidget);
+    expect(find.text('Sección 1'), findsWidgets);
+    expect(find.text('Tu amor no cambia'), findsOneWidget);
+  });
 }
