@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:musicsundayworship/data/song_repository.dart';
+import 'package:musicsundayworship/music_engine/song_structure.dart';
 import 'package:musicsundayworship/features/capture/offline_photo_queue.dart';
 import 'package:musicsundayworship/features/capture/remote_digitize_service.dart';
 import 'package:musicsundayworship/features/songs/song_review_correction_page.dart';
@@ -45,6 +46,24 @@ class _MockSongRepository implements SongRepository {
 
   @override
   Future<SongDocument> updatePhotoPath(int songId, String? photoPath) =>
+      throw UnimplementedError();
+
+  @override
+  Future<SongStructure> createStructure(SongStructure s) =>
+      throw UnimplementedError();
+
+  @override
+  Future<List<SongStructure>> readStructures(int songId) async => [];
+
+  @override
+  Future<SongStructure> updateStructure(SongStructure s) =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> deleteStructure(int id) async {}
+
+  @override
+  Future<SongStructure> duplicateStructure(int id, {String? newName}) =>
       throw UnimplementedError();
 
   @override
