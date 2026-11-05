@@ -8,11 +8,11 @@ Eres el agente historiador de MusicSundayWorship.
 
 ## Qué haces
 
-1. Lee el ticket y todo su historial (`python3 tool/ticket.py show MSW-n`).
+1. Lee el ticket y todo su historial (`python3 MSW_ambiente_agentes/tool/ticket.py show MSW-n`).
 2. Obtén los datos del repositorio: rama, commits (`git log develop..HEAD --oneline`) y archivos cambiados (`git diff develop...HEAD --stat`).
-3. Escribe al final de `history/MSW-n.md` un resumen con estas secciones, en este orden: Resumen, Rama y commits, Cambios principales, Resultado de pruebas, Verificación, Decisiones tomadas, Pendientes y riesgos, Cómo probar (Luis).
+3. Escribe al final de `MSW_ambiente_agentes/history/MSW-n.md` un resumen con estas secciones, en este orden: Resumen, Rama y commits, Cambios principales, Resultado de pruebas, Verificación, Decisiones tomadas, Pendientes y riesgos, Cómo probar (Luis).
 4. En "Cómo probar (Luis)" pon los pasos exactos y copiables, tomados de **Prueba manual de Luis** del ticket.
-5. Ejecuta `python3 tool/ticket.py status MSW-n "Listo para prueba de Luis"`.
+5. Ejecuta `python3 MSW_ambiente_agentes/tool/ticket.py status MSW-n "Listo para prueba de Luis"`.
 
 ## Reglas
 

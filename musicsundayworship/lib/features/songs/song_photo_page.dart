@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../capture/device_ocr_service.dart';
 import '../capture/ocr_models.dart';
+import '../capture/remote_digitize_service.dart';
 import 'song_editor_page.dart';
 
 class SongPhotoPage extends ConsumerStatefulWidget {
@@ -33,8 +34,10 @@ class _SongPhotoPageState extends ConsumerState<SongPhotoPage> {
   String? _croppedPath;
   bool _loading = false;
   bool _ocrProcessing = false;
+  bool _aiProcessing = false;
   String? _error;
   OcrDocument? _ocrDocument;
+  DigitizedSong? _digitizedSong;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -49,7 +52,8 @@ class _SongPhotoPageState extends ConsumerState<SongPhotoPage> {
             padding: EdgeInsets.all(14),
             child: Text(
               'Toma una foto o elígela de la galería y recorta la sección con letra y acordes. '
-              'El OCR en el dispositivo procesará la imagen sin conexión a internet.',
+              'El OCR en el dispositivo funciona sin conexión. El análisis con IA requiere internet '
+              'y envía la foto recortada al servidor y al proveedor de IA configurado.',
             ),
           ),
         ),
@@ -69,9 +73,16 @@ class _SongPhotoPageState extends ConsumerState<SongPhotoPage> {
           if (!_ocrProcessing && _ocrDocument == null)
             FilledButton.icon(
               key: const Key('digitize-ocr'),
-              onPressed: _loading ? null : _processOcr,
+              onPressed: _loading || _aiProcessing ? null : _processOcr,
               icon: const Icon(Icons.document_scanner),
               label: const Text('Digitalizar con OCR (en el dispositivo)'),
+            ),
+          if (!_aiProcessing)
+            OutlinedButton.icon(
+              key: const Key('digitize-ai'),
+              onPressed: _loading || _ocrProcessing ? null : _digitizeWithAi,
+              icon: const Icon(Icons.auto_awesome),
+              label: const Text('Analizar foto con IA (requiere internet)'),
             ),
           if (_ocrProcessing)
             const Padding(
@@ -82,6 +93,19 @@ class _SongPhotoPageState extends ConsumerState<SongPhotoPage> {
                     CircularProgressIndicator(),
                     SizedBox(height: 12),
                     Text('Extrayendo texto y acordes sin internet...'),
+                  ],
+                ),
+              ),
+            ),
+          if (_aiProcessing)
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Center(
+                child: Column(
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 12),
+                    Text('Analizando la foto con IA...'),
                   ],
                 ),
               ),
@@ -127,7 +151,10 @@ class _SongPhotoPageState extends ConsumerState<SongPhotoPage> {
                   ),
                   child: Text(
                     _ocrDocument!.toChordOverLyricText(),
-                    style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
+                    style: const TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 13,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -142,16 +169,53 @@ class _SongPhotoPageState extends ConsumerState<SongPhotoPage> {
           ),
           const SizedBox(height: 16),
         ],
+        if (_digitizedSong != null) ...[
+          Card(
+            key: const Key('ai-result'),
+            color: Colors.blue.shade50,
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Resultado de IA${_digitizedSong!.title == null ? '' : ': ${_digitizedSong!.title}'}',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  if (_digitizedSong!.key != null)
+                    Text('Tono detectado: ${_digitizedSong!.key}'),
+                  const SizedBox(height: 8),
+                  SelectableText(
+                    _digitizedSong!.chordOverLyricText,
+                    style: const TextStyle(fontFamily: 'monospace'),
+                  ),
+                  const SizedBox(height: 12),
+                  FilledButton.icon(
+                    key: const Key('open-ai-result-in-editor'),
+                    onPressed: _openAiResultInEditor,
+                    icon: const Icon(Icons.edit_note),
+                    label: const Text('Revisar y editar resultado'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
         FilledButton.icon(
           key: const Key('pick-from-gallery'),
-          onPressed: _loading || _ocrProcessing ? null : () => _select(ImageSource.gallery),
+          onPressed: _loading || _ocrProcessing || _aiProcessing
+              ? null
+              : () => _select(ImageSource.gallery),
           icon: const Icon(Icons.photo_library),
           label: const Text('Elegir de galería'),
         ),
         const SizedBox(height: 8),
         FilledButton.icon(
           key: const Key('take-photo'),
-          onPressed: _loading || _ocrProcessing ? null : () => _select(ImageSource.camera),
+          onPressed: _loading || _ocrProcessing || _aiProcessing
+              ? null
+              : () => _select(ImageSource.camera),
           icon: const Icon(Icons.camera_alt),
           label: const Text('Tomar foto'),
         ),
@@ -168,6 +232,7 @@ class _SongPhotoPageState extends ConsumerState<SongPhotoPage> {
     setState(() {
       _error = null;
       _ocrDocument = null;
+      _digitizedSong = null;
     });
     try {
       final selected = await _picker.pickImage(source: source);
@@ -235,6 +300,55 @@ class _SongPhotoPageState extends ConsumerState<SongPhotoPage> {
     }
   }
 
+  Future<void> _digitizeWithAi() async {
+    final path = _croppedPath;
+    if (path == null) return;
+
+    setState(() {
+      _aiProcessing = true;
+      _error = null;
+      _digitizedSong = null;
+    });
+    try {
+      final service = ref.read(remoteDigitizeServiceProvider);
+      final song = await service.digitize(path);
+      if (!mounted) return;
+      if (song.sections.isEmpty || song.chordOverLyricText.trim().isEmpty) {
+        throw const DigitizeException(
+          'La IA no detectó letra o acordes en la foto.',
+        );
+      }
+      setState(() {
+        _digitizedSong = song;
+        _aiProcessing = false;
+      });
+    } on DigitizeException catch (error) {
+      _setError(error.message);
+    } on Exception catch (error) {
+      _setError('No se pudo analizar la foto: $error');
+    }
+  }
+
+  Future<void> _openAiResultInEditor() async {
+    final song = _digitizedSong;
+    if (song == null) return;
+    final result = await Navigator.of(context).push<dynamic>(
+      MaterialPageRoute<dynamic>(
+        builder: (_) => SongEditorPage(
+          songId: widget.songId,
+          initialTitle:
+              song.title ??
+              (widget.songTitle.isEmpty || widget.songTitle == 'Nueva canción'
+                  ? null
+                  : widget.songTitle),
+          initialKey: song.key,
+          initialLyrics: song.chordOverLyricText,
+        ),
+      ),
+    );
+    if (mounted && result != null) Navigator.of(context).pop(result);
+  }
+
   Future<void> _openInEditor() async {
     final doc = _ocrDocument;
     if (doc == null) return;
@@ -257,7 +371,8 @@ class _SongPhotoPageState extends ConsumerState<SongPhotoPage> {
       MaterialPageRoute<dynamic>(
         builder: (_) => SongEditorPage(
           songId: widget.songId,
-          initialTitle: widget.songTitle.isEmpty || widget.songTitle == 'Nueva canción'
+          initialTitle:
+              widget.songTitle.isEmpty || widget.songTitle == 'Nueva canción'
               ? null
               : widget.songTitle,
           initialKey: detectedKey,
@@ -284,6 +399,7 @@ class _SongPhotoPageState extends ConsumerState<SongPhotoPage> {
     setState(() {
       _loading = false;
       _ocrProcessing = false;
+      _aiProcessing = false;
       _error = message;
     });
   }

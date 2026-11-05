@@ -80,7 +80,9 @@ class _EditorHost extends StatelessWidget {
 }
 
 void main() {
-  testWidgets('shows the OCR title, detected key and extracted lyrics', (tester) async {
+  testWidgets('shows the OCR title, detected key and extracted lyrics', (
+    tester,
+  ) async {
     const extractedLyrics = 'G       C\nTu amor no cambia';
     await tester.pumpWidget(
       ProviderScope(
@@ -117,6 +119,15 @@ void main() {
     final sections = SongTextParser.parse('A       E/G#       F#m\nLetra');
 
     expect(SongTextParser.format(sections), 'A       E/G#       F#m\nLetra');
+  });
+
+  test('preserves AI section names when editing and saving chord text', () {
+    const input =
+        '## Coro\nG       C\nTu amor permanece\n\n## Puente\nD\nSiempre fiel';
+    final sections = SongTextParser.parse(input);
+
+    expect(sections.map((section) => section.name), ['Coro', 'Puente']);
+    expect(SongTextParser.format(sections), input);
   });
 
   test('preserves punctuation between chord placements', () {

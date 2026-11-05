@@ -12,7 +12,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements-dev.txt
 cp .env.example .env  # skip this if backend/.env already exists; it preserves your keys
-# Edit .env and set AI_PROVIDER=gemini and GEMINI_API_KEY on this machine only.
+# Edit .env and set AI_PROVIDER=gemini and GEMINI_API_KEYS on this machine only.
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
