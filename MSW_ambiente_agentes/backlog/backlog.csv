@@ -584,7 +584,7 @@ Guardar fotos pendientes y procesarlas cuando haya conexión.
 flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
 
 *Depende de*
-MSW-30","","MSW-4","Medium","fase-3","msw","5","S5","En curso"
+MSW-30","","MSW-4","Medium","fase-3","msw","5","S5","Listo para prueba de Luis"
 "MSW-33","Story","Pantalla de revisión y corrección","*Objetivo*
 Comparar la foto con el resultado y corregirlo antes de guardar.
 

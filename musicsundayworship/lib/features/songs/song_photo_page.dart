@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../capture/device_ocr_service.dart';
 import '../capture/ocr_models.dart';
+import '../capture/offline_photo_queue.dart';
 import '../capture/remote_digitize_service.dart';
 import 'song_editor_page.dart';
 
@@ -16,12 +17,14 @@ class SongPhotoPage extends ConsumerStatefulWidget {
     super.key,
     required this.songTitle,
     this.songId,
+    this.initialCroppedPath,
     this.onImageCropped,
     this.onDocumentExtracted,
   });
 
   final int? songId;
   final String songTitle;
+  final String? initialCroppedPath;
   final ValueChanged<String>? onImageCropped;
   final ValueChanged<OcrDocument>? onDocumentExtracted;
 
@@ -38,6 +41,20 @@ class _SongPhotoPageState extends ConsumerState<SongPhotoPage> {
   String? _error;
   OcrDocument? _ocrDocument;
   DigitizedSong? _digitizedSong;
+
+  @override
+  void initState() {
+    super.initState();
+    _croppedPath = widget.initialCroppedPath;
+  }
+
+  bool _fileExists(String path) {
+    try {
+      return File(path).existsSync();
+    } catch (_) {
+      return false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -58,17 +75,18 @@ class _SongPhotoPageState extends ConsumerState<SongPhotoPage> {
           ),
         ),
         const SizedBox(height: 16),
-        if (_croppedPath != null && File(_croppedPath!).existsSync()) ...[
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Image.file(
-              File(_croppedPath!),
-              key: const Key('song-photo-preview'),
-              fit: BoxFit.contain,
-              height: 260,
-              errorBuilder: (_, _, _) => const SizedBox.shrink(),
+        if (_croppedPath != null) ...[
+          if (_fileExists(_croppedPath!))
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.file(
+                File(_croppedPath!),
+                key: const Key('song-photo-preview'),
+                fit: BoxFit.contain,
+                height: 260,
+                errorBuilder: (_, _, _) => const SizedBox.shrink(),
+              ),
             ),
-          ),
           const SizedBox(height: 12),
           if (!_ocrProcessing && _ocrDocument == null)
             FilledButton.icon(
@@ -83,6 +101,19 @@ class _SongPhotoPageState extends ConsumerState<SongPhotoPage> {
               onPressed: _loading || _ocrProcessing ? null : _digitizeWithAi,
               icon: const Icon(Icons.auto_awesome),
               label: const Text('Analizar foto con IA (requiere internet)'),
+            ),
+          if (!_aiProcessing && !_ocrProcessing)
+            OutlinedButton.icon(
+              key: const Key('enqueue-offline'),
+              onPressed: _loading
+                  ? null
+                  : () => _enqueueOffline(
+                        _croppedPath!,
+                        customMessage:
+                            'Foto guardada en la cola sin conexión. Se procesará al reconectar.',
+                      ),
+              icon: const Icon(Icons.cloud_upload_outlined),
+              label: const Text('Guardar en cola para cuando haya internet'),
             ),
           if (_ocrProcessing)
             const Padding(
@@ -304,6 +335,35 @@ class _SongPhotoPageState extends ConsumerState<SongPhotoPage> {
     }
   }
 
+  Future<void> _enqueueOffline(String path, {String? customMessage}) async {
+    setState(() {
+      _aiProcessing = false;
+      _error = null;
+    });
+    try {
+      final queue = ref.read(photoQueueRepositoryProvider);
+      await queue.enqueue(
+        filePath: path,
+        songTitle:
+            widget.songTitle.isEmpty || widget.songTitle == 'Nueva canción'
+                ? null
+                : widget.songTitle,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            customMessage ??
+                'Foto guardada en la cola sin internet. Se procesará al recuperar conexión.',
+          ),
+          backgroundColor: Colors.amber.shade800,
+        ),
+      );
+    } catch (e) {
+      _setError('No se pudo guardar en la cola: $e');
+    }
+  }
+
   Future<void> _digitizeWithAi() async {
     final path = _croppedPath;
     if (path == null) return;
@@ -327,9 +387,25 @@ class _SongPhotoPageState extends ConsumerState<SongPhotoPage> {
         _aiProcessing = false;
       });
     } on DigitizeException catch (error) {
-      _setError(error.message);
+      if (PhotoQueueProcessor.isNetworkError(error)) {
+        await _enqueueOffline(
+          path,
+          customMessage:
+              'Sin conexión a internet. Foto agregada a la cola para digitalizar al reconectar.',
+        );
+      } else {
+        _setError(error.message);
+      }
     } on Exception catch (error) {
-      _setError('No se pudo analizar la foto: $error');
+      if (PhotoQueueProcessor.isNetworkError(error)) {
+        await _enqueueOffline(
+          path,
+          customMessage:
+              'Sin conexión a internet. Foto agregada a la cola para digitalizar al reconectar.',
+        );
+      } else {
+        _setError('No se pudo analizar la foto: $error');
+      }
     }
   }
 

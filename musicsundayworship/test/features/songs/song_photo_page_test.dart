@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:musicsundayworship/features/capture/device_ocr_service.dart';
 import 'package:musicsundayworship/features/capture/ocr_models.dart';
+import 'package:musicsundayworship/features/capture/offline_photo_queue.dart';
 import 'package:musicsundayworship/features/capture/remote_digitize_service.dart';
 import 'package:musicsundayworship/features/songs/song_photo_page.dart';
 
@@ -89,4 +92,82 @@ void main() {
     );
     expect(invalidChip.backgroundColor, Colors.red.shade100);
   });
+
+  testWidgets('enqueues photo manually when offline enqueue button is tapped', (
+    tester,
+  ) async {
+    final queueRepo = InMemoryPhotoQueueRepository();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          photoQueueRepositoryProvider.overrideWithValue(queueRepo),
+        ],
+        child: const MaterialApp(
+          home: SongPhotoPage(
+            songTitle: 'Canción Offline',
+            initialCroppedPath: '/virtual/cropped_test.jpg',
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byKey(const Key('enqueue-offline')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('enqueue-offline')));
+    await tester.pump();
+
+    final queued = await queueRepo.getAll();
+    expect(queued.length, 1);
+    expect(queued.first.songTitle, 'Canción Offline');
+    expect(queued.first.status, QueueStatus.pending);
+    expect(find.byType(SnackBar), findsOneWidget);
+    expect(
+      find.text('Foto guardada en la cola sin conexión. Se procesará al reconectar.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets(
+    'automatically enqueues photo when digitize-ai fails due to network outage',
+    (tester) async {
+      final queueRepo = InMemoryPhotoQueueRepository();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            photoQueueRepositoryProvider.overrideWithValue(queueRepo),
+            remoteDigitizeServiceProvider.overrideWithValue(
+              _OfflineFailingDigitizeService(),
+            ),
+          ],
+          child: const MaterialApp(
+            home: SongPhotoPage(
+              songTitle: 'Modo Avión Canto',
+              initialCroppedPath: '/virtual/cropped_offline.jpg',
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.byKey(const Key('digitize-ai')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('digitize-ai')));
+      await tester.pump();
+
+      final queued = await queueRepo.getAll();
+      expect(queued.length, 1);
+      expect(queued.first.songTitle, 'Modo Avión Canto');
+      expect(queued.first.status, QueueStatus.pending);
+      expect(find.byType(SnackBar), findsOneWidget);
+      expect(find.textContaining('Sin conexión'), findsOneWidget);
+    },
+  );
+}
+
+class _OfflineFailingDigitizeService implements RemoteDigitizeService {
+  @override
+  Future<DigitizedSong> digitize(String imagePath) async {
+    throw const SocketException('Network is unreachable');
+  }
 }

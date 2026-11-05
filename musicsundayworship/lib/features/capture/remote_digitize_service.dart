@@ -23,6 +23,11 @@ class DigitizedChord {
 
   bool get isValid => Chord.parse(chord) != null;
 
+  Map<String, dynamic> toJson() => {
+    'chord': chord,
+    'position': position,
+  };
+
   factory DigitizedChord.fromJson(Map<String, dynamic> json) => DigitizedChord(
     chord: json['chord'] as String,
     position: json['position'] as int,
@@ -34,6 +39,11 @@ class DigitizedLine {
 
   final String text;
   final List<DigitizedChord> chords;
+
+  Map<String, dynamic> toJson() => {
+    'text': text,
+    'chords': chords.map((c) => c.toJson()).toList(),
+  };
 
   factory DigitizedLine.fromJson(Map<String, dynamic> json) => DigitizedLine(
     text: json['text'] as String,
@@ -48,6 +58,11 @@ class DigitizedSection {
 
   final String name;
   final List<DigitizedLine> lines;
+
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'lines': lines.map((l) => l.toJson()).toList(),
+  };
 
   factory DigitizedSection.fromJson(Map<String, dynamic> json) =>
       DigitizedSection(
@@ -68,6 +83,12 @@ class DigitizedSong {
   final String? title;
   final String? key;
   final List<DigitizedSection> sections;
+
+  Map<String, dynamic> toJson() => {
+    if (title != null) 'title': title,
+    if (key != null) 'key': key,
+    'sections': sections.map((s) => s.toJson()).toList(),
+  };
 
   Iterable<DigitizedChord> get chords =>
       sections.expand((section) => section.lines.expand((line) => line.chords));

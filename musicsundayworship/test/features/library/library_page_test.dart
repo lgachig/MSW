@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:musicsundayworship/data/song_repository.dart';
+import 'package:musicsundayworship/features/capture/offline_photo_queue.dart';
+import 'package:musicsundayworship/features/capture/remote_digitize_service.dart';
 import 'package:musicsundayworship/features/library/library_page.dart';
+import 'package:musicsundayworship/features/songs/song_editor_page.dart';
 
 class _FakeSongRepository implements SongRepository {
   _FakeSongRepository(this.songs);
@@ -132,6 +135,120 @@ void main() {
     expect(find.text('Alfa'), findsOneWidget);
     expect(find.text('Zeta'), findsNothing);
   });
+
+  testWidgets(
+    'displays offline queue section with items in pending, processing, ready and error states',
+    (tester) async {
+      final now = DateTime.now();
+      final items = [
+        PhotoQueueItem(
+          id: 1,
+          filePath: '/tmp/p1.jpg',
+          songTitle: 'Foto Uno',
+          status: QueueStatus.pending,
+          createdAt: now,
+          updatedAt: now,
+        ),
+        PhotoQueueItem(
+          id: 2,
+          filePath: '/tmp/p2.jpg',
+          songTitle: 'Foto Dos',
+          status: QueueStatus.processing,
+          createdAt: now,
+          updatedAt: now,
+        ),
+        PhotoQueueItem(
+          id: 3,
+          filePath: '/tmp/p3.jpg',
+          songTitle: 'Foto Tres',
+          status: QueueStatus.ready,
+          createdAt: now,
+          updatedAt: now,
+          resultJson: '{"title":"Foto Tres","key":"G","sections":[]}',
+        ),
+        PhotoQueueItem(
+          id: 4,
+          filePath: '/tmp/p4.jpg',
+          songTitle: 'Foto Cuatro',
+          status: QueueStatus.error,
+          createdAt: now,
+          updatedAt: now,
+          errorMessage: 'Timeout de red',
+        ),
+      ];
+
+      final queueRepo = InMemoryPhotoQueueRepository(items);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            songRepositoryProvider.overrideWithValue(_FakeSongRepository([])),
+            photoQueueRepositoryProvider.overrideWithValue(queueRepo),
+            photoQueueProcessorProvider
+                .overrideWithValue(_FakePhotoQueueProcessor(queueRepo)),
+          ],
+          child: const MaterialApp(home: LibraryPage()),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.byKey(const Key('offline-queue-section')), findsOneWidget);
+      expect(find.text('Cola de digitalización (4)'), findsOneWidget);
+      expect(find.text('Foto Uno'), findsOneWidget);
+      expect(find.text('Estado: pendiente'), findsOneWidget);
+      expect(find.byKey(const Key('status-pending-1')), findsOneWidget);
+
+      expect(find.text('Foto Dos'), findsOneWidget);
+      expect(find.text('Estado: procesando'), findsOneWidget);
+      expect(find.byKey(const Key('status-processing-2')), findsOneWidget);
+
+      expect(find.text('Foto Tres'), findsOneWidget);
+      expect(find.text('Estado: listo'), findsOneWidget);
+      expect(find.byKey(const Key('status-ready-3')), findsOneWidget);
+      expect(find.byKey(const Key('open-queue-item-3')), findsOneWidget);
+
+      expect(find.text('Foto Cuatro'), findsOneWidget);
+      expect(find.text('Error: Timeout de red'), findsOneWidget);
+      expect(find.byKey(const Key('status-error-4')), findsOneWidget);
+    },
+  );
+
+  testWidgets('opens ready queue item into SongEditorPage', (tester) async {
+    final now = DateTime.now();
+    final items = [
+      PhotoQueueItem(
+        id: 10,
+        filePath: '/tmp/ready_song.jpg',
+        songTitle: 'Grande y Fuerte',
+        status: QueueStatus.ready,
+        createdAt: now,
+        updatedAt: now,
+        resultJson:
+            '{"title":"Grande y Fuerte","key":"Am","sections":[{"name":"Verso","lines":[{"text":"Tu amor es grande","chords":[{"chord":"Am","position":0}]}]}]}',
+      ),
+    ];
+
+    final queueRepo = InMemoryPhotoQueueRepository(items);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          songRepositoryProvider.overrideWithValue(_FakeSongRepository([])),
+          photoQueueRepositoryProvider.overrideWithValue(queueRepo),
+        ],
+        child: const MaterialApp(home: LibraryPage()),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byKey(const Key('open-queue-item-10')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('open-queue-item-10')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(SongEditorPage), findsOneWidget);
+    expect(find.widgetWithText(TextFormField, 'Grande y Fuerte'), findsOneWidget);
+    expect(find.widgetWithText(TextFormField, 'Am'), findsOneWidget);
+  });
 }
 
 class _NeverEmitsSongRepository extends _FakeSongRepository {
@@ -139,4 +256,21 @@ class _NeverEmitsSongRepository extends _FakeSongRepository {
 
   @override
   Stream<List<SongDocument>> watchAll() => const Stream.empty();
+}
+
+class _FakePhotoQueueProcessor extends PhotoQueueProcessor {
+  _FakePhotoQueueProcessor(PhotoQueueRepository repository)
+      : super(
+          repository: repository,
+          digitizeService: _NoopDigitizeService(),
+        );
+
+  @override
+  Future<int> processPendingQueue() async => 0;
+}
+
+class _NoopDigitizeService implements RemoteDigitizeService {
+  @override
+  Future<DigitizedSong> digitize(String imagePath) async =>
+      const DigitizedSong(title: '', key: '', sections: []);
 }
