@@ -61,7 +61,11 @@ def create_app(
 
     @app.post("/digitize", response_model=DigitizeResponse)
     async def digitize(request: Request, image: UploadFile = File(...)) -> DigitizeResponse:
-        if image.content_type not in ALLOWED_TYPES:
+        declared_type = (image.content_type or "").lower()
+        if declared_type not in ALLOWED_TYPES and declared_type not in {
+            "",
+            "application/octet-stream",
+        }:
             raise HTTPException(
                 status_code=415,
                 detail="Use a JPEG, PNG, WebP, HEIC, or HEIF image.",
@@ -73,7 +77,9 @@ def create_app(
         if not data:
             raise HTTPException(status_code=400, detail="The image is empty.")
         mime_type = _image_type(data)
-        if mime_type is None or mime_type != image.content_type:
+        if mime_type is None or (
+            declared_type in ALLOWED_TYPES and mime_type != declared_type
+        ):
             raise HTTPException(status_code=415, detail="The uploaded file is not a valid supported image.")
         if mime_type in HEIF_TYPES and config.provider != "gemini" and provider is None:
             raise HTTPException(
@@ -121,4 +127,3 @@ def create_app(
 
 
 app = create_app()
-

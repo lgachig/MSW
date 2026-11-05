@@ -6,6 +6,18 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:musicsundayworship/features/capture/remote_digitize_service.dart';
 
+class RecordingClient extends http.BaseClient {
+  RecordingClient(this.onRequest);
+
+  final Future<http.StreamedResponse> Function(
+    http.BaseRequest request,
+  ) onRequest;
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) =>
+      onRequest(request);
+}
+
 void main() {
   test('uploads image and maps structured song response', () async {
     final directory = await Directory.systemTemp.createTemp('msw-digitize-');
@@ -49,6 +61,37 @@ void main() {
     expect(result.title, 'Canto');
     expect(result.key, 'G');
     expect(result.chordOverLyricText, '## Coro\nG    C\nTu amor permanece');
+    client.close();
+  });
+
+  test('declares the image MIME type in the multipart part', () async {
+    final directory = await Directory.systemTemp.createTemp('msw-digitize-');
+    addTearDown(() => directory.delete(recursive: true));
+    final image = File('${directory.path}/song.heic')
+      ..writeAsBytesSync([0, 1, 2]);
+    List<int>? sentBody;
+    final client = RecordingClient((request) async {
+      sentBody = await request.finalize().toBytes();
+      return http.StreamedResponse(
+        Stream.value(utf8.encode(jsonEncode({
+          'title': null,
+          'key': null,
+          'sections': [],
+        }))),
+        200,
+      );
+    });
+    final service = HttpRemoteDigitizeService(
+      baseUrl: 'https://api.example.com',
+      client: client,
+    );
+    await service.digitize(image.path);
+    await service.digitize(image.path);
+
+    expect(
+      utf8.decode(sentBody!),
+      contains('content-type: image/heic'),
+    );
     client.close();
   });
 

@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 
 import '../../music_engine/chord.dart';
 
@@ -144,8 +146,22 @@ class HttpRemoteDigitizeService implements RemoteDigitizeService {
       );
     }
 
+    final extension = _extension(imagePath);
+    final mimeType = _mimeTypeForExtension(extension);
+    if (mimeType == null) {
+      throw const DigitizeException(
+        'El formato de la imagen no es compatible. Usa JPEG, PNG, WebP, HEIC o HEIF.',
+      );
+    }
+
     final request = http.MultipartRequest('POST', uri.resolve('/digitize'));
-    request.files.add(await http.MultipartFile.fromPath('image', imagePath));
+    request.files.add(
+      await http.MultipartFile.fromPath(
+        'image',
+        imagePath,
+        contentType: MediaType.parse(mimeType),
+      ),
+    );
 
     try {
       final streamed = await _client
@@ -186,7 +202,23 @@ class HttpRemoteDigitizeService implements RemoteDigitizeService {
         'No se pudo conectar con el servicio. Revisa internet e inténtalo de nuevo.',
       );
     }
+
   }
+
+  static String _extension(String path) {
+    final fileName = path.split(Platform.pathSeparator).last.toLowerCase();
+    final dot = fileName.lastIndexOf('.');
+    return dot == -1 ? '' : fileName.substring(dot + 1);
+  }
+
+  static String? _mimeTypeForExtension(String extension) => switch (extension) {
+    'jpg' || 'jpeg' => 'image/jpeg',
+    'png' => 'image/png',
+    'webp' => 'image/webp',
+    'heic' => 'image/heic',
+    'heif' => 'image/heif',
+    _ => null,
+  };
 }
 
 final remoteDigitizeServiceProvider = Provider<RemoteDigitizeService>((ref) {

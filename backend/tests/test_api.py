@@ -189,6 +189,17 @@ class DigitizeApiTests(unittest.TestCase):
         self.assertEqual(response.status_code, 415)
         self.assertEqual(provider.calls, [])
 
+    def test_generic_multipart_type_is_resolved_from_image_signature(self) -> None:
+        provider = FakeDigitizer(VALID_RESULT)
+        with self.make_client(provider) as client:
+            response = client.post(
+                "/digitize",
+                files={"image": ("song.jpg", JPEG, "application/octet-stream")},
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(provider.calls[0][0:2], (JPEG, "image/jpeg"))
+
     def test_image_size_limit_is_enforced_before_model_call(self) -> None:
         provider = FakeDigitizer(VALID_RESULT)
         large_jpeg = b"\xff\xd8\xff" + b"x" * self.settings.max_image_bytes
