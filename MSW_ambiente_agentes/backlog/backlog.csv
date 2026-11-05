@@ -629,7 +629,7 @@ Comprobar la meta de 90% de acordes correctos.
 flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
 
 *Depende de*
-MSW-27, MSW-33","","MSW-4","High","fase-3","msw","3","S5","En curso"
+MSW-27, MSW-33","","MSW-4","High","fase-3","msw","3","S5","Listo para prueba de Luis"
 "MSW-35","Story","Modelo de estructura con repeticiones","*Objetivo*
 Representar el orden de las secciones y cuántas veces se repite cada una.
 
