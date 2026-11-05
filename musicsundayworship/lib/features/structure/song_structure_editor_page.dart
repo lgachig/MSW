@@ -275,7 +275,10 @@ class _SongStructureEditorPageState
   Future<void> _showSuggestStructureDialog() async {
     final buffer = StringBuffer();
     for (final sec in widget.song.sections) {
-      buffer.writeln(sec.name);
+      final header = LyricsStructureSuggester.matchHeader(sec.name);
+      if (header != null) {
+        buffer.writeln('[${header.rawName}]');
+      }
       for (final line in sec.lines) {
         if (line.chords.isNotEmpty) {
           final chordRow = StringBuffer();

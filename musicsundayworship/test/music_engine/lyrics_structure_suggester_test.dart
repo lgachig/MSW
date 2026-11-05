@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:musicsundayworship/data/song_repository.dart';
 import 'package:musicsundayworship/music_engine/music_engine.dart';
 
 void main() {
@@ -234,6 +235,113 @@ Canto siempre
       expect(structure.items.length, 2);
       expect(structure.items[0].type, SectionType.verso);
       expect(structure.items[1].type, SectionType.coro);
+    });
+
+    test('detecta secciones incluso si se pegan sin líneas en blanco intermedias', () {
+      const tightLyrics = '''
+[Verso 1]
+Tu amor no cambia
+Tu gracia es real
+[Coro]
+Cuan grande es Dios
+Cantale cuan grande es Dios
+[Verso 2]
+Dia a dia El esta
+El tiempo en Sus manos
+[Coro]
+Cuan grande es Dios
+Cantale cuan grande es Dios
+''';
+
+      final proposal = LyricsStructureSuggester.suggestFromText(tightLyrics);
+
+      expect(proposal.items.length, 4);
+      expect(proposal.items[0].name, 'Verso 1');
+      expect(proposal.items[0].type, SectionType.verso);
+
+      expect(proposal.items[1].name, 'Coro');
+      expect(proposal.items[1].type, SectionType.coro);
+
+      expect(proposal.items[2].name, 'Verso 2');
+      expect(proposal.items[2].type, SectionType.verso);
+
+      expect(proposal.items[3].name, 'Coro');
+      expect(proposal.items[3].type, SectionType.coro);
+    });
+
+    test('extrae indicadores de repetición como x2, (2x) o Bis en encabezados', () {
+      const repeatedHeaders = '''
+[Verso 1]
+Canto a mi Senor
+
+[Coro] x2
+Santo es el Senor
+Digno de loor
+
+[Puente] (Bis)
+Aleluya al Rey
+''';
+
+      final proposal = LyricsStructureSuggester.suggestFromText(repeatedHeaders);
+
+      expect(proposal.items.length, 3);
+      expect(proposal.items[0].name, 'Verso 1');
+      expect(proposal.items[0].repeatCount, 1);
+
+      expect(proposal.items[1].name, 'Coro');
+      expect(proposal.items[1].repeatCount, 2);
+
+      expect(proposal.items[2].name, 'Puente');
+      expect(proposal.items[2].repeatCount, 2);
+    });
+
+    test('ignora nombres genéricos como Sección 1 y clasifica por la letra y repeticiones', () {
+      final genericSections = [
+        const SongSection(
+          name: 'Sección 1',
+          position: 0,
+          lines: [
+            SongLine(content: 'El esplendor de un Rey vestido en majestad', position: 0),
+          ],
+        ),
+        const SongSection(
+          name: 'Sección 2',
+          position: 1,
+          lines: [
+            SongLine(content: 'Cuan grande es Dios, cantale', position: 0),
+          ],
+        ),
+        const SongSection(
+          name: 'Sección 3',
+          position: 2,
+          lines: [
+            SongLine(content: 'Dia a dia El esta, el tiempo en Sus manos', position: 0),
+          ],
+        ),
+        const SongSection(
+          name: 'Sección 4',
+          position: 3,
+          lines: [
+            SongLine(content: 'Cuan grande es Dios, cantale', position: 0),
+          ],
+        ),
+      ];
+
+      final proposal = LyricsStructureSuggester.suggestFromSections(genericSections);
+
+      // Successfully classified into Verso 1, Coro, Verso 2, Coro!
+      expect(proposal.items.length, 4);
+      expect(proposal.items[0].name, 'Verso 1');
+      expect(proposal.items[0].type, SectionType.verso);
+
+      expect(proposal.items[1].name, 'Coro');
+      expect(proposal.items[1].type, SectionType.coro);
+
+      expect(proposal.items[2].name, 'Verso 2');
+      expect(proposal.items[2].type, SectionType.verso);
+
+      expect(proposal.items[3].name, 'Coro');
+      expect(proposal.items[3].type, SectionType.coro);
     });
   });
 }
