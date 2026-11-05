@@ -11,6 +11,7 @@ import '../capture/ocr_models.dart';
 import '../capture/offline_photo_queue.dart';
 import '../capture/remote_digitize_service.dart';
 import 'song_editor_page.dart';
+import 'song_review_correction_page.dart';
 
 class SongPhotoPage extends ConsumerStatefulWidget {
   const SongPhotoPage({
@@ -414,15 +415,15 @@ class _SongPhotoPageState extends ConsumerState<SongPhotoPage> {
     if (song == null) return;
     final result = await Navigator.of(context).push<dynamic>(
       MaterialPageRoute<dynamic>(
-        builder: (_) => SongEditorPage(
+        builder: (_) => SongReviewCorrectionPage(
+          imagePath: _croppedPath ?? '',
+          digitizedSong: song,
           songId: widget.songId,
-          initialTitle:
+          initialSongTitle:
               song.title ??
               (widget.songTitle.isEmpty || widget.songTitle == 'Nueva canción'
                   ? null
                   : widget.songTitle),
-          initialKey: song.key,
-          initialLyrics: song.chordOverLyricText,
         ),
       ),
     );
