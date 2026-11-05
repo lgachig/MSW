@@ -97,7 +97,9 @@ class OpenAISongDigitizer:
             "Read this song sheet. Return only the requested JSON. Preserve the visible "
             "lyrics and chord names. Each chord position is its zero-based character "
             "column above the lyric line. Keep line order and group lines into visible "
-            "sections. If a title or key is not visible, use null. Never invent text or chords."
+            "sections. Identify the musical key precisely: if explicitly written (e.g. 'Tono: G', "
+            "'Key: D', 'F#m'), use it; otherwise deduce the tonality accurately from the tonal center "
+            "and chord progression. If the title is not visible, use null. Never invent lyrics or chords."
         )
         if correction:
             prompt += f" Correct the previous result to satisfy the schema: {correction}"
@@ -171,7 +173,9 @@ class GeminiSongDigitizer:
             "Read this song sheet. Return only the requested JSON. Preserve the visible "
             "lyrics and chord names. Each chord position is its zero-based character "
             "column above the lyric line. Keep line order and group lines into visible "
-            "sections. If a title or key is not visible, use null. Never invent text or chords."
+            "sections. Identify the musical key precisely: if explicitly written (e.g. 'Tono: G', "
+            "'Key: D', 'F#m'), use it; otherwise deduce the tonality accurately from the tonal center "
+            "and chord progression. If the title is not visible, use null. Never invent lyrics or chords."
         )
         if correction:
             prompt += f" Correct the previous result to satisfy the schema: {correction}"
