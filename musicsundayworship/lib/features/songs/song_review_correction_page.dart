@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/song_repository.dart';
+import '../../music_engine/music_key_detector.dart';
 import '../capture/offline_photo_queue.dart';
 import '../capture/remote_digitize_service.dart';
 import 'song_editor_page.dart';
@@ -62,16 +63,33 @@ class _SongReviewCorrectionPageState
             ? widget.initialSongTitle!
             : 'Canción sin título';
 
+    final initialChords = song.chords.map((c) => c.chord).toList();
+    final detectedKey = MusicKeyDetector.detectKey(initialChords);
+    final key = (song.key?.trim().isNotEmpty ?? false)
+        ? song.key!.trim()
+        : (detectedKey ?? 'G');
+
     _titleController = TextEditingController(text: title);
     _authorController = TextEditingController(text: widget.initialAuthor ?? '');
     _sourceController =
         TextEditingController(text: widget.initialSource ?? 'Foto digitalizada');
-    _keyController = TextEditingController(text: song.key ?? 'G');
+    _keyController = TextEditingController(text: key);
     _lyricsController = TextEditingController(text: song.chordOverLyricText);
+
+    _keyController.addListener(_onKeyOrLyricsChanged);
+    _lyricsController.addListener(_onKeyOrLyricsChanged);
+  }
+
+  void _onKeyOrLyricsChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
   void dispose() {
+    _keyController.removeListener(_onKeyOrLyricsChanged);
+    _lyricsController.removeListener(_onKeyOrLyricsChanged);
     _titleController.dispose();
     _authorController.dispose();
     _sourceController.dispose();
@@ -362,6 +380,186 @@ class _SongReviewCorrectionPageState
     );
   }
 
+  List<String> _extractCurrentChords() {
+    final parsed = SongTextParser.parse(_lyricsController.text);
+    final chords = <String>[];
+    for (final s in parsed) {
+      for (final l in s.lines) {
+        for (final c in l.chords) {
+          chords.add(c.chord);
+        }
+      }
+    }
+    if (chords.isEmpty) {
+      return widget.digitizedSong.chords.map((c) => c.chord).toList();
+    }
+    return chords;
+  }
+
+  Widget _buildTonalitySection() {
+    final chords = _extractCurrentChords();
+    final verification = MusicKeyDetector.verifyKey(
+      _keyController.text.trim(),
+      chords,
+    );
+
+    final isMatching = verification.matchesCurrentKey;
+    const primaryKeys = [
+      'C', 'D', 'E', 'F', 'G', 'A', 'B',
+      'Am', 'Em', 'Bm', 'Dm', 'F#m'
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Text('Tono *', style: TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(width: 8),
+            Chip(
+              key: const Key('ai-badge-key'),
+              avatar: Icon(
+                isMatching ? Icons.check_circle : Icons.auto_awesome,
+                size: 14,
+                color: isMatching ? Colors.green.shade800 : Colors.blue.shade800,
+              ),
+              label: Text(
+                isMatching ? 'Armonía verificada' : 'IA / Armonía',
+                style: TextStyle(
+                  color: isMatching ? Colors.green.shade900 : Colors.blue.shade900,
+                  fontSize: 12,
+                ),
+              ),
+              visualDensity: VisualDensity.compact,
+              backgroundColor:
+                  isMatching ? Colors.green.shade100 : Colors.blue.shade100,
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 3,
+              child: TextFormField(
+                key: const Key('review-key-field'),
+                controller: _keyController,
+                decoration: const InputDecoration(
+                  hintText: 'Ej. G, Am, C#',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.music_note, size: 20),
+                ),
+                validator: (v) =>
+                    v == null || v.trim().isEmpty ? 'Ingresa el tono' : null,
+              ),
+            ),
+            if (!isMatching) ...[
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 4,
+                child: FilledButton.tonalIcon(
+                  key: const Key('apply-detected-key-button'),
+                  onPressed: () {
+                    _keyController.text = verification.detectedKey;
+                  },
+                  icon: const Icon(Icons.auto_fix_high, size: 18),
+                  label: Text('Usar ${verification.detectedKey}'),
+                ),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 8),
+        Container(
+          key: Key(
+            isMatching ? 'tonality-verified-badge' : 'tonality-warning-badge',
+          ),
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: isMatching ? Colors.green.shade50 : Colors.amber.shade50,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color:
+                  isMatching ? Colors.green.shade300 : Colors.amber.shade400,
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                isMatching ? Icons.check_circle : Icons.warning_amber_rounded,
+                color:
+                    isMatching ? Colors.green.shade700 : Colors.amber.shade900,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isMatching
+                          ? 'Tonalidad armónica: ${_keyController.text.trim()}'
+                          : 'Tonalidad sugerida: ${verification.detectedKey}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        color: isMatching
+                            ? Colors.green.shade900
+                            : Colors.amber.shade900,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      verification.explanation,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isMatching
+                            ? Colors.green.shade800
+                            : Colors.amber.shade900,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+        const Text(
+          'Cambiar tonalidad rápidamente:',
+          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 4),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              for (final k in primaryKeys) ...[
+                Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: ChoiceChip(
+                    key: Key('quick-key-chip-$k'),
+                    label: Text(k),
+                    selected: _keyController.text.trim().toUpperCase() ==
+                        k.toUpperCase(),
+                    onSelected: (selected) {
+                      if (selected) {
+                        _keyController.text = k;
+                      }
+                    },
+                    visualDensity: VisualDensity.compact,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildEditorPanel() {
     return Form(
       key: _formKey,
@@ -434,42 +632,8 @@ class _SongReviewCorrectionPageState
           ),
           const SizedBox(height: 16),
 
-          // Tono y Validación con etiqueta IA
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Text('Tono *', style: TextStyle(fontWeight: FontWeight.w600)),
-                        const SizedBox(width: 6),
-                        Chip(
-                          key: const Key('ai-badge-key'),
-                          avatar: const Icon(Icons.auto_awesome, size: 14),
-                          label: const Text('IA'),
-                          visualDensity: VisualDensity.compact,
-                          backgroundColor: Colors.blue.shade100,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    TextFormField(
-                      key: const Key('review-key-field'),
-                      controller: _keyController,
-                      decoration: const InputDecoration(
-                        hintText: 'Ej. G, Am, C#',
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (v) =>
-                          v == null || v.trim().isEmpty ? 'Ingresa el tono' : null,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+          // Tono y Validación con análisis armónico
+          _buildTonalitySection(),
           const SizedBox(height: 16),
 
           // Autor

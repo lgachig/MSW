@@ -113,6 +113,12 @@ void main() {
         findsOneWidget,
       );
       expect(find.widgetWithText(TextFormField, 'E'), findsOneWidget);
+
+      await tester.dragUntilVisible(
+        find.byKey(const Key('review-author-field')),
+        find.byType(ListView),
+        const Offset(0, -50),
+      );
       expect(find.byKey(const Key('review-author-field')), findsOneWidget);
 
       await tester.dragUntilVisible(
@@ -206,6 +212,11 @@ void main() {
     await tester.pump();
 
     // Editar autor y fuente
+    await tester.dragUntilVisible(
+      find.byKey(const Key('review-author-field')),
+      find.byType(ListView),
+      const Offset(0, -50),
+    );
     await tester.enterText(
       find.byKey(const Key('review-author-field')),
       'John Newton',
@@ -254,5 +265,105 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(mockRepo.createdSong, isNull);
+  });
+
+  testWidgets('displays harmonic verification badge when key matches chords', (
+    tester,
+  ) async {
+    final mockRepo = _MockSongRepository();
+    const songInE = DigitizedSong(
+      title: 'Canción en E',
+      key: 'E',
+      sections: [
+        DigitizedSection(
+          name: 'Verso',
+          lines: [
+            DigitizedLine(
+              text: 'E B C#m A',
+              chords: [
+                DigitizedChord(chord: 'E', position: 0),
+                DigitizedChord(chord: 'B', position: 2),
+                DigitizedChord(chord: 'C#m', position: 4),
+                DigitizedChord(chord: 'A', position: 8),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(
+      _buildTestApp(songRepo: mockRepo, song: songInE),
+    );
+    await tester.pump();
+
+    expect(find.byKey(const Key('tonality-verified-badge')), findsOneWidget);
+    expect(find.textContaining('Tonalidad armónica: E'), findsOneWidget);
+    expect(find.byKey(const Key('apply-detected-key-button')), findsNothing);
+  });
+
+  testWidgets(
+    'displays suggestion badge and allows one-tap key correction when key mismatches',
+    (tester) async {
+      final mockRepo = _MockSongRepository();
+      const songInD = DigitizedSong(
+        title: 'Canción en D',
+        key: 'C',
+        sections: [
+          DigitizedSection(
+            name: 'Verso',
+            lines: [
+              DigitizedLine(
+                text: 'D A Bm G',
+                chords: [
+                  DigitizedChord(chord: 'D', position: 0),
+                  DigitizedChord(chord: 'A', position: 2),
+                  DigitizedChord(chord: 'Bm', position: 4),
+                  DigitizedChord(chord: 'G', position: 8),
+                ],
+              ),
+            ],
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        _buildTestApp(songRepo: mockRepo, song: songInD),
+      );
+      await tester.pump();
+
+      expect(find.byKey(const Key('tonality-warning-badge')), findsOneWidget);
+      expect(find.byKey(const Key('apply-detected-key-button')), findsOneWidget);
+      expect(find.text('Usar D'), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('apply-detected-key-button')));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const Key('tonality-verified-badge')), findsOneWidget);
+      expect(find.widgetWithText(TextFormField, 'D'), findsOneWidget);
+      expect(find.byKey(const Key('apply-detected-key-button')), findsNothing);
+    },
+  );
+
+  testWidgets('allows quick tonality selection via chips', (tester) async {
+    final mockRepo = _MockSongRepository();
+    await tester.pumpWidget(_buildTestApp(songRepo: mockRepo));
+    await tester.pump();
+
+    await tester.ensureVisible(find.byKey(const Key('quick-key-chip-G')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('quick-key-chip-G')));
+    await tester.pumpAndSettle();
+
+    expect(find.widgetWithText(TextFormField, 'G'), findsOneWidget);
+
+    await tester.ensureVisible(find.byKey(const Key('quick-key-chip-A')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('quick-key-chip-A')));
+    await tester.pumpAndSettle();
+
+    expect(find.widgetWithText(TextFormField, 'A'), findsOneWidget);
   });
 }
