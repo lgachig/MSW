@@ -539,7 +539,7 @@ Interpretar la foto con un modelo multimodal sin exponer claves en la app.
 flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
 
 *Depende de*
-MSW-29","","MSW-4","Highest","fase-3","msw","8","S5","En pruebas"
+MSW-29","","MSW-4","Highest","fase-3","msw","8","S5","Hecho"
 "MSW-31","Story","Validar el resultado con el analizador de acordes","*Objetivo*
 Ningún acorde inválido llega a la canción sin avisar.
 
@@ -584,7 +584,7 @@ Guardar fotos pendientes y procesarlas cuando haya conexión.
 flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
 
 *Depende de*
-MSW-30","","MSW-4","Medium","fase-3","msw","5","S5","Por hacer"
+MSW-30","","MSW-4","Medium","fase-3","msw","5","S5","En curso"
 "MSW-33","Story","Pantalla de revisión y corrección","*Objetivo*
 Comparar la foto con el resultado y corregirlo antes de guardar.
 
