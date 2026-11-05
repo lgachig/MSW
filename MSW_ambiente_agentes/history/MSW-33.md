@@ -12,3 +12,8 @@
 - 2026-11-05 15:49: Completado y aprobado por Luis. Funcionalidad de revisión lado a lado, marcado de sugerencias de IA, edición de autor/fuente y confirmación antes de guardar verificada e integrada.
 - 2026-11-05 16:00: Estado: Hecho -> En curso
 - 2026-11-05 16:00: Reabierto a 'En curso' por feedback de Luis: la tonalidad detectada no siempre es la correcta. Se implementará verificación armónica precisa del tono en el backend y motor musical de Flutter, selector y sugerencias de tonalidad en pantalla de revisión.
+- 2026-11-05 16:12: Estado: En curso -> En pruebas
+- 2026-11-05 16:13: Implementado detector y verificador armónico de tonalidades en el motor musical (MusicKeyDetector) y en el prompt del backend. Añadida verificación visual en vivo de tonalidad en pantalla de revisión y selector rápido de tonos con chips.
+- 2026-11-05 16:13: Estado: En pruebas -> En verificación
+- 2026-11-05 16:13: Verificación exitosa: flutter analyze sin errores (0 issues), 140/140 pruebas unitarias y de widgets pasando en Flutter (incluyendo pruebas de detección armónica y selector rápido), y 18/18 pruebas en backend pasando.
+- 2026-11-05 16:13: Estado: En verificación -> Listo para prueba de Luis
