@@ -16,6 +16,7 @@ Se valida cada acorde recibido durante la digitalización con el motor musical. 
 
 - Rama: `feature/MSW-31`
 - `3cfb62b MSW-31: validate digitized song chords`
+- `bd8d0ea MSW-31: record verification and Luis test steps`
 
 ## Cambios principales
 
