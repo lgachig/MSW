@@ -1,0 +1,46 @@
+{
+  "title": "Creo En Ti",
+  "key": "D",
+  "sections": [
+    {
+      "name": "Verso",
+      "lines": [
+        {
+          "text": "Quiero levantar a Ti    mis manos",
+          "chords": [
+            {
+              "chord": "G9",
+              "position": 22
+            }
+          ]
+        },
+        {
+          "text": "Maravilloso Jesús, milagroso Señor",
+          "chords": [
+            {
+              "chord": "D2",
+              "position": 0
+            },
+            {
+              "chord": "A9",
+              "position": 27
+            }
+          ]
+        },
+        {
+          "text": "Llena este lugar de Tu    presencia",
+          "chords": [
+            {
+              "chord": "Bm",
+              "position": 0
+            },
+            {
+              "chord": "G9",
+              "position": 24
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

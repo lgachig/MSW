@@ -1,0 +1,62 @@
+{
+  "title": "El Borde de Su Manto",
+  "key": "Am",
+  "sections": [
+    {
+      "name": "Verso",
+      "lines": [
+        {
+          "text": "Si tan solo tocare el borde de su manto",
+          "chords": [
+            {
+              "chord": "Am",
+              "position": 0
+            },
+            {
+              "chord": "G",
+              "position": 18
+            },
+            {
+              "chord": "F",
+              "position": 36
+            }
+          ]
+        },
+        {
+          "text": "Si tan solo pudiera ver su rostro",
+          "chords": [
+            {
+              "chord": "Am",
+              "position": 0
+            },
+            {
+              "chord": "G",
+              "position": 18
+            },
+            {
+              "chord": "F",
+              "position": 33
+            }
+          ]
+        },
+        {
+          "text": "Libre seria, yo se",
+          "chords": [
+            {
+              "chord": "C",
+              "position": 0
+            },
+            {
+              "chord": "Dm",
+              "position": 12
+            },
+            {
+              "chord": "G",
+              "position": 18
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "title": "Los Carros Del Faraón",
+  "key": "F",
+  "sections": [
+    {
+      "name": "Verso",
+      "lines": [
+        {
+          "text": "//Lara lara la-la lara lara la-la lara la la la la la la//",
+          "chords": [
+            {
+              "chord": "Dm",
+              "position": 0
+            },
+            {
+              "chord": "Gm",
+              "position": 14
+            },
+            {
+              "chord": "Dm",
+              "position": 30
+            },
+            {
+              "chord": "A7",
+              "position": 34
+            }
+          ]
+        },
+        {
+          "text": "//Cantare a Jehová por siempre",
+          "chords": [
+            {
+              "chord": "Dm",
+              "position": 0
+            },
+            {
+              "chord": "Gm",
+              "position": 22
+            }
+          ]
+        },
+        {
+          "text": "Su diestra es todo poder //",
+          "chords": [
+            {
+              "chord": "Dm",
+              "position": 0
+            },
+            {
+              "chord": "A7",
+              "position": 10
+            },
+            {
+              "chord": "Dm",
+              "position": 14
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

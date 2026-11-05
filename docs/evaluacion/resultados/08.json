@@ -1,0 +1,46 @@
+{
+  "title": "Vamos a cantar",
+  "key": "D#",
+  "sections": [
+    {
+      "name": "Verso",
+      "lines": [
+        {
+          "text": "//Vamos a cantar con la música del cielo",
+          "chords": [
+            {
+              "chord": "D#",
+              "position": 0
+            }
+          ]
+        },
+        {
+          "text": "Vamos a cantar alegres porque escuchas",
+          "chords": [
+            {
+              "chord": "Cm",
+              "position": 10
+            }
+          ]
+        },
+        {
+          "text": "Cuando cantamos para exaltar tu nombre //",
+          "chords": [
+            {
+              "chord": "Bb",
+              "position": 8
+            },
+            {
+              "chord": "G#",
+              "position": 21
+            },
+            {
+              "chord": "D#",
+              "position": 36
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "title": "Como Zaqueo",
+  "key": "A",
+  "sections": [
+    {
+      "name": "Verso",
+      "lines": [
+        {
+          "text": "Como Zaqueo, Yo quiero subir",
+          "chords": [
+            {
+              "chord": "A",
+              "position": 0
+            },
+            {
+              "chord": "E/G#",
+              "position": 8
+            },
+            {
+              "chord": "F#m7(9)",
+              "position": 19
+            }
+          ]
+        },
+        {
+          "text": "A los mas alto, que yo pudiera",
+          "chords": [
+            {
+              "chord": "D",
+              "position": 4
+            },
+            {
+              "chord": "A/C#",
+              "position": 23
+            }
+          ]
+        },
+        {
+          "text": "Solo para verte, mirar hacia mi",
+          "chords": [
+            {
+              "chord": "E/G#",
+              "position": 4
+            },
+            {
+              "chord": "F#m7(9)",
+              "position": 25
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
