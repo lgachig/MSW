@@ -242,6 +242,8 @@ class _SongPhotoPageState extends ConsumerState<SongPhotoPage> {
 
       final cropped = await ImageCropper().cropImage(
         sourcePath: selected.path,
+        compressFormat: ImageCompressFormat.jpg,
+        compressQuality: 95,
         uiSettings: [
           AndroidUiSettings(
             toolbarTitle: 'Recortar canción',

@@ -23,6 +23,8 @@ VALID_RESULT = {
     ],
 }
 JPEG = b"\xff\xd8\xff" + b"test image bytes"
+HEIC = b"\x00\x00\x00\x18ftypheic\x00\x00\x00\x00heic"
+HEIF = b"\x00\x00\x00\x18ftypmif1\x00\x00\x00\x00mif1"
 
 
 class FakeDigitizer:
@@ -143,6 +145,39 @@ class DigitizeApiTests(unittest.TestCase):
             )
         self.assertEqual(response.status_code, 415)
         self.assertEqual(provider.calls, [])
+
+    def test_heic_image_is_accepted_and_forwarded_with_its_mime_type(self) -> None:
+        provider = FakeDigitizer(VALID_RESULT)
+        with self.make_client(provider) as client:
+            response = client.post(
+                "/digitize",
+                files={"image": ("song.heic", HEIC, "image/heic")},
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(provider.calls[0][0:2], (HEIC, "image/heic"))
+
+    def test_heif_image_is_accepted_and_forwarded_with_its_mime_type(self) -> None:
+        provider = FakeDigitizer(VALID_RESULT)
+        with self.make_client(provider) as client:
+            response = client.post(
+                "/digitize",
+                files={"image": ("song.heif", HEIF, "image/heif")},
+            )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(provider.calls[0][0:2], (HEIF, "image/heif"))
+
+    def test_openai_configuration_rejects_heic_with_clear_guidance(self) -> None:
+        quota = DailyQuota(self.settings.quota_database_path, self.settings.daily_request_limit)
+        with TestClient(create_app(self.settings, quota=quota)) as client:
+            response = client.post(
+                "/digitize",
+                files={"image": ("song.heic", HEIC, "image/heic")},
+            )
+
+        self.assertEqual(response.status_code, 415)
+        self.assertIn("require Gemini", response.json()["detail"])
 
     def test_mime_type_must_match_the_actual_image(self) -> None:
         provider = FakeDigitizer(VALID_RESULT)

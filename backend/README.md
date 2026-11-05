@@ -17,8 +17,9 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 Health check: `GET /health`. Digitization: `POST /digitize` with a multipart
-field named `image` containing a JPEG, PNG, or WebP file. Images are held in
-memory for the request and are not written to disk. OpenAI requests set
+field named `image` containing a JPEG, PNG, or WebP file. Gemini also accepts
+HEIC/HEIF uploads. Images are held in memory for the request and are not written
+to disk. OpenAI requests set
 `store: false`; image data is still sent to the selected provider for processing.
 
 The service limits image size (10 MiB by default), validates MIME type and file
@@ -34,7 +35,8 @@ Choose `AI_PROVIDER=gemini` or `AI_PROVIDER=openai`. For Gemini, set
 key) and optionally `GEMINI_MODEL` (defaults to `gemini-3.5-flash`). The service
 tries the next key when Gemini rejects a key or reports exhausted quota (401,
 403, or 429), and starts the next request with the next key in the list.
-For OpenAI, set `OPENAI_API_KEY` and optionally `OPENAI_MODEL`. Also configurable:
+For OpenAI, set `OPENAI_API_KEY` and optionally `OPENAI_MODEL`; this backend
+accepts HEIC/HEIF only with Gemini. Also configurable:
 `DAILY_REQUEST_LIMIT`, `MAX_IMAGE_BYTES`, and `QUOTA_DATABASE_PATH`. Never put a
 provider key in Flutter, the repository, logs, or an API response.
 
@@ -80,6 +82,9 @@ flutter run --dart-define=MSW_DIGITIZE_API_URL=https://your-api.example
 For a physical iPhone, use the reachable HTTPS URL of the server. Do not use
 `localhost` from the phone. The app includes no provider key. If the URL is not
 configured, the AI action reports that setting rather than sending the image.
+The app explicitly exports the cropped iPhone photo as JPEG before upload, so
+HEIC photos from the camera work with either provider. Direct HEIC/HEIF API
+uploads are supported when Gemini is selected.
 
 ## Tests
 
