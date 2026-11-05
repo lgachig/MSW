@@ -50,3 +50,4 @@ APROBADO. La verificación independiente confirmó que los acordes pasan por `Ch
 3. Comprueba el resumen de acordes válidos y su porcentaje.
 - 2026-11-05 12:43: Estado: En verificación -> Listo para prueba de Luis
 - 2026-11-05 13:57: Corregido envío móvil: el cliente declara el MIME real (JPEG, PNG, WebP, HEIC/HEIF) en multipart y el backend identifica application/octet-stream por firma. Pruebas: backend 18/18, flutter analyze limpio y flutter test 108/108.
+- 2026-11-05 13:57: Estado: Listo para prueba de Luis -> En pruebas
