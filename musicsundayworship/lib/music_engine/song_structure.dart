@@ -26,7 +26,8 @@ enum SectionType {
     }
     if (clean.contains('verso') ||
         clean.contains('estrofa') ||
-        clean.contains('verse')) {
+        clean.contains('verse') ||
+        clean.contains('parte')) {
       return SectionType.verso;
     }
     if (clean.contains('puente') || clean.contains('bridge')) {

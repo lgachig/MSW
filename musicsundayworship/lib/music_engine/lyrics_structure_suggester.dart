@@ -111,11 +111,63 @@ class LyricsStructureSuggester {
     if (clean.isEmpty) return null;
     final lower = clean.toLowerCase();
 
-    // Reject generic labels like "Sección 1", "Parte 1", "Track 1"
-    if (RegExp(r'^(?:secci[oó]n|parte|bloque|section|track)\s*\d*$',
+    // Reject purely generic machine labels like "Sección 1", "Track 1", "Bloque 1"
+    if (RegExp(r'^(?:secci[oó]n|bloque|section|track)\s*\d*$',
             caseSensitive: false)
         .hasMatch(lower)) {
       return null;
+    }
+
+    // Parte / Primera parte / Segunda parte -> Verso 1, Verso 2...
+    if (lower.contains('primera parte') ||
+        lower.contains('1ra parte') ||
+        lower.contains('1a parte') ||
+        lower.contains('1era parte') ||
+        RegExp(r'^parte\s*(?:1|i)\b').hasMatch(lower)) {
+      return HeaderInfo(
+        rawName: 'Verso 1',
+        type: SectionType.verso,
+        repeatCount: repeatCount,
+      );
+    }
+    if (lower.contains('segunda parte') ||
+        lower.contains('2da parte') ||
+        lower.contains('2a parte') ||
+        RegExp(r'^parte\s*(?:2|ii)\b').hasMatch(lower)) {
+      return HeaderInfo(
+        rawName: 'Verso 2',
+        type: SectionType.verso,
+        repeatCount: repeatCount,
+      );
+    }
+    if (lower.contains('tercera parte') ||
+        lower.contains('3ra parte') ||
+        lower.contains('3a parte') ||
+        RegExp(r'^parte\s*(?:3|iii)\b').hasMatch(lower)) {
+      return HeaderInfo(
+        rawName: 'Verso 3',
+        type: SectionType.verso,
+        repeatCount: repeatCount,
+      );
+    }
+    if (lower.contains('cuarta parte') ||
+        lower.contains('4ta parte') ||
+        lower.contains('4a parte') ||
+        RegExp(r'^parte\s*(?:4|iv)\b').hasMatch(lower)) {
+      return HeaderInfo(
+        rawName: 'Verso 4',
+        type: SectionType.verso,
+        repeatCount: repeatCount,
+      );
+    }
+    if (lower.contains('parte')) {
+      final num = RegExp(r'\d+').firstMatch(lower)?.group(0);
+      final name = num != null ? 'Verso $num' : 'Verso';
+      return HeaderInfo(
+        rawName: name,
+        type: SectionType.verso,
+        repeatCount: repeatCount,
+      );
     }
 
     // Intro

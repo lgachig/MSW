@@ -104,12 +104,16 @@ class _SongStructureEditorPageState
       if (widget.song.sections.isNotEmpty) {
         for (var i = 0; i < widget.song.sections.length; i++) {
           final sec = widget.song.sections[i];
+          final header = LyricsStructureSuggester.matchHeader(sec.name);
+          final name = header?.rawName ??
+              (sec.name.trim().isEmpty ? 'Sección ${i + 1}' : sec.name);
+          final type = header?.type ?? SectionType.fromString(sec.name);
           defaultItems.add(
             StructureItem(
               id: 'sec_${sec.position}_$i',
-              type: SectionType.fromString(sec.name),
-              name: sec.name.trim().isEmpty ? 'Sección ${i + 1}' : sec.name,
-              repeatCount: 1,
+              type: type,
+              name: name,
+              repeatCount: header?.repeatCount ?? 1,
             ),
           );
         }
@@ -246,6 +250,30 @@ class _SongStructureEditorPageState
       final saved = structure.id != null
           ? await repo.updateStructure(structure)
           : await repo.createStructure(structure);
+
+      // Also synchronize section names in the song document if changed
+      if (widget.song.id != null &&
+          _items.length == widget.song.sections.length) {
+        final updatedSections = <SongSection>[];
+        var hasChanges = false;
+        for (var i = 0; i < widget.song.sections.length; i++) {
+          final oldSec = widget.song.sections[i];
+          final newItem = _items[i];
+          if (oldSec.name != newItem.name) {
+            hasChanges = true;
+          }
+          updatedSections.add(
+            SongSection(
+              name: newItem.name,
+              position: oldSec.position,
+              lines: oldSec.lines,
+            ),
+          );
+        }
+        if (hasChanges) {
+          await repo.update(widget.song.copyWith(sections: updatedSections));
+        }
+      }
 
       widget.onStructureSaved?.call(saved);
 

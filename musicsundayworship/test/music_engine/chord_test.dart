@@ -65,6 +65,32 @@ void main() {
       expect(complex.toAmerican().toLatin().toString(), 'Soladd9/Sib');
     });
 
+    test('resolves shorthand chord variants to standard equivalents', () {
+      // A4 -> Asus4
+      final a4 = Chord.parse('A4');
+      expect(a4, isNotNull);
+      expect(a4.toString(), 'Asus4');
+      expect(a4!.toLatin().toString(), 'Lasus4');
+
+      // E7(4/9) -> E7sus4(9)
+      final e7 = Chord.parse('E7(4/9)');
+      expect(e7, isNotNull);
+      expect(e7.toString(), 'E7sus4(9)');
+      expect(e7!.toLatin().toString(), 'Mi7sus4(9)');
+
+      // A2 -> Asus2
+      final a2 = Chord.parse('A2');
+      expect(a2?.toString(), 'Asus2');
+
+      // C6/9 and slash chords
+      final c69 = Chord.parse('C6/9');
+      expect(c69?.toString(), 'C6/9');
+
+      final c69G = Chord.parse('C6/9/G');
+      expect(c69G?.toString(), 'C6/9/G');
+      expect(c69G?.bass?.toString(), 'G');
+    });
+
     test('does not interpret lyric words as chords', () {
       for (final text in ['la', 'mi', 'Hola']) {
         expect(Chord.parse(text), isNull);

@@ -404,7 +404,10 @@ class _SongDetailPageState extends ConsumerState<SongDetailPage> {
   }
 
   Widget _buildSectionCard(SongSection section) {
-    final type = SectionType.fromString(section.name);
+    final headerInfo = LyricsStructureSuggester.matchHeader(section.name);
+    final displayName = headerInfo?.rawName ??
+        (section.name.trim().isEmpty ? 'Sección' : section.name);
+    final type = headerInfo?.type ?? SectionType.fromString(section.name);
     final borderColor = SectionStyle.borderColor(type);
     final bgColor = SectionStyle.backgroundColor(type);
     final textColor = SectionStyle.textColor(type);
@@ -431,7 +434,7 @@ class _SongDetailPageState extends ConsumerState<SongDetailPage> {
                 Icon(SectionStyle.icon(type), size: 16, color: textColor),
                 const SizedBox(width: 8),
                 Text(
-                  section.name.trim().isEmpty ? 'Sección' : section.name,
+                  displayName,
                   style: TextStyle(
                     color: textColor,
                     fontWeight: FontWeight.bold,
