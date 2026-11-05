@@ -10,7 +10,14 @@ from .quota import DailyQuota
 from .schemas import DigitizeResponse
 
 
-ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp"}
+ALLOWED_TYPES = {
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/heic",
+    "image/heif",
+}
+HEIF_TYPES = {"image/heic", "image/heif"}
 
 
 def _image_type(data: bytes) -> str | None:
@@ -20,6 +27,13 @@ def _image_type(data: bytes) -> str | None:
         return "image/png"
     if len(data) >= 12 and data[:4] == b"RIFF" and data[8:12] == b"WEBP":
         return "image/webp"
+    if len(data) >= 12 and data[4:8] == b"ftyp":
+        brands = {data[8:12]}
+        brands.update(data[offset : offset + 4] for offset in range(16, len(data) - 3, 4))
+        if brands & {b"heic", b"heix", b"hevc", b"hevx", b"heim", b"heis"}:
+            return "image/heic"
+        if brands & {b"mif1", b"msf1", b"mif2"}:
+            return "image/heif"
     return None
 
 
@@ -47,8 +61,15 @@ def create_app(
 
     @app.post("/digitize", response_model=DigitizeResponse)
     async def digitize(request: Request, image: UploadFile = File(...)) -> DigitizeResponse:
-        if image.content_type not in ALLOWED_TYPES:
-            raise HTTPException(status_code=415, detail="Use a JPEG, PNG, or WebP image.")
+        declared_type = (image.content_type or "").lower()
+        if declared_type not in ALLOWED_TYPES and declared_type not in {
+            "",
+            "application/octet-stream",
+        }:
+            raise HTTPException(
+                status_code=415,
+                detail="Use a JPEG, PNG, WebP, HEIC, or HEIF image.",
+            )
 
         data = await image.read(config.max_image_bytes + 1)
         if len(data) > config.max_image_bytes:
@@ -56,8 +77,15 @@ def create_app(
         if not data:
             raise HTTPException(status_code=400, detail="The image is empty.")
         mime_type = _image_type(data)
-        if mime_type is None or mime_type != image.content_type:
+        if mime_type is None or (
+            declared_type in ALLOWED_TYPES and mime_type != declared_type
+        ):
             raise HTTPException(status_code=415, detail="The uploaded file is not a valid supported image.")
+        if mime_type in HEIF_TYPES and config.provider != "gemini" and provider is None:
+            raise HTTPException(
+                status_code=415,
+                detail="HEIC and HEIF require Gemini. Choose Gemini or upload a JPEG, PNG, or WebP image.",
+            )
         configured_key = (
             (config.gemini_api_keys or (config.gemini_api_key,))
             if config.provider == "gemini"
@@ -99,4 +127,3 @@ def create_app(
 
 
 app = create_app()
-

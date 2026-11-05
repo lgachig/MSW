@@ -185,6 +185,8 @@ class _SongPhotoPageState extends ConsumerState<SongPhotoPage> {
                   if (_digitizedSong!.key != null)
                     Text('Tono detectado: ${_digitizedSong!.key}'),
                   const SizedBox(height: 8),
+                  DigitizedSongChordReview(song: _digitizedSong!),
+                  const SizedBox(height: 8),
                   SelectableText(
                     _digitizedSong!.chordOverLyricText,
                     style: const TextStyle(fontFamily: 'monospace'),
@@ -240,6 +242,8 @@ class _SongPhotoPageState extends ConsumerState<SongPhotoPage> {
 
       final cropped = await ImageCropper().cropImage(
         sourcePath: selected.path,
+        compressFormat: ImageCompressFormat.jpg,
+        compressQuality: 95,
         uiSettings: [
           AndroidUiSettings(
             toolbarTitle: 'Recortar canción',
@@ -402,5 +406,57 @@ class _SongPhotoPageState extends ConsumerState<SongPhotoPage> {
       _aiProcessing = false;
       _error = message;
     });
+  }
+}
+
+class DigitizedSongChordReview extends StatelessWidget {
+  const DigitizedSongChordReview({super.key, required this.song});
+
+  final DigitizedSong song;
+
+  @override
+  Widget build(BuildContext context) {
+    if (song.chordCount == 0) {
+      return const Text(
+        'No se detectaron acordes para validar.',
+        key: Key('chord-validity-summary'),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Acordes válidos: ${song.validChordCount}/${song.chordCount} '
+          '(${song.validChordPercentage.toStringAsFixed(0)}%)',
+          key: const Key('chord-validity-summary'),
+        ),
+        const SizedBox(height: 4),
+        Wrap(
+          key: const Key('chord-review-list'),
+          spacing: 4,
+          runSpacing: 0,
+          children: [
+            for (final (index, chord) in song.chords.indexed)
+              _buildChordReviewChip(chord, index),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildChordReviewChip(DigitizedChord chord, int index) {
+    final isValid = chord.isValid;
+    return Chip(
+      key: Key('chord-review-$index'),
+      avatar: Icon(
+        isValid ? Icons.check_circle : Icons.warning_amber_rounded,
+        color: isValid ? Colors.green.shade800 : Colors.red.shade800,
+        size: 18,
+      ),
+      backgroundColor: isValid ? Colors.green.shade100 : Colors.red.shade100,
+      label: Text(isValid ? chord.chord : '${chord.chord} · revisar'),
+      visualDensity: VisualDensity.compact,
+    );
   }
 }

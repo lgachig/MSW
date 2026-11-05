@@ -562,7 +562,7 @@ Ningún acorde inválido llega a la canción sin avisar.
 flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
 
 *Depende de*
-MSW-30","","MSW-4","High","fase-3","msw","3","S5","Por hacer"
+MSW-30","","MSW-4","High","fase-3","msw","3","S5","Hecho"
 "MSW-32","Story","Cola de fotos sin internet","*Objetivo*
 Guardar fotos pendientes y procesarlas cuando haya conexión.
 
