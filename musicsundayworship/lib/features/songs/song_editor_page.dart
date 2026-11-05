@@ -197,9 +197,15 @@ class _SongEditorPageState extends ConsumerState<SongEditorPage> {
   @override
   void initState() {
     super.initState();
-    if (widget.initialTitle != null) _title.text = widget.initialTitle!;
-    if (widget.initialKey != null) _key.text = widget.initialKey!;
-    if (widget.initialLyrics != null) _lyrics.text = widget.initialLyrics!;
+    if (widget.initialTitle != null && widget.initialTitle!.isNotEmpty) {
+      _title.text = widget.initialTitle!;
+    }
+    if (widget.initialKey != null && widget.initialKey!.isNotEmpty) {
+      _key.text = widget.initialKey!;
+    }
+    if (widget.initialLyrics != null && widget.initialLyrics!.isNotEmpty) {
+      _lyrics.text = widget.initialLyrics!;
+    }
     if (widget.songId != null) _load();
   }
 
@@ -209,13 +215,27 @@ class _SongEditorPageState extends ConsumerState<SongEditorPage> {
     if (!mounted) return;
     if (song != null) {
       _song = song;
-      _title.text = song.title;
-      _author.text = song.author ?? '';
-      _source.text = song.source ?? '';
-      _key.text = song.originalKey ?? '';
-      _tempo.text = song.tempo?.toString() ?? '';
-      _timeSignature.text = song.timeSignature ?? '';
-      _lyrics.text = _toText(song);
+      if (_title.text.trim().isEmpty) {
+        _title.text = song.title;
+      }
+      if (_author.text.trim().isEmpty) {
+        _author.text = song.author ?? '';
+      }
+      if (_source.text.trim().isEmpty) {
+        _source.text = song.source ?? '';
+      }
+      if (_key.text.trim().isEmpty) {
+        _key.text = song.originalKey ?? '';
+      }
+      if (_tempo.text.trim().isEmpty) {
+        _tempo.text = song.tempo?.toString() ?? '';
+      }
+      if (_timeSignature.text.trim().isEmpty) {
+        _timeSignature.text = song.timeSignature ?? '';
+      }
+      if (widget.initialLyrics == null || widget.initialLyrics!.trim().isEmpty) {
+        _lyrics.text = _toText(song);
+      }
     }
     setState(() => _loading = false);
   }

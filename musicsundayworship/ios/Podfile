@@ -39,5 +39,14 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+
+    # image_picker_ios currently omits @unknown default for FLTSourceCamera.
+    # Compile this dependency in Swift 5 mode so Xcode versions defaulting to
+    # Swift 6 do not turn that forward-compatibility warning into an error.
+    if target.name == 'image_picker_ios'
+      target.build_configurations.each do |config|
+        config.build_settings['SWIFT_VERSION'] = '5.0'
+      end
+    end
   end
 end

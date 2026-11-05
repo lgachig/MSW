@@ -105,6 +105,7 @@ class OcrDocument {
 
   /// Formats the document as chord-over-lyric text aligned for [SongTextParser].
   String toChordOverLyricText() {
+    if (processedLines.isEmpty) return rawText;
     final buffer = StringBuffer();
     for (var i = 0; i < processedLines.length; i++) {
       final current = processedLines[i];
@@ -120,7 +121,8 @@ class OcrDocument {
       }
       buffer.writeln(current.text);
     }
-    return buffer.toString().trimRight();
+    final result = buffer.toString().trimRight();
+    return result.trim().isNotEmpty ? result : rawText;
   }
 
   static String _alignChordsAboveLyric(
@@ -158,6 +160,7 @@ class OcrDocument {
       }
     }
 
-    return lineChars.join('').trimRight();
+    final result = lineChars.join('').trimRight();
+    return result.trim().isNotEmpty ? result : chordLine.text;
   }
 }

@@ -239,12 +239,29 @@ class _SongPhotoPageState extends ConsumerState<SongPhotoPage> {
     final doc = _ocrDocument;
     if (doc == null) return;
 
-    final result = await Navigator.of(context).push(
+    String? detectedKey;
+    for (final line in doc.processedLines) {
+      if (line.isChordLine && line.chords.isNotEmpty) {
+        detectedKey = line.chords.first.text;
+        break;
+      }
+    }
+
+    final formattedLyrics = doc.toChordOverLyricText();
+    if (formattedLyrics.trim().isEmpty) {
+      _setError('No se detectó texto para enviar al editor.');
+      return;
+    }
+
+    final result = await Navigator.of(context).push<dynamic>(
       MaterialPageRoute<dynamic>(
         builder: (_) => SongEditorPage(
           songId: widget.songId,
-          initialTitle: widget.songTitle == 'Nueva canción' ? null : widget.songTitle,
-          initialLyrics: doc.toChordOverLyricText(),
+          initialTitle: widget.songTitle.isEmpty || widget.songTitle == 'Nueva canción'
+              ? null
+              : widget.songTitle,
+          initialKey: detectedKey,
+          initialLyrics: formattedLyrics,
         ),
       ),
     );

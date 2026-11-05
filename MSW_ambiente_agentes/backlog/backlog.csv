@@ -514,7 +514,7 @@ Extraer texto con su posición usando ML Kit o Vision.
 flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
 
 *Depende de*
-MSW-27, MSW-28","","MSW-4","Highest","fase-3","msw","8","S4","Listo para prueba de Luis"
+MSW-27, MSW-28","","MSW-4","Highest","fase-3","msw","8","S4","Hecho"
 "MSW-30","Story","Servicio intermedio y agente de digitalización","*Objetivo*
 Interpretar la foto con un modelo multimodal sin exponer claves en la app.
 
