@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
+import '../../music_engine/chord.dart';
+
 class DigitizeException implements Exception {
   const DigitizeException(this.message);
   final String message;
@@ -16,6 +18,8 @@ class DigitizedChord {
 
   final String chord;
   final int position;
+
+  bool get isValid => Chord.parse(chord) != null;
 
   factory DigitizedChord.fromJson(Map<String, dynamic> json) => DigitizedChord(
     chord: json['chord'] as String,
@@ -62,6 +66,16 @@ class DigitizedSong {
   final String? title;
   final String? key;
   final List<DigitizedSection> sections;
+
+  Iterable<DigitizedChord> get chords =>
+      sections.expand((section) => section.lines.expand((line) => line.chords));
+
+  int get chordCount => chords.length;
+
+  int get validChordCount => chords.where((chord) => chord.isValid).length;
+
+  double get validChordPercentage =>
+      chordCount == 0 ? 0 : validChordCount * 100 / chordCount;
 
   factory DigitizedSong.fromJson(Map<String, dynamic> json) => DigitizedSong(
     title: json['title'] as String?,

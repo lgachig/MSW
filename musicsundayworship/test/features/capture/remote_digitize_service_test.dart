@@ -82,4 +82,47 @@ void main() {
     );
     client.close();
   });
+
+  test(
+    'marks invalid chords using the music engine and calculates validity',
+    () {
+      final song = DigitizedSong.fromJson({
+        'title': 'Canto',
+        'key': 'G',
+        'sections': [
+          {
+            'name': 'Verso',
+            'lines': [
+              {
+                'text': 'Tu amor permanece',
+                'chords': [
+                  {'chord': 'G', 'position': 0},
+                  {'chord': 'Hx', 'position': 5},
+                ],
+              },
+            ],
+          },
+        ],
+      });
+
+      expect(song.chordCount, 2);
+      expect(song.validChordCount, 1);
+      expect(song.validChordPercentage, 50);
+      expect(song.chords.map((chord) => chord.isValid), [true, false]);
+    },
+  );
+
+  test('reports zero valid percentage when no chords were detected', () {
+    final song = DigitizedSong.fromJson({
+      'title': null,
+      'key': null,
+      'sections': [
+        {'name': 'Verso', 'lines': []},
+      ],
+    });
+
+    expect(song.chordCount, 0);
+    expect(song.validChordCount, 0);
+    expect(song.validChordPercentage, 0);
+  });
 }
