@@ -49,6 +49,20 @@ void main() {
       );
     });
 
+    test('detects shorthand and altered chord variants in line', () {
+      final result = detectChordLine('E7(-)   D7M   F5-   C#5+   D4+');
+
+      expect(result.isChordLine, isTrue);
+      expect(
+        result.chords.map((token) => token.chord.toAmerican().toString()),
+        ['Em7', 'Dmaj7', 'F(b5)', 'C#aug', 'Dsus4'],
+      );
+      expect(
+        result.chords.map((token) => token.chord.toLatin().toString()),
+        ['Mim7', 'Remaj7', 'Fa(b5)', 'Do#aug', 'Resus4'],
+      );
+    });
+
     test('exposes result aliases, ratios and immutable tokens', () {
       final detector = const ChordLineDetector();
       final result = detector.classify('C /');

@@ -91,12 +91,66 @@ class Chord {
     if (q.isEmpty) return '';
 
     // Direct shorthands & equivalents:
-    // A4 -> sus4, D4 -> sus4
-    if (q == '4') return 'sus4';
-    // A2 -> sus2, C2 -> sus2
-    if (q == '2') return 'sus2';
-    // M7, Maj7 -> maj7
-    if (q == 'M7' || q == 'Maj7') return 'maj7';
+    // A4, D4, D4+, D+4 -> sus4
+    if (q == '4' ||
+        q == '(4)' ||
+        q == '4+' ||
+        q == '+4' ||
+        q == '(4+)' ||
+        q == '(+4)') {
+      return 'sus4';
+    }
+    // A2, C2, D2+, D+2 -> sus2
+    if (q == '2' ||
+        q == '(2)' ||
+        q == '2+' ||
+        q == '+2' ||
+        q == '(2+)' ||
+        q == '(+2)') {
+      return 'sus2';
+    }
+    // D7M, 7Maj, 7maj, M7, Maj7 -> maj7
+    if (q == '7M' ||
+        q == '7Maj' ||
+        q == '7maj' ||
+        q == 'M7' ||
+        q == 'Maj7') {
+      return 'maj7';
+    }
+    // E7(-), E7-, E-7, E7m -> m7
+    if (RegExp(r'^(?:7\s*[\(\[]?\s*-\s*[\)\]]?|-7|7m|7-)$').hasMatch(q)) {
+      return 'm7';
+    }
+    // E- -> m
+    if (q == '-') return 'm';
+
+    // F5-, F(5-), F(-5) -> (b5)
+    if (RegExp(r'^[\(\[]?\s*(?:5\s*-|-\s*5)\s*[\)\]]?$').hasMatch(q)) {
+      return '(b5)';
+    }
+
+    // C#5+, C#(5+), C#(+5) -> aug
+    if (RegExp(r'^[\(\[]?\s*(?:5\s*\+|\+\s*5)\s*[\)\]]?$').hasMatch(q)) {
+      return 'aug';
+    }
+
+    // 7(5-), 7(-5), 7-5 -> 7(b5)
+    if (RegExp(r'^7\s*[\(\[]?\s*(?:5\s*-|-\s*5)\s*[\)\]]?$').hasMatch(q) ||
+        q == '7-5') {
+      return '7(b5)';
+    }
+
+    // m7(5-), m7(-5), m7-5 -> m7(b5)
+    if (RegExp(r'^m7\s*[\(\[]?\s*(?:5\s*-|-\s*5)\s*[\)\]]?$').hasMatch(q) ||
+        q == 'm7-5') {
+      return 'm7(b5)';
+    }
+
+    // 7(5+), 7(+5), 7+5 -> 7(#5)
+    if (RegExp(r'^7\s*[\(\[]?\s*(?:5\s*\+|\+\s*5)\s*[\)\]]?$').hasMatch(q) ||
+        q == '7+5') {
+      return '7(#5)';
+    }
 
     // E7(4/9), E7(4,9) -> 7sus4(9)
     if (RegExp(r'^7\s*[\(\[]\s*4\s*[\/,]\s*9\s*[\)\]]$').hasMatch(q)) {
@@ -110,9 +164,6 @@ class Chord {
     if (RegExp(r'^[\(\[]?\s*4\s*[\/,]\s*9\s*[\)\]]?$').hasMatch(q)) {
       return 'sus4(9)';
     }
-    // (4) -> sus4, (2) -> sus2
-    if (q == '(4)') return 'sus4';
-    if (q == '(2)') return 'sus2';
     // 6/9 or (6/9)
     if (RegExp(r'^[\(\[]?\s*6\s*[\/,]\s*9\s*[\)\]]?$').hasMatch(q)) {
       return '6/9';

@@ -89,6 +89,36 @@ void main() {
       final c69G = Chord.parse('C6/9/G');
       expect(c69G?.toString(), 'C6/9/G');
       expect(c69G?.bass?.toString(), 'G');
+
+      // User requested variants: E7(-), D7M, F5-, C#5+, D4+
+      // E7(-) -> Em7 (Mim7)
+      final e7minus = Chord.parse('E7(-)');
+      expect(e7minus?.toString(), 'Em7');
+      expect(e7minus?.toLatin().toString(), 'Mim7');
+
+      // D7M -> Dmaj7 (Remaj7)
+      final d7M = Chord.parse('D7M');
+      expect(d7M?.toString(), 'Dmaj7');
+      expect(d7M?.toLatin().toString(), 'Remaj7');
+
+      final d7MSlash = Chord.parse('D7M/F#');
+      expect(d7MSlash?.toString(), 'Dmaj7/F#');
+      expect(d7MSlash?.toLatin().toString(), 'Remaj7/Fa#');
+
+      // F5- -> F(b5) (Fa(b5))
+      final f5minus = Chord.parse('F5-');
+      expect(f5minus?.toString(), 'F(b5)');
+      expect(f5minus?.toLatin().toString(), 'Fa(b5)');
+
+      // C#5+ -> C#aug (Do#aug)
+      final cs5plus = Chord.parse('C#5+');
+      expect(cs5plus?.toString(), 'C#aug');
+      expect(cs5plus?.toLatin().toString(), 'Do#aug');
+
+      // D4+ -> Dsus4 (Resus4)
+      final d4plus = Chord.parse('D4+');
+      expect(d4plus?.toString(), 'Dsus4');
+      expect(d4plus?.toLatin().toString(), 'Resus4');
     });
 
     test('does not interpret lyric words as chords', () {
