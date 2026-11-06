@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:musicsundayworship/data/song_repository.dart';
 import 'package:musicsundayworship/features/songs/song_detail_page.dart';
+import 'package:musicsundayworship/music_engine/song_structure.dart';
 
 const _song = SongDocument(
   title: 'Grande es tu amor',
@@ -119,4 +121,81 @@ void main() {
     expect(find.text('Sección 1'), findsWidgets);
     expect(find.text('Tu amor no cambia'), findsOneWidget);
   });
+
+  testWidgets('deletes song from detail page with confirmation dialog', (tester) async {
+    const song = SongDocument(
+      id: 99,
+      title: 'Canción a eliminar',
+      originalKey: 'D',
+      sections: [],
+    );
+    var deletedId = -1;
+    final repo = _FakeDetailSongRepository(onDelete: (id) => deletedId = id);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          songRepositoryProvider.overrideWithValue(repo),
+        ],
+        child: const MaterialApp(home: SongDetailPage(song: song)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('delete-song')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('delete-song')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('¿Eliminar canción?'), findsOneWidget);
+    expect(find.byKey(const Key('confirm-delete-song-button')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('confirm-delete-song-button')));
+    await tester.pumpAndSettle();
+
+    expect(deletedId, equals(99));
+  });
+}
+
+class _FakeDetailSongRepository implements SongRepository {
+  _FakeDetailSongRepository({this.onDelete});
+
+  final void Function(int id)? onDelete;
+
+  @override
+  Future<SongDocument> create(SongDocument song) => throw UnimplementedError();
+  @override
+  Future<void> delete(int id) async => onDelete?.call(id);
+  @override
+  Future<List<SongArrangement>> readArrangements(int songId) async => [];
+  @override
+  Future<SongDocument?> read(int id) async => null;
+  @override
+  Future<List<SongDocument>> readAll() async => [];
+  @override
+  Future<SongDocument> update(SongDocument song) => throw UnimplementedError();
+  @override
+  Future<SongArrangement> createArrangement(SongArrangement arrangement) =>
+      throw UnimplementedError();
+  @override
+  Future<SongArrangement> updateArrangement(SongArrangement arrangement) =>
+      throw UnimplementedError();
+  @override
+  Future<SongDocument> updatePhotoPath(int songId, String? photoPath) =>
+      throw UnimplementedError();
+  @override
+  Future<SongStructure> createStructure(SongStructure s) =>
+      throw UnimplementedError();
+  @override
+  Future<List<SongStructure>> readStructures(int songId) async => [];
+  @override
+  Future<SongStructure> updateStructure(SongStructure s) =>
+      throw UnimplementedError();
+  @override
+  Future<void> deleteStructure(int id) async {}
+  @override
+  Future<SongStructure> duplicateStructure(int id, {String? newName}) =>
+      throw UnimplementedError();
+  @override
+  Stream<List<SongDocument>> watchAll() => const Stream.empty();
 }

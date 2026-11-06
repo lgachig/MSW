@@ -35,6 +35,10 @@ class _LibraryPageState extends ConsumerState<LibraryPage>
   String? _keyFilter;
   String? _labelFilter;
   LibrarySort _sort = LibrarySort.title;
+  final Set<String> _dismissedKeys = {};
+
+  String _songKey(SongDocument song) =>
+      song.id?.toString() ?? '${song.title}_${song.author}_${song.originalKey}';
 
   @override
   void initState() {
@@ -122,16 +126,19 @@ class _LibraryPageState extends ConsumerState<LibraryPage>
         initialData: const [],
         builder: (context, snapshot) {
           final allSongs = snapshot.data ?? const <SongDocument>[];
-          final visible = _visible(allSongs);
+          final activeSongs = allSongs
+              .where((song) => !_dismissedKeys.contains(_songKey(song)))
+              .toList();
+          final visible = _visible(activeSongs);
           final keys =
-              allSongs
+              activeSongs
                   .map((song) => song.originalKey)
                   .whereType<String>()
                   .toSet()
                   .toList()
                 ..sort();
           final labels =
-              allSongs
+              activeSongs
                   .map((song) => song.label)
                   .whereType<String>()
                   .toSet()
@@ -163,30 +170,138 @@ class _LibraryPageState extends ConsumerState<LibraryPage>
               Expanded(
                 child: visible.isEmpty
                     ? _EmptyState(
-                        hasSongs: allSongs.isNotEmpty,
+                        hasSongs: activeSongs.isNotEmpty,
                         onAddSong: () => widget._addSong(context),
                       )
                     : ListView.builder(
                         itemCount: visible.length,
                         itemBuilder: (context, index) {
                           final song = visible[index];
-                          return ListTile(
-                            title: Text(song.title),
-                            subtitle: Text(
-                              [
-                                song.author ?? 'Autor desconocido',
-                                if (song.source != null) song.source!,
-                              ].join(' · '),
-                            ),
-                            trailing: Text(song.originalKey ?? '—'),
-                            onTap: song.id == null
-                                ? null
-                                : () => Navigator.of(context).push(
-                                    MaterialPageRoute<void>(
-                                      builder: (_) =>
-                                          SongDetailPage(song: song),
+                          final sKey = _songKey(song);
+                          return Dismissible(
+                            key: Key('song-dismiss-$sKey'),
+                            direction: DismissDirection.horizontal,
+                            background: Container(
+                              color: Colors.red.shade700,
+                              alignment: Alignment.centerLeft,
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 20),
+                              child: const Row(
+                                children: [
+                                  Icon(Icons.delete, color: Colors.white),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Eliminar',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
+                                ],
+                              ),
+                            ),
+                            secondaryBackground: Container(
+                              color: Colors.red.shade700,
+                              alignment: Alignment.centerRight,
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 20),
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Icon(Icons.delete, color: Colors.white),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Eliminar',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            confirmDismiss: (direction) async {
+                              final confirmed = await showDialog<bool>(
+                                context: context,
+                                builder: (dialogContext) => AlertDialog(
+                                  title: const Text('¿Eliminar canción?'),
+                                  content: Text(
+                                    '¿Estás seguro de que deseas eliminar "${song.title}"? Esta acción no se puede deshacer.',
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      key: const Key(
+                                          'cancel-delete-song-button'),
+                                      onPressed: () =>
+                                          Navigator.of(dialogContext).pop(false),
+                                      child: const Text('Cancelar'),
+                                    ),
+                                    FilledButton(
+                                      key: const Key(
+                                          'confirm-delete-song-button'),
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor: Colors.red.shade700,
+                                      ),
+                                      onPressed: () =>
+                                          Navigator.of(dialogContext).pop(true),
+                                      child: const Text('Eliminar'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                              return confirmed ?? false;
+                            },
+                            onDismissed: (direction) async {
+                              setState(() {
+                                _dismissedKeys.add(sKey);
+                              });
+                              final songId = song.id;
+                              if (songId != null) {
+                                try {
+                                  await ref
+                                      .read(songRepositoryProvider)
+                                      .delete(songId);
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                            'Canción "${song.title}" eliminada'),
+                                      ),
+                                    );
+                                  }
+                                } catch (e) {
+                                  setState(() {
+                                    _dismissedKeys.remove(sKey);
+                                  });
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                            'Error al eliminar canción: $e'),
+                                      ),
+                                    );
+                                  }
+                                }
+                              }
+                            },
+                            child: ListTile(
+                              title: Text(song.title),
+                              subtitle: Text(
+                                [
+                                  song.author ?? 'Autor desconocido',
+                                  if (song.source != null) song.source!,
+                                ].join(' · '),
+                              ),
+                              trailing: Text(song.originalKey ?? '—'),
+                              onTap: song.id == null
+                                  ? null
+                                  : () => Navigator.of(context).push(
+                                      MaterialPageRoute<void>(
+                                        builder: (_) =>
+                                            SongDetailPage(song: song),
+                                      ),
+                                    ),
+                            ),
                           );
                         },
                       ),

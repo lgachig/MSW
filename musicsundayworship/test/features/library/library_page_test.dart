@@ -16,7 +16,9 @@ class _FakeSongRepository implements SongRepository {
   @override
   Future<SongDocument> create(SongDocument song) => throw UnimplementedError();
   @override
-  Future<void> delete(int id) => throw UnimplementedError();
+  Future<void> delete(int id) async {
+    songs.removeWhere((s) => s.id == id);
+  }
   @override
   Future<List<SongArrangement>> readArrangements(int songId) =>
       throw UnimplementedError();
@@ -262,11 +264,61 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(SongReviewCorrectionPage), findsOneWidget);
+    expect(find.widgetWithText(TextFormField, 'Grande y Fuerte'), findsOneWidget);
+    expect(find.widgetWithText(TextFormField, 'Am'), findsOneWidget);
+  });
+
+  testWidgets('canceling swipe dismiss keeps the song in the library', (tester) async {
+    final songs = [
+      const SongDocument(id: 1, title: 'Canción a conservar', author: 'Autor 1'),
+      const SongDocument(id: 2, title: 'Otra Canción', author: 'Autor 2'),
+    ];
+    await tester.pumpWidget(_app(songs));
+    await tester.pump();
+
+    expect(find.text('Canción a conservar'), findsOneWidget);
+
+    // Swipe the first song to the left
+    await tester.drag(find.text('Canción a conservar'), const Offset(-500, 0));
+    await tester.pumpAndSettle();
+
+    // Confirmation dialog should be visible
+    expect(find.text('¿Eliminar canción?'), findsOneWidget);
     expect(
-      find.widgetWithText(TextFormField, 'Grande y Fuerte'),
+      find.text('¿Estás seguro de que deseas eliminar "Canción a conservar"? Esta acción no se puede deshacer.'),
       findsOneWidget,
     );
-    expect(find.widgetWithText(TextFormField, 'Am'), findsOneWidget);
+
+    // Tap "Cancelar"
+    await tester.tap(find.byKey(const Key('cancel-delete-song-button')));
+    await tester.pumpAndSettle();
+
+    // Song is still visible
+    expect(find.text('Canción a conservar'), findsOneWidget);
+  });
+
+  testWidgets('confirming swipe dismiss deletes the song from library and calls delete', (tester) async {
+    final songs = [
+      const SongDocument(id: 1, title: 'Canción a borrar', author: 'Autor 1'),
+      const SongDocument(id: 2, title: 'Canción a mantener', author: 'Autor 2'),
+    ];
+    await tester.pumpWidget(_app(songs));
+    await tester.pump();
+
+    expect(find.text('Canción a borrar'), findsOneWidget);
+
+    // Swipe the song to the left
+    await tester.drag(find.text('Canción a borrar'), const Offset(-500, 0));
+    await tester.pumpAndSettle();
+
+    // Tap "Eliminar" in dialog
+    await tester.tap(find.byKey(const Key('confirm-delete-song-button')));
+    await tester.pumpAndSettle();
+
+    // Song is gone from the UI
+    expect(find.text('Canción a borrar'), findsNothing);
+    expect(find.text('Canción a mantener'), findsOneWidget);
+    expect(find.text('Canción "Canción a borrar" eliminada'), findsOneWidget);
   });
 }
 

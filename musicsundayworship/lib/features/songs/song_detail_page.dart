@@ -119,6 +119,13 @@ class _SongDetailPageState extends ConsumerState<SongDetailPage> {
           onPressed: _editPhoto,
           icon: const Icon(Icons.photo_camera),
         ),
+        if (widget.song.id != null)
+          IconButton(
+            key: const Key('delete-song'),
+            tooltip: 'Eliminar canción',
+            icon: const Icon(Icons.delete_outline),
+            onPressed: _confirmDeleteSong,
+          ),
       ],
     ),
     body: ListView(
@@ -380,6 +387,46 @@ class _SongDetailPageState extends ConsumerState<SongDetailPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _confirmDeleteSong() async {
+    final id = widget.song.id;
+    if (id == null) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('¿Eliminar canción?'),
+        content: Text(
+          '¿Estás seguro de que deseas eliminar "${widget.song.title}"? Esta acción no se puede deshacer.',
+        ),
+        actions: [
+          TextButton(
+            key: const Key('cancel-delete-song-button'),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            key: const Key('confirm-delete-song-button'),
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.red.shade700,
+            ),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      await ref.read(songRepositoryProvider).delete(id);
+      if (mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Canción "${widget.song.title}" eliminada'),
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _editArrangement(SongArrangement arrangement) async {
