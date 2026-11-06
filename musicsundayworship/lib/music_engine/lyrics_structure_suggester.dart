@@ -297,16 +297,98 @@ class LyricsStructureSuggester {
       );
     }
 
+    // 1. Check if the text contains an explicit roadmap line (e.g. Estructura: V1, Coro, V2...)
+    final roadmap = _extractRoadmap(clean);
+    if (roadmap != null && roadmap.isNotEmpty) {
+      return _buildFromRoadmapAndBlocks(roadmap, parsedBlocks);
+    }
+
     final explicitBlocks =
         parsedBlocks.where((b) => b.headerInfo != null).toList();
     final hasExplicitHeaders =
-        explicitBlocks.isNotEmpty && explicitBlocks.length >= (parsedBlocks.length * 0.4).ceil();
+        explicitBlocks.isNotEmpty &&
+        explicitBlocks.length >= (parsedBlocks.length * 0.4).ceil();
 
     if (hasExplicitHeaders) {
       return _buildFromExplicitAndInferred(parsedBlocks);
     } else {
       return _buildFromRepetitionsAndPosition(parsedBlocks);
     }
+  }
+
+  /// Extracts an explicit song roadmap if present (e.g. "Estructura: Intro, Verso 1, Coro, Verso 2, Coro...").
+  static List<HeaderInfo>? _extractRoadmap(String text) {
+    for (final line in text.split('\n')) {
+      final trimmed = line.trim();
+      final match = RegExp(
+        r'^(?:estructura|orden|secuencia|flow|roadmap)\s*[:=]\s*(.+)$',
+        caseSensitive: false,
+      ).firstMatch(trimmed);
+      if (match != null) {
+        final content = match.group(1)!;
+        final tokens = content
+            .split(RegExp(r'[,–—\->\/;\|]+'))
+            .map((t) => t.trim())
+            .where((t) => t.isNotEmpty)
+            .toList();
+        if (tokens.length >= 2) {
+          final items = <HeaderInfo>[];
+          for (final token in tokens) {
+            final header = matchHeader(token);
+            if (header != null) {
+              items.add(header);
+            }
+          }
+          if (items.length >= 2) {
+            return items;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  static StructureProposal _buildFromRoadmapAndBlocks(
+    List<HeaderInfo> roadmap,
+    List<_RawBlock> blocks,
+  ) {
+    final items = <StructureItem>[];
+    for (var i = 0; i < roadmap.length; i++) {
+      final h = roadmap[i];
+      items.add(
+        StructureItem(
+          id: 'sug_road_${i}_${h.type.name}',
+          type: h.type,
+          name: h.rawName,
+          repeatCount: h.repeatCount,
+        ),
+      );
+    }
+
+    final uniqueSections = <String, SongSection>{};
+    for (final b in blocks) {
+      if (b.songLines.isEmpty) continue;
+      final name = b.headerInfo?.rawName ?? 'Sección ${uniqueSections.length + 1}';
+      if (!uniqueSections.containsKey(name)) {
+        uniqueSections[name] = SongSection(
+          name: name,
+          position: uniqueSections.length,
+          lines: b.songLines,
+        );
+      }
+    }
+
+    final explanation =
+        'Estructura detectada desde la indicación explícita de la canción: '
+        '${items.map((it) => it.labelWithRepeats).join(' → ')}.';
+
+    return StructureProposal(
+      items: List.unmodifiable(items),
+      sections: List.unmodifiable(uniqueSections.values.toList()),
+      explanation: explanation,
+      hasExplicitHeaders: true,
+      confidence: 1.0,
+    );
   }
 
   /// Proposes a [SongStructure] from existing song sections.
@@ -346,7 +428,57 @@ class LyricsStructureSuggester {
       buffer.writeln(); // Blank line between sections
     }
 
-    return suggestFromText(buffer.toString());
+    final proposal = suggestFromText(buffer.toString());
+
+    // If the song defined unique sections (e.g. Verso 1, Coro, Verso 2),
+    // expand the worship structure flow so subsequent verses/bridges include the chorus.
+    final expandedItems = _expandWorshipStructureIfLinear(proposal.items);
+    if (expandedItems.length != proposal.items.length) {
+      final explanation =
+          'Estructura armada en base a las partes identificadas (${expandedItems.map((it) => it.labelWithRepeats).join(' → ')}).';
+      return StructureProposal(
+        items: List.unmodifiable(expandedItems),
+        sections: proposal.sections,
+        explanation: explanation,
+        hasExplicitHeaders: proposal.hasExplicitHeaders,
+        confidence: proposal.confidence,
+      );
+    }
+
+    return proposal;
+  }
+
+  static List<StructureItem> _expandWorshipStructureIfLinear(
+    List<StructureItem> items,
+  ) {
+    final coros = items.where((it) => it.type == SectionType.coro).toList();
+    if (coros.length != 1) return items;
+
+    final coro = coros.first;
+    final expanded = <StructureItem>[];
+
+    for (var i = 0; i < items.length; i++) {
+      final current = items[i];
+      expanded.add(current);
+
+      final nextIsCoro =
+          i + 1 < items.length && items[i + 1].type == SectionType.coro;
+      if (!nextIsCoro) {
+        if ((current.type == SectionType.verso && current.name != 'Verso 1') ||
+            current.type == SectionType.puente) {
+          expanded.add(
+            StructureItem(
+              id: 'sug_flow_coro_${expanded.length}',
+              type: coro.type,
+              name: coro.name,
+              repeatCount: coro.repeatCount,
+            ),
+          );
+        }
+      }
+    }
+
+    return expanded;
   }
 
   /// Segments text into blocks by blank lines OR by encountering a header line.
@@ -387,6 +519,14 @@ class LyricsStructureSuggester {
         if (currentLyricLines.isNotEmpty || currentHeader != null) {
           flushCurrentBlock();
         }
+        continue;
+      }
+
+      // Skip explicit roadmap line from stanza blocks
+      if (RegExp(
+        r'^(?:estructura|orden|secuencia|flow|roadmap)\s*[:=]',
+        caseSensitive: false,
+      ).hasMatch(trimmed)) {
         continue;
       }
 
@@ -464,6 +604,7 @@ class LyricsStructureSuggester {
   ) {
     final items = <StructureItem>[];
     final sections = <SongSection>[];
+    final uniqueSectionsByName = <String, SongSection>{};
     final verseCounts = <String, int>{};
 
     // Find known chorus lyrics from blocks that explicitly had Coro header
@@ -516,13 +657,29 @@ class LyricsStructureSuggester {
         ),
       );
 
-      sections.add(
-        SongSection(
+      // Only add to unique sections if it has lines and isn't a duplicate
+      if (b.songLines.isNotEmpty && !uniqueSectionsByName.containsKey(name)) {
+        final sec = SongSection(
           name: name,
-          position: i,
+          position: sections.length,
           lines: b.songLines,
-        ),
-      );
+        );
+        sections.add(sec);
+        uniqueSectionsByName[name] = sec;
+      }
+    }
+
+    // Ensure every section referenced in items exists in sections
+    for (final item in items) {
+      if (!uniqueSectionsByName.containsKey(item.name)) {
+        final sec = SongSection(
+          name: item.name,
+          position: sections.length,
+          lines: const [],
+        );
+        sections.add(sec);
+        uniqueSectionsByName[item.name] = sec;
+      }
     }
 
     final explanation =

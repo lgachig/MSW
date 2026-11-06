@@ -343,6 +343,108 @@ Aleluya al Rey
       expect(proposal.items[3].name, 'Coro');
       expect(proposal.items[3].type, SectionType.coro);
     });
+
+    test('detecta estructura completa desde línea explícita de roadmap (Estructura: Intro, V1, Coro...)', () {
+      const textWithRoadmap = '''
+Estructura: Intro, Verso 1, Coro, Verso 2, Coro, Puente, Coro x2, Final
+
+[Verso 1]
+Tu amor me sostiene Dios de mi vida
+
+[Coro]
+Aleluya al Rey de salvacion
+
+[Verso 2]
+En la tormenta Tu mano me guia
+
+[Puente]
+Digno es el Cordero por siempre
+''';
+
+      final proposal = LyricsStructureSuggester.suggestFromText(textWithRoadmap);
+
+      expect(proposal.hasExplicitHeaders, isTrue);
+      expect(proposal.items.length, 8);
+      expect(proposal.items.map((it) => it.labelWithRepeats).toList(), [
+        'Intro',
+        'Verso 1',
+        'Coro',
+        'Verso 2',
+        'Coro',
+        'Puente',
+        'Coro x2',
+        'Final',
+      ]);
+      // Only the 4 master sections with lines are saved as unique sections
+      expect(proposal.sections.length, 4);
+      expect(proposal.sections.map((s) => s.name).toList(), [
+        'Verso 1',
+        'Coro',
+        'Verso 2',
+        'Puente',
+      ]);
+    });
+
+    test('reconoce menciones de sección sin acordes ni letra repetida sin crear secciones vacías', () {
+      const textWithReferences = '''
+[Verso 1]
+G                 D
+Tu gracia me encontro
+
+[Coro]
+C                 G
+Aleluya al Señor
+
+[Verso 2]
+G                 D
+En Ti confiare
+
+[Coro]
+
+[Puente]
+Em                C
+Santo por la eternidad
+
+[Coro] x2
+''';
+
+      final proposal = LyricsStructureSuggester.suggestFromText(textWithReferences);
+
+      expect(proposal.items.length, 6);
+      expect(proposal.items.map((it) => it.labelWithRepeats).toList(), [
+        'Verso 1',
+        'Coro',
+        'Verso 2',
+        'Coro',
+        'Puente',
+        'Coro x2',
+      ]);
+      // Master sections keep their chords and lyrics; no blank section is duplicated
+      expect(proposal.sections.length, 4);
+      expect(proposal.sections[1].lines.first.chords.isNotEmpty, isTrue);
+    });
+
+    test('arma flujo de alabanza (Verso 1 -> Coro -> Verso 2 -> Coro -> Puente -> Coro) desde partes únicas', () {
+      final uniqueSections = [
+        const SongSection(name: 'Verso 1', position: 0, lines: [SongLine(content: 'Línea 1', position: 0)]),
+        const SongSection(name: 'Coro', position: 1, lines: [SongLine(content: 'Línea Coro', position: 0)]),
+        const SongSection(name: 'Verso 2', position: 2, lines: [SongLine(content: 'Línea 2', position: 0)]),
+        const SongSection(name: 'Puente', position: 3, lines: [SongLine(content: 'Línea Puente', position: 0)]),
+      ];
+
+      final proposal = LyricsStructureSuggester.suggestFromSections(uniqueSections);
+
+      // Successfully expanded flow with Coro after Verso 2 and after Puente
+      expect(proposal.items.length, 6);
+      expect(proposal.items.map((it) => it.name).toList(), [
+        'Verso 1',
+        'Coro',
+        'Verso 2',
+        'Coro',
+        'Puente',
+        'Coro',
+      ]);
+    });
   });
 }
 
