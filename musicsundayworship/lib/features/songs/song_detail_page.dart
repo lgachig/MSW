@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/song_repository.dart';
 import '../../music_engine/music_engine.dart';
+import '../rehearsal/rehearsal_page.dart';
 import '../rehearsal/visual_metronome_card.dart';
 import '../structure/song_structure_editor_page.dart';
 import 'arrangement_editor_page.dart';
@@ -112,6 +113,12 @@ class _SongDetailPageState extends ConsumerState<SongDetailPage> {
     appBar: AppBar(
       title: Text(widget.song.title),
       actions: [
+        IconButton(
+          key: const Key('start-rehearsal-mode'),
+          tooltip: 'Modo Ensayo',
+          icon: const Icon(Icons.play_circle_filled, color: Colors.green),
+          onPressed: _openRehearsalMode,
+        ),
         IconButton(
           key: const Key('edit-structure'),
           tooltip: 'Estructura y repeticiones',
@@ -360,7 +367,24 @@ class _SongDetailPageState extends ConsumerState<SongDetailPage> {
           _buildSectionCard(section),
       ],
     ),
+    floatingActionButton: FloatingActionButton.extended(
+      key: const Key('start-rehearsal-fab'),
+      onPressed: _openRehearsalMode,
+      icon: const Icon(Icons.play_arrow),
+      label: const Text('Modo Ensayo'),
+    ),
   );
+
+  Future<void> _openRehearsalMode() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => RehearsalPage(
+          song: _currentSong,
+          structure: _selectedStructure,
+        ),
+      ),
+    );
+  }
 
   Future<void> _openStructureEditor() async {
     final saved = await Navigator.of(context).push<SongStructure>(

@@ -744,7 +744,7 @@ Pantalla completa con sección actual y siguiente, que avanza sola al compás.
 flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
 
 *Depende de*
-MSW-36, MSW-38","","MSW-5","Highest","fase-4","msw","8","S6","Por hacer"
+MSW-36, MSW-38","","MSW-5","Highest","fase-4","msw","8","S6","En curso"
 "MSW-40","Story","Playlists por servicio","*Objetivo*
 Armar y reutilizar la lista de canciones del domingo.
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:musicsundayworship/data/song_repository.dart';
+import 'package:musicsundayworship/features/rehearsal/rehearsal_page.dart';
 import 'package:musicsundayworship/features/songs/song_detail_page.dart';
 import 'package:musicsundayworship/music_engine/song_structure.dart';
 
@@ -177,6 +178,36 @@ void main() {
     expect(find.text('115 BPM'), findsWidgets);
     expect(find.byKey(const Key('play-metronome-button')), findsOneWidget);
     expect(find.byKey(const Key('tap-tempo-button')), findsOneWidget);
+  });
+
+  testWidgets('opens rehearsal mode page when tapping rehearsal button', (tester) async {
+    const song = SongDocument(
+      id: 7,
+      title: 'Canción Ensayo Test',
+      originalKey: 'D',
+      tempo: 120,
+      timeSignature: '4/4',
+      sections: [
+        SongSection(
+          name: 'Verso',
+          lines: [SongLine(content: 'Letra')],
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(home: SongDetailPage(song: song)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('start-rehearsal-mode')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('start-rehearsal-mode')));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(RehearsalPage), findsOneWidget);
+    expect(find.byKey(const Key('current-section-card')), findsOneWidget);
   });
 }
 

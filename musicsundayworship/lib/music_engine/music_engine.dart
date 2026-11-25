@@ -4,6 +4,8 @@ export 'lyrics_structure_suggester.dart';
 export 'music_key.dart';
 export 'music_key_detector.dart';
 export 'note_name.dart';
+export 'rehearsal_flow_controller.dart';
+export 'rehearsal_plan.dart';
 export 'song_structure.dart';
 export 'tap_tempo.dart';
 export 'tempo_suggester.dart';
