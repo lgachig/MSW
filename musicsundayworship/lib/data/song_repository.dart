@@ -34,17 +34,24 @@ class SongDocument {
 
   SongDocument copyWith({
     int? id,
-    List<SongSection>? sections,
+    String? title,
+    String? author,
+    String? source,
+    String? originalKey,
+    String? label,
+    int? tempo,
+    String? timeSignature,
     String? photoPath,
+    List<SongSection>? sections,
   }) => SongDocument(
     id: id ?? this.id,
-    title: title,
-    author: author,
-    source: source,
-    originalKey: originalKey,
-    label: label,
-    tempo: tempo,
-    timeSignature: timeSignature,
+    title: title ?? this.title,
+    author: author ?? this.author,
+    source: source ?? this.source,
+    originalKey: originalKey ?? this.originalKey,
+    label: label ?? this.label,
+    tempo: tempo ?? this.tempo,
+    timeSignature: timeSignature ?? this.timeSignature,
     photoPath: photoPath ?? this.photoPath,
     sections: sections ?? this.sections,
   );
@@ -111,6 +118,11 @@ abstract interface class SongRepository {
   Future<SongStructure> updateStructure(SongStructure structure);
   Future<void> deleteStructure(int id);
   Future<SongStructure> duplicateStructure(int structureId, {String? newName});
+  Future<SongDocument> updateTempoAndSignature(
+    int songId, {
+    int? tempo,
+    String? timeSignature,
+  });
 }
 
 class DriftSongRepository implements SongRepository {
@@ -215,6 +227,25 @@ class DriftSongRepository implements SongRepository {
         await (database.update(database.songs)
               ..where((table) => table.id.equals(songId)))
             .write(SongsCompanion(photoPath: Value(photoPath)));
+    if (updated == 0) throw StateError('Song $songId does not exist');
+    return (await read(songId))!;
+  }
+
+  @override
+  Future<SongDocument> updateTempoAndSignature(
+    int songId, {
+    int? tempo,
+    String? timeSignature,
+  }) async {
+    final updated =
+        await (database.update(database.songs)
+              ..where((table) => table.id.equals(songId)))
+            .write(
+          SongsCompanion(
+            tempo: Value(tempo),
+            timeSignature: Value(timeSignature),
+          ),
+        );
     if (updated == 0) throw StateError('Song $songId does not exist');
     return (await read(songId))!;
   }

@@ -53,6 +53,16 @@ class _FakeSongRepository implements SongRepository {
   @override
   Future<SongStructure> duplicateStructure(int id, {String? newName}) async =>
       SongStructure(name: newName ?? 'Copia');
+  @override
+  Future<SongDocument> updateTempoAndSignature(
+    int songId, {
+    int? tempo,
+    String? timeSignature,
+  }) async =>
+      (await read(songId))!.copyWith(
+        tempo: tempo,
+        timeSignature: timeSignature,
+      );
 }
 
 class _FailingSongRepository extends _FakeSongRepository {

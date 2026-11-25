@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/song_repository.dart';
 import '../../music_engine/music_engine.dart';
+import '../rehearsal/visual_metronome_card.dart';
 import '../structure/song_structure_editor_page.dart';
 import 'arrangement_editor_page.dart';
 import 'song_photo_page.dart';
@@ -17,6 +18,7 @@ class SongDetailPage extends ConsumerStatefulWidget {
 }
 
 class _SongDetailPageState extends ConsumerState<SongDetailPage> {
+  late SongDocument _currentSong;
   NoteNotation _notation = NoteNotation.american;
   int _semitones = 0;
   MusicKey? _targetKey;
@@ -28,8 +30,17 @@ class _SongDetailPageState extends ConsumerState<SongDetailPage> {
   @override
   void initState() {
     super.initState();
+    _currentSong = widget.song;
     _loadArrangements();
     _loadStructures();
+  }
+
+  @override
+  void didUpdateWidget(covariant SongDetailPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.song.id != oldWidget.song.id) {
+      _currentSong = widget.song;
+    }
   }
 
   Future<void> _loadArrangements() async {
@@ -215,6 +226,16 @@ class _SongDetailPageState extends ConsumerState<SongDetailPage> {
               ],
             ),
           ),
+        ),
+        const SizedBox(height: 16),
+        VisualMetronomeCard(
+          song: _currentSong,
+          onSaved: (tempo, sig) => setState(() {
+            _currentSong = _currentSong.copyWith(
+              tempo: tempo,
+              timeSignature: sig,
+            );
+          }),
         ),
         const SizedBox(height: 16),
         if (_arrangements.isNotEmpty)
