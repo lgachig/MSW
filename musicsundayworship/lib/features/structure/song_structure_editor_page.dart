@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/song_repository.dart';
-import '../../music_engine/song_structure.dart';
+import '../../music_engine/music_engine.dart';
 
 /// Provides distinct colors and icons for each musical section type.
 class SectionStyle {
@@ -102,16 +102,26 @@ class _SongStructureEditorPageState
       // Build default structure from song sections
       final defaultItems = <StructureItem>[];
       if (widget.song.sections.isNotEmpty) {
-        for (var i = 0; i < widget.song.sections.length; i++) {
-          final sec = widget.song.sections[i];
-          defaultItems.add(
-            StructureItem(
-              id: 'sec_${sec.position}_$i',
-              type: SectionType.fromString(sec.name),
-              name: sec.name.trim().isEmpty ? 'Sección ${i + 1}' : sec.name,
-              repeatCount: 1,
-            ),
-          );
+        final proposal =
+            LyricsStructureSuggester.suggestFromSections(widget.song.sections);
+        if (proposal.items.isNotEmpty) {
+          defaultItems.addAll(proposal.items);
+        } else {
+          for (var i = 0; i < widget.song.sections.length; i++) {
+            final sec = widget.song.sections[i];
+            final header = LyricsStructureSuggester.matchHeader(sec.name);
+            final name = header?.rawName ??
+                (sec.name.trim().isEmpty ? 'Sección ${i + 1}' : sec.name);
+            final type = header?.type ?? SectionType.fromString(sec.name);
+            defaultItems.add(
+              StructureItem(
+                id: 'sec_${sec.position}_$i',
+                type: type,
+                name: name,
+                repeatCount: header?.repeatCount ?? 1,
+              ),
+            );
+          }
         }
       } else {
         defaultItems.addAll([
@@ -247,6 +257,30 @@ class _SongStructureEditorPageState
           ? await repo.updateStructure(structure)
           : await repo.createStructure(structure);
 
+      // Also synchronize section names in the song document if changed
+      if (widget.song.id != null &&
+          _items.length == widget.song.sections.length) {
+        final updatedSections = <SongSection>[];
+        var hasChanges = false;
+        for (var i = 0; i < widget.song.sections.length; i++) {
+          final oldSec = widget.song.sections[i];
+          final newItem = _items[i];
+          if (oldSec.name != newItem.name) {
+            hasChanges = true;
+          }
+          updatedSections.add(
+            SongSection(
+              name: newItem.name,
+              position: oldSec.position,
+              lines: oldSec.lines,
+            ),
+          );
+        }
+        if (hasChanges) {
+          await repo.update(widget.song.copyWith(sections: updatedSections));
+        }
+      }
+
       widget.onStructureSaved?.call(saved);
 
       if (!mounted) return;
@@ -272,6 +306,227 @@ class _SongStructureEditorPageState
     }
   }
 
+  Future<void> _showSuggestStructureDialog() async {
+    final buffer = StringBuffer();
+    for (final sec in widget.song.sections) {
+      final header = LyricsStructureSuggester.matchHeader(sec.name);
+      if (header != null) {
+        buffer.writeln('[${header.rawName}]');
+      }
+      for (final line in sec.lines) {
+        if (line.chords.isNotEmpty) {
+          final chordRow = StringBuffer();
+          for (final c in line.chords) {
+            if (chordRow.length < c.position) {
+              chordRow.write(' ' * (c.position - chordRow.length));
+            }
+            chordRow.write(c.chord);
+          }
+          buffer.writeln(chordRow.toString());
+        }
+        buffer.writeln(line.content);
+      }
+      buffer.writeln();
+    }
+
+    final lyricsController = TextEditingController(
+      text: buffer.toString().trim(),
+    );
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (bottomSheetContext) {
+        return StatefulBuilder(
+          builder: (ctx, setModalState) {
+            final proposal = LyricsStructureSuggester.suggestFromText(
+              lyricsController.text,
+            );
+
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
+                top: 16,
+                left: 16,
+                right: 16,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.auto_awesome, color: Colors.deepPurple),
+                        const SizedBox(width: 8),
+                        const Expanded(
+                          child: Text(
+                            'Estructura propuesta desde la letra',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          key: const Key('close-suggestion-modal'),
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.pop(bottomSheetContext),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Pega o edita la letra para detectar automáticamente estrofas, coros, pre-coros y puentes.',
+                      style: TextStyle(fontSize: 12, color: Colors.black54),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      key: const Key('suggestion-lyrics-input'),
+                      controller: lyricsController,
+                      minLines: 4,
+                      maxLines: 8,
+                      style: const TextStyle(
+                        fontFamily: 'monospace',
+                        fontSize: 13,
+                      ),
+                      decoration: const InputDecoration(
+                        labelText: 'Letra a analizar',
+                        hintText: 'Pega aquí la letra o acordes...',
+                        border: OutlineInputBorder(),
+                        isDense: true,
+                      ),
+                      onChanged: (_) => setModalState(() {}),
+                    ),
+                    const SizedBox(height: 12),
+                    if (proposal.items.isNotEmpty) ...[
+                      Container(
+                        key: const Key('proposal-summary-card'),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.deepPurple.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.deepPurple.shade200),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.lightbulb,
+                                  size: 16,
+                                  color: Colors.deepPurple,
+                                ),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    proposal.explanation,
+                                    key: const Key('proposal-explanation-text'),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.deepPurple.shade900,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Wrap(
+                              key: const Key('proposal-preview-chips'),
+                              spacing: 6,
+                              runSpacing: 4,
+                              children: [
+                                for (final it in proposal.items)
+                                  Chip(
+                                    visualDensity: VisualDensity.compact,
+                                    backgroundColor:
+                                        SectionStyle.backgroundColor(it.type),
+                                    side: BorderSide(
+                                      color: SectionStyle.borderColor(it.type),
+                                    ),
+                                    avatar: Icon(
+                                      SectionStyle.icon(it.type),
+                                      size: 14,
+                                      color: SectionStyle.textColor(it.type),
+                                    ),
+                                    label: Text(
+                                      it.name,
+                                      style: TextStyle(
+                                        color: SectionStyle.textColor(it.type),
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ] else ...[
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Text(
+                          proposal.explanation,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.black45,
+                          ),
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          key: const Key('discard-suggestion-button'),
+                          onPressed: () => Navigator.pop(bottomSheetContext),
+                          child: const Text('Descartar'),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton.icon(
+                          key: const Key('apply-suggestion-button'),
+                          icon: const Icon(Icons.check),
+                          label: const Text('Aplicar estructura'),
+                          onPressed: proposal.items.isEmpty
+                              ? null
+                              : () {
+                                  setState(() {
+                                    _items = List<StructureItem>.from(
+                                      proposal.items,
+                                    );
+                                  });
+                                  Navigator.pop(bottomSheetContext);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Estructura aplicada (${proposal.items.length} secciones). Guarda para persistir.',
+                                      ),
+                                      backgroundColor:
+                                          Colors.deepPurple.shade800,
+                                    ),
+                                  );
+                                },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentStructure = SongStructure(
@@ -284,6 +539,12 @@ class _SongStructureEditorPageState
       appBar: AppBar(
         title: const Text('Editor de estructura'),
         actions: [
+          IconButton(
+            key: const Key('suggest-structure-button'),
+            tooltip: 'Sugerir estructura desde letra',
+            onPressed: _showSuggestStructureDialog,
+            icon: const Icon(Icons.auto_awesome),
+          ),
           IconButton(
             key: const Key('duplicate-structure-button'),
             tooltip: 'Duplicar versión',
@@ -420,6 +681,27 @@ class _SongStructureEditorPageState
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
+                        ActionChip(
+                          key: const Key('suggest-from-lyrics-chip'),
+                          avatar: const Icon(
+                            Icons.auto_awesome,
+                            size: 14,
+                            color: Colors.deepPurple,
+                          ),
+                          label: const Text(
+                            'Sugerir de letra',
+                            style: TextStyle(
+                              color: Colors.deepPurple,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          backgroundColor: Colors.deepPurple.shade50,
+                          side: BorderSide(color: Colors.deepPurple.shade200),
+                          visualDensity: VisualDensity.compact,
+                          onPressed: _showSuggestStructureDialog,
+                        ),
+                        const SizedBox(width: 8),
                         _buildAddButton(SectionType.intro),
                         _buildAddButton(SectionType.verso),
                         _buildAddButton(SectionType.precoro),

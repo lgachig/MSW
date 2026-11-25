@@ -45,23 +45,52 @@ class ChordLineDetector {
     final found = <ChordLineToken>[];
     var tokenCount = 0;
 
-    // Keep slash chords (Am/G) together, but treat | and - as separators.
-    final tokenPattern = RegExp(r'[^\s|–—-]+');
+    // Matches non-whitespace, non-pipe sequences
+    final tokenPattern = RegExp(r'[^\s|]+');
     for (final match in tokenPattern.allMatches(line)) {
       final text = match.group(0)!;
-      if (text == '/') continue;
-      tokenCount++;
-      final chord = Chord.parse(text);
-      if (chord != null) {
+      // Skip standalone separators like /, -, –, —
+      if (text == '/' || text == '-' || text == '–' || text == '—') continue;
+
+      // Check if text directly forms a valid chord (e.g. E7(-), F5-, C#5+, D7M, D4+)
+      final directChord = Chord.parse(text);
+      if (directChord != null) {
+        tokenCount++;
         found.add(
           ChordLineToken(
             text: text,
-            chord: chord,
+            chord: directChord,
             start: match.start,
             end: match.end,
           ),
         );
+        continue;
       }
+
+      // If text contains dashes separating multiple chords (e.g. "G-Em" or "C--D")
+      if (text.contains('-') || text.contains('–') || text.contains('—')) {
+        final subMatches = RegExp(r'[^\s|–—-]+').allMatches(text);
+        if (subMatches.length > 1) {
+          for (final sub in subMatches) {
+            final subText = sub.group(0)!;
+            tokenCount++;
+            final subChord = Chord.parse(subText);
+            if (subChord != null) {
+              found.add(
+                ChordLineToken(
+                  text: subText,
+                  chord: subChord,
+                  start: match.start + sub.start,
+                  end: match.start + sub.end,
+                ),
+              );
+            }
+          }
+          continue;
+        }
+      }
+
+      tokenCount++;
     }
 
     return ChordLineResult(

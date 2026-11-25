@@ -697,7 +697,7 @@ Sugerir secciones a partir de la letra, siempre editable.
 flutter analyze sin errores; pruebas del ticket pasan; historial publicado en Jira; ticket en 'Listo para prueba de Luis'.
 
 *Depende de*
-MSW-36","","MSW-5","Medium","fase-4","msw","5","S7","Por hacer"
+MSW-36","","MSW-5","Medium","fase-4","msw","5","S7","Listo para prueba de Luis"
 "MSW-38","Story","Metrónomo de baja latencia","*Objetivo*
 Un pulso exacto, medido con el reloj de audio.
 

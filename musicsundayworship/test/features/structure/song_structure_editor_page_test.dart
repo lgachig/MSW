@@ -127,8 +127,8 @@ void main() {
     expect(find.byKey(const Key('delete-item-2')), findsOneWidget);
     expect(find.byKey(const Key('delete-item-3')), findsNothing);
 
-    // Tap quick chip 'Coro'
-    await tester.tap(find.byKey(const Key('add-section-coro')));
+    // Tap quick chip 'Intro'
+    await tester.tap(find.byKey(const Key('add-section-intro')));
     await tester.pumpAndSettle();
 
     // Should now have 4 items
@@ -279,4 +279,127 @@ void main() {
     // Preview should update to 5 bloques (1 verso + 4 coros)
     expect(find.text('Secuencia expandida (5 bloques):'), findsOneWidget);
   });
+
+  testWidgets(
+    'MSW-37: opens suggestion modal, detects structure, and does not apply if discarded',
+    (tester) async {
+      await tester.pumpWidget(createWidget());
+      await tester.pumpAndSettle();
+
+      // Initial structure has 3 items
+      expect(find.byKey(const Key('repeat-count-0')), findsOneWidget);
+      expect(find.byKey(const Key('repeat-count-1')), findsOneWidget);
+      expect(find.byKey(const Key('repeat-count-2')), findsOneWidget);
+
+      // Open suggestion modal via action button
+      await tester.tap(find.byKey(const Key('suggest-structure-button')));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Estructura propuesta desde la letra'),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('suggestion-lyrics-input')), findsOneWidget);
+
+      // Paste new lyrics into modal
+      const newLyrics = '''
+[Verso 1]
+Primera linea
+
+[Coro]
+Coro gloria
+
+[Puente]
+Puente santo
+''';
+      await tester.enterText(
+        find.byKey(const Key('suggestion-lyrics-input')),
+        newLyrics,
+      );
+      await tester.pumpAndSettle();
+
+      // Proposal is shown in modal
+      expect(find.byKey(const Key('proposal-summary-card')), findsOneWidget);
+      expect(
+        find.textContaining('encabezados explícitos'),
+        findsOneWidget,
+      );
+
+      // Tap 'Descartar'
+      await tester.tap(find.byKey(const Key('discard-suggestion-button')));
+      await tester.pumpAndSettle();
+
+      // Modal closed, and original 3 items remain unchanged!
+      expect(find.byKey(const Key('delete-item-2')), findsOneWidget);
+      expect(find.byKey(const Key('delete-item-3')), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'MSW-37: Luis manual test - pastes lyrics, reviews proposal, applies and saves only after confirmation',
+    (tester) async {
+      SongStructure? savedOutput;
+      await tester.pumpWidget(
+        createWidget(
+          onStructureSaved: (s) => savedOutput = s,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Open suggestion via chip
+      await tester.tap(find.byKey(const Key('suggest-from-lyrics-chip')));
+      await tester.pumpAndSettle();
+
+      // Paste lyrics with verses and repeated chorus without tags
+      const lyricsToTest = '''
+El esplendor de un Rey
+Vestido en majestad
+La Tierra alegre esta
+
+Cuan grande es Dios
+Cantale cuan grande es Dios
+Y todos veran cuan grande es Dios
+
+Dia a dia El esta
+El tiempo en Sus manos
+
+Cuan grande es Dios
+Cantale cuan grande es Dios
+Y todos veran cuan grande es Dios
+''';
+      await tester.enterText(
+        find.byKey(const Key('suggestion-lyrics-input')),
+        lyricsToTest,
+      );
+      await tester.pumpAndSettle();
+
+      // Proposal shows inferred structure
+      expect(find.byKey(const Key('proposal-summary-card')), findsOneWidget);
+      expect(
+        find.textContaining('Coro detectado por repetición'),
+        findsOneWidget,
+      );
+
+      // Apply structure
+      await tester.tap(find.byKey(const Key('apply-suggestion-button')));
+      await tester.pumpAndSettle();
+
+      // Modal closed, editor now has 4 items (Verso 1, Coro, Verso 2, Coro)
+      expect(find.byKey(const Key('delete-item-3')), findsOneWidget);
+      expect(find.text('Secuencia expandida (4 bloques):'), findsOneWidget);
+
+      // The structure is in editor memory, but NOT yet saved to repository
+      expect(savedOutput, isNull);
+
+      // Save structure explicitly
+      await tester.tap(find.byKey(const Key('save-structure-button')));
+      await tester.pumpAndSettle();
+
+      // Now it is saved!
+      expect(savedOutput, isNotNull);
+      expect(savedOutput?.items.length, 4);
+      expect(savedOutput?.items[1].name, 'Coro');
+      expect(savedOutput?.items[1].type, SectionType.coro);
+    },
+  );
 }

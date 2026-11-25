@@ -119,6 +119,13 @@ class _SongDetailPageState extends ConsumerState<SongDetailPage> {
           onPressed: _editPhoto,
           icon: const Icon(Icons.photo_camera),
         ),
+        if (widget.song.id != null)
+          IconButton(
+            key: const Key('delete-song'),
+            tooltip: 'Eliminar canción',
+            icon: const Icon(Icons.delete_outline),
+            onPressed: _confirmDeleteSong,
+          ),
       ],
     ),
     body: ListView(
@@ -328,7 +335,8 @@ class _SongDetailPageState extends ConsumerState<SongDetailPage> {
           ),
           const SizedBox(height: 16),
         ],
-        ..._sections.expand((section) => section.lines.map(_buildLine)),
+        for (final section in _sections)
+          _buildSectionCard(section),
       ],
     ),
   );
@@ -381,6 +389,46 @@ class _SongDetailPageState extends ConsumerState<SongDetailPage> {
     );
   }
 
+  Future<void> _confirmDeleteSong() async {
+    final id = widget.song.id;
+    if (id == null) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('¿Eliminar canción?'),
+        content: Text(
+          '¿Estás seguro de que deseas eliminar "${widget.song.title}"? Esta acción no se puede deshacer.',
+        ),
+        actions: [
+          TextButton(
+            key: const Key('cancel-delete-song-button'),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            key: const Key('confirm-delete-song-button'),
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.red.shade700,
+            ),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      await ref.read(songRepositoryProvider).delete(id);
+      if (mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Canción "${widget.song.title}" eliminada'),
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _editArrangement(SongArrangement arrangement) async {
     final saved = await Navigator.of(context).push<SongArrangement>(
       MaterialPageRoute(
@@ -400,6 +448,60 @@ class _SongDetailPageState extends ConsumerState<SongDetailPage> {
       ];
       _selectedArrangement = saved;
     });
+  }
+
+  Widget _buildSectionCard(SongSection section) {
+    final headerInfo = LyricsStructureSuggester.matchHeader(section.name);
+    final displayName = headerInfo?.rawName ??
+        (section.name.trim().isEmpty ? 'Sección' : section.name);
+    final type = headerInfo?.type ?? SectionType.fromString(section.name);
+    final borderColor = SectionStyle.borderColor(type);
+    final bgColor = SectionStyle.backgroundColor(type);
+    final textColor = SectionStyle.textColor(type);
+
+    return Container(
+      key: Key('section-card-${section.position}'),
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: bgColor.withValues(alpha: 0.35),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: borderColor.withValues(alpha: 0.8), width: 1.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+            decoration: BoxDecoration(
+              color: bgColor,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+            ),
+            child: Row(
+              children: [
+                Icon(SectionStyle.icon(type), size: 16, color: textColor),
+                const SizedBox(width: 8),
+                Text(
+                  displayName,
+                  style: TextStyle(
+                    color: textColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: section.lines.map(_buildLine).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildLine(SongLine line) {
