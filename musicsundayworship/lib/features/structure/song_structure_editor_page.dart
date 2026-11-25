@@ -181,22 +181,272 @@ class _SongStructureEditorPageState
     });
   }
 
-  void _addSection(SectionType type) {
-    setState(() {
-      final count = _items.where((i) => i.type == type).length + 1;
-      final name = type == SectionType.verso || type == SectionType.puente
-          ? '${type.displayName} $count'
-          : type.displayName;
+  List<SongSection> _getMatchingSongSections(SectionType type) {
+    return widget.song.sections.where((sec) {
+      final header = LyricsStructureSuggester.matchHeader(sec.name);
+      final secType = header?.type ?? SectionType.fromString(sec.name);
+      return secType == type;
+    }).toList();
+  }
 
+  void _addSectionItem({
+    required SectionType type,
+    required String name,
+    int repeatCount = 1,
+  }) {
+    setState(() {
       _items.add(
         StructureItem(
-          id: 'item_${DateTime.now().millisecondsSinceEpoch}',
+          id: 'item_${DateTime.now().millisecondsSinceEpoch}_${_items.length}',
           type: type,
           name: name,
-          repeatCount: 1,
+          repeatCount: repeatCount,
         ),
       );
     });
+  }
+
+  Future<void> _addSection(SectionType type) async {
+    final matchingSections = _getMatchingSongSections(type);
+
+    // If there are multiple matching sections in the song, or if it's Verso and the song has at least 1 verse:
+    if (matchingSections.length > 1 ||
+        (type == SectionType.verso && matchingSections.isNotEmpty)) {
+      await _showAddSectionPicker(type, matchingSections);
+      return;
+    }
+
+    // If there is exactly 1 section of this type in the song, use its exact name
+    if (matchingSections.length == 1) {
+      _addSectionItem(type: type, name: matchingSections.first.name);
+      return;
+    }
+
+    // Fallback when song has no sections matching this type
+    final count = _items.where((i) => i.type == type).length + 1;
+    final name = type == SectionType.verso || type == SectionType.puente
+        ? '${type.displayName} $count'
+        : type.displayName;
+
+    _addSectionItem(type: type, name: name);
+  }
+
+  Future<void> _showAddSectionPicker(
+    SectionType type,
+    List<SongSection> matchingSections,
+  ) async {
+    final bgColor = SectionStyle.backgroundColor(type);
+    final borderColor = SectionStyle.borderColor(type);
+    final textColor = SectionStyle.textColor(type);
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (bottomSheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: bgColor,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: borderColor),
+                      ),
+                      child: Icon(SectionStyle.icon(type), color: textColor, size: 22),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Agregar ${type.displayName}',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            'Selecciona cuál ${type.displayName.toLowerCase()} deseas añadir a la estructura:',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.of(bottomSheetContext).pop(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // List of matching sections
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.45,
+                  ),
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: matchingSections.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    itemBuilder: (context, idx) {
+                      final sec = matchingSections[idx];
+                      final snippet = sec.lines
+                          .map((l) => l.content.trim())
+                          .where((t) => t.isNotEmpty)
+                          .take(2)
+                          .join(' / ');
+
+                      return Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          key: Key('select-section-${sec.name.toLowerCase().replaceAll(' ', '-')}'),
+                          borderRadius: BorderRadius.circular(10),
+                          onTap: () {
+                            Navigator.of(bottomSheetContext).pop();
+                            _addSectionItem(type: type, name: sec.name);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: bgColor.withValues(alpha: 0.6),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: borderColor),
+                            ),
+                            child: Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 16,
+                                  backgroundColor: borderColor.withValues(alpha: 0.3),
+                                  child: Text(
+                                    '${idx + 1}',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: textColor,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        sec.name,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15,
+                                          color: textColor,
+                                        ),
+                                      ),
+                                      if (snippet.isNotEmpty) ...[
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          snippet,
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontStyle: FontStyle.italic,
+                                            color: Colors.grey.shade700,
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                                Icon(Icons.add_circle_outline, color: textColor, size: 22),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+                const Divider(),
+
+                // Option to add a new generic section (e.g. "Verso 3")
+                ListTile(
+                  key: const Key('add-new-custom-section-tile'),
+                  dense: true,
+                  leading: const Icon(Icons.add, color: Colors.blueAccent),
+                  title: Text(
+                    'Crear nuevo ${type.displayName} (${type.displayName} ${_items.where((i) => i.type == type).length + 1})',
+                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                  ),
+                  onTap: () {
+                    Navigator.of(bottomSheetContext).pop();
+                    final count = _items.where((i) => i.type == type).length + 1;
+                    _addSectionItem(type: type, name: '${type.displayName} $count');
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _showChangeSectionNameDialog(int index, StructureItem item) async {
+    final controller = TextEditingController(text: item.name);
+    final result = await showDialog<String>(
+      context: context,
+      builder: (dialogCtx) => AlertDialog(
+        title: const Text('Renombrar sección'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(
+            labelText: 'Nombre de la sección',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogCtx).pop(),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final text = controller.text.trim();
+              if (text.isNotEmpty) {
+                Navigator.of(dialogCtx).pop(text);
+              }
+            },
+            child: const Text('Guardar'),
+          ),
+        ],
+      ),
+    );
+    if (result != null && result.isNotEmpty && mounted) {
+      setState(() {
+        _items[index] = item.copyWith(name: result);
+      });
+    }
   }
 
   void _removeItem(int index) {
@@ -256,30 +506,6 @@ class _SongStructureEditorPageState
       final saved = structure.id != null
           ? await repo.updateStructure(structure)
           : await repo.createStructure(structure);
-
-      // Also synchronize section names in the song document if changed
-      if (widget.song.id != null &&
-          _items.length == widget.song.sections.length) {
-        final updatedSections = <SongSection>[];
-        var hasChanges = false;
-        for (var i = 0; i < widget.song.sections.length; i++) {
-          final oldSec = widget.song.sections[i];
-          final newItem = _items[i];
-          if (oldSec.name != newItem.name) {
-            hasChanges = true;
-          }
-          updatedSections.add(
-            SongSection(
-              name: newItem.name,
-              position: oldSec.position,
-              lines: oldSec.lines,
-            ),
-          );
-        }
-        if (hasChanges) {
-          await repo.update(widget.song.copyWith(sections: updatedSections));
-        }
-      }
 
       widget.onStructureSaved?.call(saved);
 
@@ -801,6 +1027,7 @@ class _SongStructureEditorPageState
     final bgColor = SectionStyle.backgroundColor(item.type);
     final borderColor = SectionStyle.borderColor(item.type);
     final textColor = SectionStyle.textColor(item.type);
+    final matchingSections = _getMatchingSongSections(item.type);
 
     return Card(
       key: ValueKey(item.id),
@@ -832,13 +1059,73 @@ class _SongStructureEditorPageState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    item.name,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                      color: textColor,
-                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          item.name,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            color: textColor,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (matchingSections.length > 1) ...[
+                        PopupMenuButton<String>(
+                          key: Key('switch-section-$index'),
+                          icon: Icon(Icons.arrow_drop_down, color: textColor, size: 20),
+                          tooltip: 'Cambiar a otro ${item.type.displayName.toLowerCase()}',
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
+                          onSelected: (newName) {
+                            if (newName == '__rename__') {
+                              _showChangeSectionNameDialog(index, item);
+                            } else {
+                              setState(() {
+                                _items[index] = item.copyWith(name: newName);
+                              });
+                            }
+                          },
+                          itemBuilder: (context) => [
+                            for (final s in matchingSections)
+                              PopupMenuItem(
+                                value: s.name,
+                                child: Row(
+                                  children: [
+                                    if (s.name == item.name)
+                                      Icon(Icons.check, size: 16, color: textColor)
+                                    else
+                                      const SizedBox(width: 16),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      s.name,
+                                      style: TextStyle(
+                                        fontWeight: s.name == item.name
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            const PopupMenuDivider(),
+                            const PopupMenuItem(
+                              value: '__rename__',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.edit_outlined, size: 16),
+                                  SizedBox(width: 8),
+                                  Text('Cambiar nombre...'),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ],
                   ),
                   Text(
                     item.type.displayName,

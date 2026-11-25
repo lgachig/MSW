@@ -174,30 +174,55 @@ class RehearsalSongPlan {
     if (songSections.isEmpty) return null;
 
     final itemClean = item.name.toLowerCase().trim().replaceAll(RegExp(r'[\[\]\(\)]'), '');
+    final itemNum = _extractNumber(item.name);
 
-    // 1. Coincidencia exacta de nombre limpio
+    // 1. Coincidencia exacta de nombre limpio (ej: "Verso 2" == "Verso 2")
     for (final sec in songSections) {
       final secClean = sec.name.toLowerCase().trim().replaceAll(RegExp(r'[\[\]\(\)]'), '');
       if (secClean == itemClean) return sec;
     }
 
-    // 2. Coincidencia parcial de nombres cruzados (ej: "Verso 1" y "Verso", o "Coro" y "Coro 1")
-    for (final sec in songSections) {
-      final s = sec.name.toLowerCase().trim();
-      final it = itemClean;
-      if (s.contains(it) || it.contains(s)) return sec;
-    }
-
-    // 3. Coincidencia por tipo de sección (ej: SectionType.coro con sección de coro)
-    for (final sec in songSections) {
-      final secType = LyricsStructureSuggester.matchHeader(sec.name)?.type ??
-          SectionType.fromString(sec.name);
-      if (secType == item.type && secType != SectionType.otro) {
-        return sec;
+    // 2. Si el item tiene número específico (ej: "Verso 2"), buscar una sección del mismo tipo con el mismo número
+    if (itemNum != null) {
+      for (final sec in songSections) {
+        final secType = LyricsStructureSuggester.matchHeader(sec.name)?.type ??
+            SectionType.fromString(sec.name);
+        if (secType == item.type) {
+          final secNum = _extractNumber(sec.name);
+          if (secNum == itemNum) {
+            return sec;
+          }
+        }
       }
     }
 
-    // 4. Búsqueda por posición en id 'sec_X_...'
+    // 3. Coincidencia parcial de nombres cruzados respetando el número si existe
+    for (final sec in songSections) {
+      final s = sec.name.toLowerCase().trim();
+      final secNum = _extractNumber(sec.name);
+      if (itemNum != null && secNum != null && itemNum != secNum) {
+        // Tienen números diferentes (ej: Verso 1 vs Verso 2) -> NO coinciden
+        continue;
+      }
+      if (s.contains(itemClean) || itemClean.contains(s)) return sec;
+    }
+
+    // 4. Coincidencia por tipo de sección y posición ordinal
+    // Si item tiene número (ej. Verso 2), buscar la n-ésima sección de ese tipo
+    final sameTypeSections = songSections.where((s) {
+      final secType = LyricsStructureSuggester.matchHeader(s.name)?.type ??
+          SectionType.fromString(s.name);
+      return secType == item.type;
+    }).toList();
+
+    if (sameTypeSections.isNotEmpty) {
+      if (itemNum != null && itemNum > 0 && itemNum <= sameTypeSections.length) {
+        return sameTypeSections[itemNum - 1];
+      }
+      return sameTypeSections.first;
+    }
+
+    // 5. Búsqueda por posición en id 'sec_X_...'
     final matchPos = RegExp(r'sec_(\d+)').firstMatch(item.id);
     if (matchPos != null) {
       final idx = int.tryParse(matchPos.group(1)!);
@@ -206,7 +231,7 @@ class RehearsalSongPlan {
       }
     }
 
-    // 5. Coincidencia por raíz léxica (ej: "estrofa" coincide con "verso")
+    // 6. Coincidencia por raíz léxica (ej: "estrofa" coincide con "verso")
     final itemAlpha = itemClean.replaceAll(RegExp(r'[^a-záéíóúñ]'), '');
     for (final sec in songSections) {
       final secAlpha = sec.name
@@ -218,7 +243,7 @@ class RehearsalSongPlan {
       }
     }
 
-    // 6. Si es Coro y hay al menos una sección que mencione coro
+    // 7. Si es Coro y hay al menos una sección que mencione coro
     if (item.type == SectionType.coro) {
       final anyChorus = songSections.cast<SongSection?>().firstWhere(
             (s) =>
@@ -230,7 +255,7 @@ class RehearsalSongPlan {
       if (anyChorus != null) return anyChorus;
     }
 
-    // 7. Si es Verso y no encontró específico, usar el primer verso disponible
+    // 8. Si es Verso y no encontró específico, usar el primer verso disponible
     if (item.type == SectionType.verso) {
       final anyVerse = songSections.cast<SongSection?>().firstWhere(
             (s) =>
@@ -243,6 +268,18 @@ class RehearsalSongPlan {
       if (anyVerse != null) return anyVerse;
     }
 
+    return null;
+  }
+
+  static int? _extractNumber(String text) {
+    final match = RegExp(r'\b(\d+)\b').firstMatch(text);
+    if (match != null) {
+      return int.tryParse(match.group(1)!);
+    }
+    final lower = text.toLowerCase();
+    if (lower.contains(' iii') || lower.contains(' 3')) return 3;
+    if (lower.contains(' ii') || lower.contains(' 2')) return 2;
+    if (lower.contains(' i') || lower.contains(' 1')) return 1;
     return null;
   }
 

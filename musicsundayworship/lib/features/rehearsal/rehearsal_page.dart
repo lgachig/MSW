@@ -163,40 +163,43 @@ class _RehearsalPageState extends State<RehearsalPage> {
           // Botón descriptivo para mantener la pantalla encendida
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 10),
-            child: InkWell(
-              key: const Key('keep-awake-button'),
-              onTap: _toggleKeepAwake,
-              borderRadius: BorderRadius.circular(20),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: _keepAwake
-                      ? Colors.amber.shade100
-                      : theme.colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: _keepAwake ? Colors.amber.shade800 : Colors.grey.shade400,
-                    width: 1.5,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      _keepAwake ? Icons.screen_lock_portrait : Icons.stay_current_portrait,
-                      size: 16,
-                      color: _keepAwake ? Colors.amber.shade900 : Colors.grey.shade700,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                key: const Key('keep-awake-button'),
+                onTap: _toggleKeepAwake,
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: _keepAwake
+                        ? Colors.amber.shade100
+                        : theme.colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: _keepAwake ? Colors.amber.shade800 : Colors.grey.shade400,
+                      width: 1.5,
                     ),
-                    const SizedBox(width: 4),
-                    Text(
-                      _keepAwake ? 'Pantalla encendida' : 'Pantalla normal',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        _keepAwake ? Icons.screen_lock_portrait : Icons.stay_current_portrait,
+                        size: 16,
                         color: _keepAwake ? Colors.amber.shade900 : Colors.grey.shade700,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 4),
+                      Text(
+                        _keepAwake ? 'Pantalla encendida' : 'Pantalla normal',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: _keepAwake ? Colors.amber.shade900 : Colors.grey.shade700,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

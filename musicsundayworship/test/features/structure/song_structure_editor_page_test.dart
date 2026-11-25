@@ -402,4 +402,109 @@ Y todos veran cuan grande es Dios
       expect(savedOutput?.items[1].type, SectionType.coro);
     },
   );
+
+  testWidgets(
+    'allows choosing specific song verse when clicking add Verso',
+    (tester) async {
+      final multiVerseSong = await repository.create(
+        const SongDocument(
+          title: 'Sublime Gracia',
+          originalKey: 'E',
+          sections: [
+            SongSection(
+              name: 'Verso 1',
+              lines: [SongLine(content: 'Sublime gracia del Senor')],
+            ),
+            SongSection(
+              name: 'Coro',
+              lines: [SongLine(content: 'Ya libre soy')],
+            ),
+            SongSection(
+              name: 'Verso 2',
+              lines: [SongLine(content: 'En los peligros o dolor')],
+            ),
+          ],
+        ),
+      );
+
+      await tester.pumpWidget(createWidget(song: multiVerseSong));
+      await tester.pumpAndSettle();
+
+      // Tap add section 'Verso'
+      await tester.tap(find.byKey(const Key('add-section-verso')));
+      await tester.pumpAndSettle();
+
+      // Modal bottom sheet appears with options for Verso 1 and Verso 2
+      expect(find.text('Agregar Verso'), findsOneWidget);
+      expect(find.text('Sublime gracia del Senor'), findsOneWidget);
+      expect(find.text('En los peligros o dolor'), findsOneWidget);
+
+      // Select 'Verso 2'
+      await tester.tap(find.byKey(const Key('select-section-verso-2')));
+      await tester.pumpAndSettle();
+
+      // Modal closed, and new item 'Verso 2' was appended
+      expect(find.text('Agregar Verso'), findsNothing);
+      expect(find.text('Verso 2'), findsWidgets);
+    },
+  );
+
+  testWidgets(
+    'allows switching section name via card popup menu',
+    (tester) async {
+      final multiVerseSong = await repository.create(
+        const SongDocument(
+          title: 'Sublime Gracia',
+          originalKey: 'E',
+          sections: [
+            SongSection(
+              name: 'Verso 1',
+              lines: [SongLine(content: 'Sublime gracia del Senor')],
+            ),
+            SongSection(
+              name: 'Verso 2',
+              lines: [SongLine(content: 'En los peligros o dolor')],
+            ),
+          ],
+        ),
+      );
+
+      final customStructure = SongStructure(
+        songId: multiVerseSong.id,
+        name: 'Test Switch',
+        items: [
+          const StructureItem(
+            id: 'v1',
+            type: SectionType.verso,
+            name: 'Verso 1',
+            repeatCount: 1,
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        createWidget(
+          song: multiVerseSong,
+          initialStructure: customStructure,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Verso 1'), findsOneWidget);
+
+      // Open switch-section popup menu on card 0
+      await tester.tap(find.byKey(const Key('switch-section-0')));
+      await tester.pumpAndSettle();
+
+      // Popup items include Verso 1, Verso 2, and Cambiar nombre...
+      expect(find.text('Cambiar nombre...'), findsOneWidget);
+
+      // Tap on 'Verso 2' in the popup menu
+      await tester.tap(find.text('Verso 2').last);
+      await tester.pumpAndSettle();
+
+      // Card is updated to Verso 2
+      expect(find.text('Verso 2'), findsOneWidget);
+    },
+  );
 }

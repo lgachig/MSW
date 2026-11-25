@@ -199,14 +199,16 @@ void main() {
 
       // Toggle off
       await tester.tap(find.byKey(const Key('keep-awake-button')));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
 
       expect(find.text('Pantalla normal'), findsOneWidget);
       expect(find.text('Pantalla siempre encendida: Desactivado'), findsOneWidget);
 
       // Toggle back on
       await tester.tap(find.byKey(const Key('keep-awake-button')));
-      await tester.pumpAndSettle();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
 
       expect(find.text('Pantalla encendida'), findsOneWidget);
       expect(find.text('Pantalla siempre encendida: Activado'), findsOneWidget);
