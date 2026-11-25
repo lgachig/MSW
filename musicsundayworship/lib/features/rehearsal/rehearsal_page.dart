@@ -1,12 +1,27 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../data/song_repository.dart';
 import '../../music_engine/music_engine.dart';
 import '../structure/song_structure_editor_page.dart';
 
-/// Página de pantalla completa para el Modo Ensayo con avance automático.
+/// Servicio de canal nativo para mantener la pantalla encendida durante el ensayo.
+class KeepAwakeService {
+  static const _channel = MethodChannel('com.musicsundayworship/keep_awake');
+
+  static Future<bool> setKeepAwake(bool enable) async {
+    try {
+      final res = await _channel.invokeMethod<bool>(enable ? 'enable' : 'disable');
+      return res ?? enable;
+    } catch (_) {
+      return enable;
+    }
+  }
+}
+
+/// Página de Modo Ensayo con desplazamiento vertical continuo y avance automático al compás.
 class RehearsalPage extends StatefulWidget {
   const RehearsalPage({
     super.key,
@@ -29,7 +44,11 @@ class _RehearsalPageState extends State<RehearsalPage> {
   StreamSubscription<RehearsalState>? _stateSubscription;
   late RehearsalState _state;
 
+  final ScrollController _scrollController = ScrollController();
+  final List<GlobalKey> _sectionKeys = [];
+
   bool _keepAwake = true;
+  int _lastScrolledSection = -1;
 
   @override
   void initState() {
@@ -47,35 +66,72 @@ class _RehearsalPageState extends State<RehearsalPage> {
     }
 
     _state = _controller.currentState;
+
+    // Inicializar keys para auto-scroll de cada sección
+    for (int i = 0; i < _controller.plan.sections.length; i++) {
+      _sectionKeys.add(GlobalKey());
+    }
+
+    // Activar pantalla encendida por defecto en ensayo
+    KeepAwakeService.setKeepAwake(true);
+
     _stateSubscription = _controller.stateStream.listen((state) {
-      if (mounted) {
-        setState(() => _state = state);
+      if (!mounted) return;
+      setState(() => _state = state);
+
+      // Desplazamiento automático vertical cuando cambia la sección
+      if (state.sectionIndex != _lastScrolledSection) {
+        _lastScrolledSection = state.sectionIndex;
+        _scrollToSection(state.sectionIndex);
       }
+    });
+
+    // Auto-scroll inicial a la primera sección al renderizar
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToSection(0);
     });
   }
 
   @override
   void dispose() {
+    KeepAwakeService.setKeepAwake(false);
     _stateSubscription?.cancel();
+    _scrollController.dispose();
     if (_ownsController) {
       _controller.dispose();
     }
     super.dispose();
   }
 
+  void _scrollToSection(int index) {
+    if (index < 0 || index >= _sectionKeys.length) return;
+    final keyContext = _sectionKeys[index].currentContext;
+    if (keyContext != null) {
+      Scrollable.ensureVisible(
+        keyContext,
+        duration: const Duration(milliseconds: 650),
+        curve: Curves.easeInOutCubic,
+        alignment: 0.12, // Posiciona la sección activa al 12% superior para ver lo que viene abajo
+      );
+    }
+  }
+
   void _togglePlayPause() {
     _controller.togglePlayPause();
   }
 
-  void _toggleKeepAwake() {
-    setState(() => _keepAwake = !_keepAwake);
+  Future<void> _toggleKeepAwake() async {
+    final nextVal = !_keepAwake;
+    await KeepAwakeService.setKeepAwake(nextVal);
+    if (!mounted) return;
+    setState(() => _keepAwake = nextVal);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         duration: const Duration(seconds: 2),
         content: Text(
           _keepAwake
-              ? 'Pantalla encendida activa durante el ensayo'
-              : 'Pantalla encendida desactivada',
+              ? 'Pantalla siempre encendida: Activado'
+              : 'Pantalla siempre encendida: Desactivado',
         ),
       ),
     );
@@ -84,14 +140,8 @@ class _RehearsalPageState extends State<RehearsalPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final currentSection = _state.currentSection;
-    final nextSection = _state.nextSection;
+    final sections = _controller.plan.sections;
     final isBeatOne = _state.isFirstBeat && _state.isPlaying;
-
-    final type = currentSection?.type ?? SectionType.otro;
-    final sectionColor = SectionStyle.backgroundColor(type);
-    final borderColor = SectionStyle.borderColor(type);
-    final textColor = SectionStyle.textColor(type);
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
@@ -110,14 +160,46 @@ class _RehearsalPageState extends State<RehearsalPage> {
           ],
         ),
         actions: [
-          IconButton(
-            key: const Key('keep-awake-button'),
-            tooltip: _keepAwake ? 'Mantener pantalla encendida (Activo)' : 'Pantalla encendida (Inactivo)',
-            icon: Icon(
-              _keepAwake ? Icons.light_mode : Icons.light_mode_outlined,
-              color: _keepAwake ? Colors.amber : null,
+          // Botón descriptivo para mantener la pantalla encendida
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: InkWell(
+              key: const Key('keep-awake-button'),
+              onTap: _toggleKeepAwake,
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _keepAwake
+                      ? Colors.amber.shade100
+                      : theme.colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: _keepAwake ? Colors.amber.shade800 : Colors.grey.shade400,
+                    width: 1.5,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      _keepAwake ? Icons.screen_lock_portrait : Icons.stay_current_portrait,
+                      size: 16,
+                      color: _keepAwake ? Colors.amber.shade900 : Colors.grey.shade700,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      _keepAwake ? 'Pantalla encendida' : 'Pantalla normal',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: _keepAwake ? Colors.amber.shade900 : Colors.grey.shade700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-            onPressed: _toggleKeepAwake,
           ),
           IconButton(
             key: const Key('close-rehearsal-button'),
@@ -139,27 +221,46 @@ class _RehearsalPageState extends State<RehearsalPage> {
       body: SafeArea(
         child: Column(
           children: [
-            // Barra rítmica superior: indicador de compás y pulso visual
+            // Barra rítmica superior: indicador de compás y pulsos visuales
             _buildBeatBar(theme, isBeatOne),
 
             // Roadmap horizontal de secciones para salto rápido
             _buildSectionRoadmap(theme),
 
-            // Sección actual destacada en grande
+            // Flujo continuo vertical de la canción completa con auto-desplazamiento
             Expanded(
-              child: _buildCurrentSectionCard(
-                theme: theme,
-                currentSection: currentSection,
-                sectionColor: sectionColor,
-                borderColor: borderColor,
-                textColor: textColor,
-              ),
+              child: sections.isEmpty
+                  ? Center(
+                      child: Text(
+                        'Sin secciones para ensayar',
+                        style: theme.textTheme.headlineSmall,
+                      ),
+                    )
+                  : ListView.builder(
+                      key: const Key('rehearsal-continuous-list'),
+                      controller: _scrollController,
+                      padding: const EdgeInsets.fromLTRB(14, 12, 14, 140),
+                      itemCount: sections.length,
+                      itemBuilder: (context, index) {
+                        final section = sections[index];
+                        final isActive = index == _state.sectionIndex;
+                        final isPast = index < _state.sectionIndex;
+
+                        return Container(
+                          key: _sectionKeys[index],
+                          child: _buildContinuousSectionCard(
+                            theme: theme,
+                            section: section,
+                            index: index,
+                            isActive: isActive,
+                            isPast: isPast,
+                          ),
+                        );
+                      },
+                    ),
             ),
 
-            // Vista previa de la siguiente sección
-            _buildNextSectionPreview(theme, nextSection),
-
-            // Barra de control de transporte (Play/Pause, anterior, siguiente, tempo)
+            // Barra de control de transporte inferior (Play/Pause, anterior, siguiente, tempo)
             _buildControlBar(theme),
           ],
         ),
@@ -174,14 +275,14 @@ class _RehearsalPageState extends State<RehearsalPage> {
     return Container(
       key: const Key('rehearsal-beat-bar'),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+      color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
       child: Row(
         children: [
-          // Conteo de compás
+          // Conteo de compás en la sección activa
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
+              color: theme.colorScheme.primaryContainer.withValues(alpha: 0.6),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
@@ -194,9 +295,33 @@ class _RehearsalPageState extends State<RehearsalPage> {
               ),
             ),
           ),
+          const SizedBox(width: 8),
+          if (_state.activeChord != null)
+            Container(
+              key: const Key('active-chord-badge'),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: Colors.amber.shade700,
+                borderRadius: BorderRadius.circular(6),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.amber.shade700.withValues(alpha: 0.5),
+                    blurRadius: 8,
+                  ),
+                ],
+              ),
+              child: Text(
+                'Acorde: ${_state.activeChord}',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  fontSize: 13,
+                ),
+              ),
+            ),
           const Spacer(),
 
-          // Fila de pulsos visuales con acento en el tiempo 1
+          // Fila de pulsos visuales con acento destacado en el tiempo 1
           Row(
             children: List.generate(_state.beatsPerBar, (index) {
               final beatNumber = index + 1;
@@ -205,7 +330,7 @@ class _RehearsalPageState extends State<RehearsalPage> {
 
               return Container(
                 key: Key('rehearsal-beat-dot-$beatNumber'),
-                margin: const EdgeInsets.symmetric(horizontal: 4),
+                margin: const EdgeInsets.symmetric(horizontal: 3),
                 width: isB1 ? 16 : 12,
                 height: isB1 ? 16 : 12,
                 decoration: BoxDecoration(
@@ -213,7 +338,7 @@ class _RehearsalPageState extends State<RehearsalPage> {
                   color: isCurrent
                       ? (isB1 ? beatOneColor : otherBeatColor)
                       : (isB1
-                          ? beatOneColor.withValues(alpha: 0.3)
+                          ? beatOneColor.withValues(alpha: 0.35)
                           : theme.disabledColor.withValues(alpha: 0.3)),
                   boxShadow: isCurrent && isB1
                       ? [
@@ -262,14 +387,17 @@ class _RehearsalPageState extends State<RehearsalPage> {
                 color: isActive
                     ? SectionStyle.borderColor(sType)
                     : theme.dividerColor.withValues(alpha: 0.4),
-                width: isActive ? 2.0 : 1.0,
+                width: isActive ? 2.5 : 1.0,
               ),
               labelStyle: TextStyle(
                 fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
                 fontSize: 12,
                 color: isActive ? SectionStyle.textColor(sType) : theme.colorScheme.onSurface,
               ),
-              onPressed: () => _controller.jumpToSection(index),
+              onPressed: () {
+                _controller.jumpToSection(index);
+                _scrollToSection(index);
+              },
             ),
           );
         },
@@ -277,100 +405,115 @@ class _RehearsalPageState extends State<RehearsalPage> {
     );
   }
 
-  Widget _buildCurrentSectionCard({
+  Widget _buildContinuousSectionCard({
     required ThemeData theme,
-    required RehearsalSection? currentSection,
-    required Color sectionColor,
-    required Color borderColor,
-    required Color textColor,
+    required RehearsalSection section,
+    required int index,
+    required bool isActive,
+    required bool isPast,
   }) {
-    if (currentSection == null) {
-      return Center(
-        child: Text(
-          _state.isFinished ? '¡Canción finalizada!' : 'Sin secciones',
-          style: theme.textTheme.headlineSmall,
-        ),
-      );
-    }
+    final type = section.type;
+    final sectionColor = SectionStyle.backgroundColor(type);
+    final borderColor = SectionStyle.borderColor(type);
+    final textColor = SectionStyle.textColor(type);
 
-    return Container(
-      key: const Key('current-section-card'),
-      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-      decoration: BoxDecoration(
-        color: sectionColor.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: borderColor, width: 2),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Cabecera de la sección
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(
-              color: sectionColor,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
-            ),
-            child: Row(
-              children: [
-                Icon(SectionStyle.icon(currentSection.type), color: textColor, size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  currentSection.displayTitle,
-                  style: TextStyle(
-                    color: textColor,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 350),
+      opacity: isActive ? 1.0 : (isPast ? 0.45 : 0.85),
+      child: Container(
+        key: isActive ? const Key('current-section-card') : Key('section-card-$index'),
+        margin: const EdgeInsets.only(bottom: 18),
+        decoration: BoxDecoration(
+          color: isActive
+              ? sectionColor.withValues(alpha: 0.22)
+              : sectionColor.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isActive ? borderColor : borderColor.withValues(alpha: 0.5),
+            width: isActive ? 2.5 : 1.2,
+          ),
+          boxShadow: isActive
+              ? [
+                  BoxShadow(
+                    color: borderColor.withValues(alpha: 0.35),
+                    blurRadius: 14,
+                    spreadRadius: 2,
                   ),
-                ),
-                const Spacer(),
-                if (_state.activeChord != null)
-                  Container(
-                    key: const Key('active-chord-badge'),
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.amber.shade700,
-                      borderRadius: BorderRadius.circular(6),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.amber.shade700.withValues(alpha: 0.4),
-                          blurRadius: 6,
-                        ),
-                      ],
+                ]
+              : null,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Cabecera de la sección
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: isActive ? sectionColor : sectionColor.withValues(alpha: 0.7),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+              ),
+              child: Row(
+                children: [
+                  Icon(SectionStyle.icon(type), color: textColor, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    section.displayTitle,
+                    style: TextStyle(
+                      color: textColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
                     ),
-                    child: Text(
-                      'Acorde: ${_state.activeChord}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
+                  ),
+                  const Spacer(),
+                  if (isActive)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
                         color: Colors.white,
-                        fontSize: 14,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: textColor.withValues(alpha: 0.5)),
+                      ),
+                      child: Text(
+                        'En curso (${section.bars} compases)',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: textColor,
+                        ),
+                      ),
+                    )
+                  else
+                    Text(
+                      '${section.bars} compases',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: textColor.withValues(alpha: 0.8),
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
-          ),
 
-          // Letra y acordes de la sección
-          Expanded(
-            child: SingleChildScrollView(
+            // Contenido de la sección: acordes y letras
+            Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  for (final line in currentSection.lines) ...[
-                    _buildLineWithChords(line, theme),
+                  for (final line in section.lines) ...[
+                    _buildLineWithChords(line, theme, isActive),
                     const SizedBox(height: 12),
                   ],
-                  if (currentSection.lines.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 24),
+                  if (section.lines.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
                       child: Center(
                         child: Text(
-                          '[Instrumental]',
+                          '[Instrumental - ${section.bars} compases]',
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: 15,
                             fontStyle: FontStyle.italic,
+                            color: theme.hintColor,
                           ),
                         ),
                       ),
@@ -378,13 +521,13 @@ class _RehearsalPageState extends State<RehearsalPage> {
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildLineWithChords(SongLine line, ThemeData theme) {
+  Widget _buildLineWithChords(SongLine line, ThemeData theme, bool isSectionActive) {
     final chords = line.chords;
 
     return Column(
@@ -395,16 +538,18 @@ class _RehearsalPageState extends State<RehearsalPage> {
             spacing: 12,
             runSpacing: 4,
             children: chords.map((c) {
-              final isThisChordActive = _state.isPlaying && _state.activeChord == c.chord;
+              final isThisChordActive =
+                  isSectionActive && _state.isPlaying && _state.activeChord == c.chord;
+
               return Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
                   color: isThisChordActive
-                      ? Colors.amber.shade700.withValues(alpha: 0.25)
+                      ? Colors.amber.shade700.withValues(alpha: 0.3)
                       : Colors.transparent,
                   borderRadius: BorderRadius.circular(4),
                   border: isThisChordActive
-                      ? Border.all(color: Colors.amber.shade700, width: 1.5)
+                      ? Border.all(color: Colors.amber.shade700, width: 1.8)
                       : null,
                 ),
                 child: Text(
@@ -430,70 +575,6 @@ class _RehearsalPageState extends State<RehearsalPage> {
     );
   }
 
-  Widget _buildNextSectionPreview(ThemeData theme, RehearsalSection? nextSection) {
-    if (nextSection == null) {
-      return Container(
-        key: const Key('next-section-preview'),
-        margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: theme.dividerColor.withValues(alpha: 0.4)),
-        ),
-        child: const Row(
-          children: [
-            Icon(Icons.flag_outlined, size: 16, color: Colors.grey),
-            SizedBox(width: 8),
-            Text(
-              'Final de la canción',
-              style: TextStyle(fontSize: 13, color: Colors.grey),
-            ),
-          ],
-        ),
-      );
-    }
-
-    final nextColor = SectionStyle.backgroundColor(nextSection.type);
-    final nextTextColor = SectionStyle.textColor(nextSection.type);
-
-    return Container(
-      key: const Key('next-section-preview'),
-      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: nextColor.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: SectionStyle.borderColor(nextSection.type).withValues(alpha: 0.6),
-        ),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.skip_next, size: 18),
-          const SizedBox(width: 6),
-          Text(
-            'Siguiente: ',
-            style: TextStyle(fontSize: 12, color: theme.hintColor),
-          ),
-          Text(
-            nextSection.displayTitle,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 13,
-              color: nextTextColor,
-            ),
-          ),
-          const Spacer(),
-          Text(
-            '(${nextSection.bars} compases)',
-            style: TextStyle(fontSize: 11, color: theme.hintColor),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildControlBar(ThemeData theme) {
     return Container(
       key: const Key('rehearsal-control-bar'),
@@ -501,6 +582,13 @@ class _RehearsalPageState extends State<RehearsalPage> {
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainer,
         border: Border(top: BorderSide(color: theme.dividerColor.withValues(alpha: 0.5))),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 8,
+            offset: const Offset(0, -2),
+          ),
+        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -510,7 +598,10 @@ class _RehearsalPageState extends State<RehearsalPage> {
             key: const Key('prev-section-button'),
             tooltip: 'Sección anterior',
             icon: const Icon(Icons.skip_previous, size: 28),
-            onPressed: _controller.goToPreviousSection,
+            onPressed: () {
+              _controller.goToPreviousSection();
+              _scrollToSection(_controller.sectionIndex);
+            },
           ),
 
           // Botón Play / Pause principal
@@ -518,7 +609,8 @@ class _RehearsalPageState extends State<RehearsalPage> {
             key: const Key('rehearsal-play-pause-button'),
             style: FilledButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              backgroundColor: _state.isPlaying ? Colors.red.shade700 : theme.colorScheme.primary,
+              backgroundColor:
+                  _state.isPlaying ? Colors.red.shade700 : theme.colorScheme.primary,
             ),
             onPressed: _togglePlayPause,
             icon: Icon(_state.isPlaying ? Icons.pause : Icons.play_arrow),
@@ -533,7 +625,10 @@ class _RehearsalPageState extends State<RehearsalPage> {
             key: const Key('next-section-button'),
             tooltip: 'Siguiente sección',
             icon: const Icon(Icons.skip_next, size: 28),
-            onPressed: _controller.goToNextSection,
+            onPressed: () {
+              _controller.goToNextSection();
+              _scrollToSection(_controller.sectionIndex);
+            },
           ),
 
           // Ajustador de BPM
@@ -563,4 +658,3 @@ class _RehearsalPageState extends State<RehearsalPage> {
     );
   }
 }
-

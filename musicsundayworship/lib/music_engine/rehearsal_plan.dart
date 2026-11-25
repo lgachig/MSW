@@ -1,4 +1,5 @@
 import '../data/song_repository.dart';
+import 'lyrics_structure_suggester.dart';
 import 'song_structure.dart';
 import 'time_signature.dart';
 
@@ -102,25 +103,17 @@ class RehearsalSongPlan {
     final timeSignature =
         TimeSignature.tryParse(song.timeSignature) ?? TimeSignature.fourFour;
 
-    // Mapa de secciones de la canción por nombre
-    final sectionMap = <String, SongSection>{
-      for (final s in song.sections) s.name.trim().toLowerCase(): s,
-    };
-
     final rehearsalSections = <RehearsalSection>[];
 
     if (structure != null && structure.items.isNotEmpty) {
       // Usar la estructura ordenada con repeticiones expandidas
       int sectionCounter = 0;
       for (final item in structure.items) {
-        final key = item.name.trim().toLowerCase();
-        final matchedSongSection = sectionMap[key] ??
-            song.sections.cast<SongSection?>().firstWhere(
-                  (s) => s != null && s.name.toLowerCase().contains(key),
-                  orElse: () => null,
-                );
+        final matchedSongSection = _findMatchingSongSection(item, song.sections);
+        final lines = matchedSongSection?.lines.isNotEmpty == true
+            ? matchedSongSection!.lines
+            : [SongLine(content: '[${item.name} - Instrumental]')];
 
-        final lines = matchedSongSection?.lines ?? const [];
         final defaultBars = _calculateDefaultBars(lines, item.type);
         final bars = customBarsBySectionName?[item.name] ??
             customBarsBySectionName?[item.id] ??
@@ -146,7 +139,8 @@ class RehearsalSongPlan {
       int sectionCounter = 0;
       for (final s in song.sections) {
         sectionCounter++;
-        final type = SectionType.fromString(s.name);
+        final type = LyricsStructureSuggester.matchHeader(s.name)?.type ??
+            SectionType.fromString(s.name);
         final defaultBars = _calculateDefaultBars(s.lines, type);
         final bars = customBarsBySectionName?[s.name] ?? defaultBars;
 
@@ -171,6 +165,87 @@ class RehearsalSongPlan {
     );
   }
 
+  /// Empareja de forma flexible e inteligente un [StructureItem] con la sección real
+  /// de la canción, soportando nombres con o sin números, etiquetas y tipos de sección.
+  static SongSection? _findMatchingSongSection(
+    StructureItem item,
+    List<SongSection> songSections,
+  ) {
+    if (songSections.isEmpty) return null;
+
+    final itemClean = item.name.toLowerCase().trim().replaceAll(RegExp(r'[\[\]\(\)]'), '');
+
+    // 1. Coincidencia exacta de nombre limpio
+    for (final sec in songSections) {
+      final secClean = sec.name.toLowerCase().trim().replaceAll(RegExp(r'[\[\]\(\)]'), '');
+      if (secClean == itemClean) return sec;
+    }
+
+    // 2. Coincidencia parcial de nombres cruzados (ej: "Verso 1" y "Verso", o "Coro" y "Coro 1")
+    for (final sec in songSections) {
+      final s = sec.name.toLowerCase().trim();
+      final it = itemClean;
+      if (s.contains(it) || it.contains(s)) return sec;
+    }
+
+    // 3. Coincidencia por tipo de sección (ej: SectionType.coro con sección de coro)
+    for (final sec in songSections) {
+      final secType = LyricsStructureSuggester.matchHeader(sec.name)?.type ??
+          SectionType.fromString(sec.name);
+      if (secType == item.type && secType != SectionType.otro) {
+        return sec;
+      }
+    }
+
+    // 4. Búsqueda por posición en id 'sec_X_...'
+    final matchPos = RegExp(r'sec_(\d+)').firstMatch(item.id);
+    if (matchPos != null) {
+      final idx = int.tryParse(matchPos.group(1)!);
+      if (idx != null && idx >= 0 && idx < songSections.length) {
+        return songSections[idx];
+      }
+    }
+
+    // 5. Coincidencia por raíz léxica (ej: "estrofa" coincide con "verso")
+    final itemAlpha = itemClean.replaceAll(RegExp(r'[^a-záéíóúñ]'), '');
+    for (final sec in songSections) {
+      final secAlpha = sec.name
+          .toLowerCase()
+          .replaceAll(RegExp(r'[^a-záéíóúñ]'), '');
+      if (secAlpha.isNotEmpty &&
+          (secAlpha.contains(itemAlpha) || itemAlpha.contains(secAlpha))) {
+        return sec;
+      }
+    }
+
+    // 6. Si es Coro y hay al menos una sección que mencione coro
+    if (item.type == SectionType.coro) {
+      final anyChorus = songSections.cast<SongSection?>().firstWhere(
+            (s) =>
+                s != null &&
+                (s.name.toLowerCase().contains('coro') ||
+                    s.name.toLowerCase().contains('chorus')),
+            orElse: () => null,
+          );
+      if (anyChorus != null) return anyChorus;
+    }
+
+    // 7. Si es Verso y no encontró específico, usar el primer verso disponible
+    if (item.type == SectionType.verso) {
+      final anyVerse = songSections.cast<SongSection?>().firstWhere(
+            (s) =>
+                s != null &&
+                (s.name.toLowerCase().contains('verso') ||
+                    s.name.toLowerCase().contains('estrofa') ||
+                    s.name.toLowerCase().contains('verse')),
+            orElse: () => null,
+          );
+      if (anyVerse != null) return anyVerse;
+    }
+
+    return null;
+  }
+
   /// Calcula una estimación musical inteligente de compases para una sección.
   static int _calculateDefaultBars(List<SongLine> lines, SectionType type) {
     if (lines.isEmpty) {
@@ -192,7 +267,6 @@ class RehearsalSongPlan {
 
     if (chordCount > 0) {
       // Generalmente cada acorde dura 1 compás (o 2 si son muy pocos).
-      // Si hay 4 acordes -> 4 compases; si hay 8 acordes -> 8 compases.
       return chordCount.clamp(4, 32);
     }
 
@@ -201,4 +275,3 @@ class RehearsalSongPlan {
     return barsFromLines.clamp(4, 32);
   }
 }
-

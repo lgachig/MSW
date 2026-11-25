@@ -72,7 +72,7 @@ void main() {
   }
 
   group('RehearsalPage UI & Interaction', () {
-    testWidgets('renders header, current section, and next section preview', (tester) async {
+    testWidgets('renders continuous vertical flow with active section and upcoming sections', (tester) async {
       await tester.pumpWidget(
         createRehearsalApp(structure: testStructure),
       );
@@ -82,14 +82,17 @@ void main() {
       expect(find.textContaining('100 BPM'), findsWidgets);
       expect(find.textContaining('Tono: G'), findsOneWidget);
 
-      // Current section card
+      // Continuous vertical list
+      expect(find.byKey(const Key('rehearsal-continuous-list')), findsOneWidget);
+
+      // Active section card
       expect(find.byKey(const Key('current-section-card')), findsOneWidget);
       expect(find.text('Verso 1'), findsWidgets);
       expect(find.text('Quién rompe el poder del pecado'), findsOneWidget);
 
-      // Next section preview shows Coro (1/2)
-      expect(find.byKey(const Key('next-section-preview')), findsOneWidget);
-      expect(find.text('Coro (1/2)'), findsOneWidget);
+      // Upcoming sections are present in the list
+      expect(find.text('Coro (1/2)'), findsWidgets);
+      expect(find.text('Coro (2/2)'), findsWidgets);
 
       // Roadmap chips
       expect(find.byKey(const Key('section-roadmap-list')), findsOneWidget);
@@ -136,15 +139,12 @@ void main() {
       await tester.pump();
 
       expect(find.text('Coro (1/2)'), findsWidgets);
-      expect(find.text('Siguiente: '), findsOneWidget);
-      expect(find.text('Coro (2/2)'), findsOneWidget);
 
       // Tap Next section again
       await tester.tap(find.byKey(const Key('next-section-button')));
       await tester.pump();
 
       expect(find.text('Coro (2/2)'), findsWidgets);
-      expect(find.text('Final de la canción'), findsOneWidget);
 
       // Tap Previous section
       await tester.tap(find.byKey(const Key('prev-section-button')));
@@ -195,18 +195,21 @@ void main() {
       await tester.pump();
 
       expect(find.byKey(const Key('keep-awake-button')), findsOneWidget);
+      expect(find.text('Pantalla encendida'), findsOneWidget);
 
       // Toggle off
       await tester.tap(find.byKey(const Key('keep-awake-button')));
       await tester.pumpAndSettle();
 
-      expect(find.text('Pantalla encendida desactivada'), findsOneWidget);
+      expect(find.text('Pantalla normal'), findsOneWidget);
+      expect(find.text('Pantalla siempre encendida: Desactivado'), findsOneWidget);
 
       // Toggle back on
       await tester.tap(find.byKey(const Key('keep-awake-button')));
       await tester.pumpAndSettle();
 
-      expect(find.text('Pantalla encendida activa durante el ensayo'), findsOneWidget);
+      expect(find.text('Pantalla encendida'), findsOneWidget);
+      expect(find.text('Pantalla siempre encendida: Activado'), findsOneWidget);
     });
 
     testWidgets('active chord badge displays current sounding chord', (tester) async {
@@ -220,4 +223,3 @@ void main() {
     });
   });
 }
-
