@@ -223,11 +223,11 @@ void main() {
       expect(controller.currentBar, 1);
       expect(controller.currentBeat, 1);
 
-      controller.previousSection();
+      controller.goToPreviousSection();
       expect(controller.sectionIndex, 0);
       expect(controller.currentSection?.name, 'Verso');
 
-      controller.nextSection();
+      controller.goToNextSection();
       expect(controller.sectionIndex, 1);
 
       controller.dispose();

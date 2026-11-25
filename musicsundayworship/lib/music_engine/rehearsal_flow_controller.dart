@@ -184,14 +184,14 @@ class RehearsalFlowController {
   }
 
   /// Avanza a la siguiente sección inmediatamente.
-  void nextSection() {
+  void goToNextSection() {
     if (_sectionIndex + 1 < _plan.sections.length) {
       jumpToSection(_sectionIndex + 1);
     }
   }
 
   /// Retrocede a la sección previa (o al inicio del compás si está a mitad).
-  void previousSection() {
+  void goToPreviousSection() {
     if (_currentBar > 1) {
       _currentBar = 1;
       _currentBeat = 1;

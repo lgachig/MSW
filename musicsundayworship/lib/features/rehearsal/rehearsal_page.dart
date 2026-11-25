@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../data/song_repository.dart';
 import '../../music_engine/music_engine.dart';
+import '../structure/song_structure_editor_page.dart';
 
 /// Página de pantalla completa para el Modo Ensayo con avance automático.
 class RehearsalPage extends StatefulWidget {
@@ -509,7 +510,7 @@ class _RehearsalPageState extends State<RehearsalPage> {
             key: const Key('prev-section-button'),
             tooltip: 'Sección anterior',
             icon: const Icon(Icons.skip_previous, size: 28),
-            onPressed: _controller.previousSection,
+            onPressed: _controller.goToPreviousSection,
           ),
 
           // Botón Play / Pause principal
@@ -532,7 +533,7 @@ class _RehearsalPageState extends State<RehearsalPage> {
             key: const Key('next-section-button'),
             tooltip: 'Siguiente sección',
             icon: const Icon(Icons.skip_next, size: 28),
-            onPressed: _controller.nextSection,
+            onPressed: _controller.goToNextSection,
           ),
 
           // Ajustador de BPM
