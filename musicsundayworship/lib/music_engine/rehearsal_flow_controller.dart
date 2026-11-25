@@ -91,7 +91,7 @@ class RehearsalFlowController {
   StreamSubscription<MetronomeTick>? _tickSub;
 
   int _bpm;
-  TimeSignature _timeSignature;
+  final TimeSignature _timeSignature;
 
   bool _isPlaying = false;
   bool _isPaused = false;

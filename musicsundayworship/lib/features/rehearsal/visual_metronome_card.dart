@@ -30,7 +30,6 @@ class _VisualMetronomeCardState extends ConsumerState<VisualMetronomeCard> {
   late TimeSignature _timeSignature;
   int _activeBeat = 0;
   bool _isFirstBeat = false;
-  bool _isAccentBeat = false;
   bool _isFlashing = false;
   bool _isPlaying = false;
   Timer? _flashResetTimer;
@@ -87,7 +86,6 @@ class _VisualMetronomeCardState extends ConsumerState<VisualMetronomeCard> {
     setState(() {
       _activeBeat = tick.beat;
       _isFirstBeat = tick.isFirstBeat;
-      _isAccentBeat = tick.isAccentBeat;
       _isFlashing = true;
     });
 

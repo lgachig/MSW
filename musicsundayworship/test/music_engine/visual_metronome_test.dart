@@ -1,6 +1,3 @@
-import 'dart:async';
-
-import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:musicsundayworship/music_engine/time_signature.dart';
 import 'package:musicsundayworship/music_engine/visual_metronome.dart';
