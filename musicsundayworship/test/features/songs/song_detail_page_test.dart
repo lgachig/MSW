@@ -155,6 +155,29 @@ void main() {
 
     expect(deletedId, equals(99));
   });
+
+  testWidgets('renders visual metronome card within song detail', (tester) async {
+    const song = SongDocument(
+      id: 5,
+      title: 'Canción con Metrónomo',
+      originalKey: 'C',
+      tempo: 115,
+      timeSignature: '4/4',
+      sections: [],
+    );
+
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: MaterialApp(home: SongDetailPage(song: song)),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('visual-metronome-card')), findsOneWidget);
+    expect(find.text('115 BPM'), findsWidgets);
+    expect(find.byKey(const Key('play-metronome-button')), findsOneWidget);
+    expect(find.byKey(const Key('tap-tempo-button')), findsOneWidget);
+  });
 }
 
 class _FakeDetailSongRepository implements SongRepository {
@@ -195,6 +218,13 @@ class _FakeDetailSongRepository implements SongRepository {
   Future<void> deleteStructure(int id) async {}
   @override
   Future<SongStructure> duplicateStructure(int id, {String? newName}) =>
+      throw UnimplementedError();
+  @override
+  Future<SongDocument> updateTempoAndSignature(
+    int songId, {
+    int? tempo,
+    String? timeSignature,
+  }) =>
       throw UnimplementedError();
   @override
   Stream<List<SongDocument>> watchAll() => const Stream.empty();

@@ -67,6 +67,22 @@ class _MockSongRepository implements SongRepository {
       throw UnimplementedError();
 
   @override
+  Future<SongDocument> updateTempoAndSignature(
+    int songId, {
+    int? tempo,
+    String? timeSignature,
+  }) async {
+    final base = updatedSong ?? createdSong ?? const SongDocument(title: '');
+    final updated = base.copyWith(
+      id: songId,
+      tempo: tempo,
+      timeSignature: timeSignature,
+    );
+    updatedSong = updated;
+    return updated;
+  }
+
+  @override
   Stream<List<SongDocument>> watchAll() => Stream.value([]);
 }
 

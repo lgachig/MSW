@@ -51,6 +51,13 @@ class _FakeSongRepository implements SongRepository {
   Future<SongStructure> duplicateStructure(int id, {String? newName}) =>
       throw UnimplementedError();
   @override
+  Future<SongDocument> updateTempoAndSignature(
+    int songId, {
+    int? tempo,
+    String? timeSignature,
+  }) =>
+      throw UnimplementedError();
+  @override
   Stream<List<SongDocument>> watchAll() => Stream.value(songs);
 }
 
